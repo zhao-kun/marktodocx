@@ -1,0 +1,6 @@
+.cluade
+CLAUDE.md
+node_modules/
+*.docx
+test-markdown/
+
