@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body {
+      width: 360px;
+      padding: 16px;
+      font-family: system-ui, -apple-system, sans-serif;
+      margin: 0;
+      color: #1a1a1a;
+    }
+    h1 {
+      font-size: 16px;
+      margin: 0 0 4px;
+    }
+    .subtitle {
+      font-size: 12px;
+      color: #666;
+      margin: 0 0 14px;
+    }
+
+    /* Directory picker */
+    .picker-area {
+      border: 2px dashed #ccc;
+      border-radius: 8px;
+      padding: 20px 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.15s, background-color 0.15s;
+      margin-bottom: 12px;
+    }
+    .picker-area:hover {
+      border-color: #4285f4;
+      background-color: #f0f5ff;
+    }
+    .picker-area.has-folder {
+      border-color: #188038;
+      background-color: #e6f4ea;
+    }
+    .picker-icon {
+      font-size: 28px;
+      margin-bottom: 6px;
+    }
+    .picker-label {
+      font-size: 13px;
+      color: #555;
+    }
+    .picker-area.has-folder .picker-label {
+      color: #188038;
+    }
+    #folder-input {
+      display: none;
+    }
+
+    /* File info */
+    .file-info {
+      font-size: 12px;
+      color: #555;
+      margin-bottom: 12px;
+      padding: 8px 10px;
+      background: #f5f5f5;
+      border-radius: 4px;
+      display: none;
+    }
+    .file-info.visible {
+      display: block;
+    }
+    .file-info .md-file {
+      font-weight: 600;
+      color: #1a1a1a;
+    }
+    .file-info .image-count {
+      color: #666;
+      margin-top: 2px;
+    }
+
+    /* Markdown file selector */
+    .md-selector {
+      margin-bottom: 12px;
+      display: none;
+    }
+    .md-selector.visible {
+      display: block;
+    }
+    .md-selector label {
+      font-size: 12px;
+      font-weight: 600;
+      display: block;
+      margin-bottom: 4px;
+    }
+    .md-selector select {
+      width: 100%;
+      padding: 6px 8px;
+      font-size: 13px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    /* Convert button */
+    #convert {
+      width: 100%;
+      padding: 10px;
+      font-size: 14px;
+      cursor: pointer;
+      border: none;
+      border-radius: 6px;
+      background: #4285f4;
+      color: white;
+      font-weight: 500;
+      transition: background 0.15s;
+    }
+    #convert:hover:not(:disabled) {
+      background: #3367d6;
+    }
+    #convert:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    /* Status */
+    #status {
+      margin-top: 10px;
+      font-size: 13px;
+      color: #333;
+      min-height: 20px;
+    }
+    .error { color: #d93025; }
+    .success { color: #188038; }
+
+    /* Change folder link */
+    .change-folder {
+      font-size: 11px;
+      color: #4285f4;
+      cursor: pointer;
+      text-decoration: underline;
+      margin-top: 4px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <h1>markdocx</h1>
+  <p class="subtitle">Markdown to Word converter</p>
+
+  <div class="picker-area" id="picker-area">
+    <div class="picker-icon" id="picker-icon">&#128193;</div>
+    <div class="picker-label" id="picker-label">Select folder containing .md file</div>
+    <input type="file" id="folder-input" webkitdirectory>
+  </div>
+  <div class="change-folder" id="change-folder">Change folder</div>
+
+  <div class="md-selector" id="md-selector">
+    <label for="md-select">Markdown file:</label>
+    <select id="md-select"></select>
+  </div>
+
+  <div class="file-info" id="file-info">
+    <div class="md-file" id="md-file-name"></div>
+    <div class="image-count" id="image-count"></div>
+  </div>
+
+  <button id="convert" disabled>Convert to DOCX</button>
+  <div id="status"></div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

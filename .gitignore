@@ -1,6 +1,8 @@
-.cluade
+.claude/
 CLAUDE.md
 node_modules/
 *.docx
 test-markdown/
+markdocx-extension/node_modules/
+dist/
 

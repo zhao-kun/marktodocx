@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "markdocx",
+  "version": "0.0.1",
+  "description": "Convert Markdown to Word (.docx) with Mermaid diagram support",
+  "permissions": [
+    "offscreen",
+    "downloads"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_popup": "popup/popup.html"
+  }
+}

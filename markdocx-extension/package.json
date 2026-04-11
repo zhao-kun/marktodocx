@@ -1,0 +1,19 @@
+{
+  "name": "markdocx-extension",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "watch": "vite build --watch"
+  },
+  "dependencies": {
+    "buffer": "^6.0.3",
+    "html-to-docx": "^1.8.0",
+    "markdown-it": "^14.1.1",
+    "mermaid": "^11.14.0"
+  },
+  "devDependencies": {
+    "vite": "^8.0.8",
+    "vite-plugin-node-polyfills": "^0.26.0"
+  }
+}
