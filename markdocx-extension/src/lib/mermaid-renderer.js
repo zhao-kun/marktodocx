@@ -3,10 +3,9 @@ import {
   FLOWCHART_WRAPPING_WIDTH,
   FLOWCHART_NODE_SPACING,
   FLOWCHART_RANK_SPACING,
-  DOCX_CONTENT_HEIGHT_PX,
-  DOCX_CONTENT_WIDTH_PX,
   MERMAID_RENDER_SCALE,
 } from './constants.js';
+import { resolveDocumentLayout } from './document-layout.js';
 
 let initialized = false;
 
@@ -107,7 +106,7 @@ function loadSvgAsImage(svgString) {
  *     → canvas.toDataURL('image/png')
  *     → HTML img tag
  */
-export async function renderMermaidToImageTag(code, index) {
+export async function renderMermaidToImageTag(code, index, layoutMetrics = resolveDocumentLayout()) {
   ensureInitialized();
 
   const id = `mermaid-diagram-${index}`;
@@ -177,13 +176,12 @@ export async function renderMermaidToImageTag(code, index) {
   const naturalWidth = Math.round(bounds.width / scale);
   const naturalHeight = Math.round(bounds.height / scale);
 
-  // Cap display width at 960px (matching CLI behavior)
-  let displayWidth = Math.min(naturalWidth, DOCX_CONTENT_WIDTH_PX);
+  let displayWidth = Math.min(naturalWidth, layoutMetrics.contentWidthPx);
   let displayHeight = Math.round(naturalHeight * (displayWidth / naturalWidth));
 
   // Cap display height to page content area so the diagram fits on one page
-  if (displayHeight > DOCX_CONTENT_HEIGHT_PX) {
-    displayHeight = DOCX_CONTENT_HEIGHT_PX;
+  if (displayHeight > layoutMetrics.contentHeightPx) {
+    displayHeight = layoutMetrics.contentHeightPx;
     displayWidth = Math.round(naturalWidth * (displayHeight / naturalHeight));
   }
 

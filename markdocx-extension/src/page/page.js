@@ -1,4 +1,17 @@
 import { IMAGE_EXTENSIONS } from '../lib/constants.js';
+import {
+  BODY_FONT_FAMILY_OPTIONS,
+  CODE_FONT_FAMILY_OPTIONS,
+  DEFAULT_STYLE_OPTIONS,
+  DOCUMENT_STYLE_PRESET_ORDER,
+  STYLE_PRESET_LABELS,
+  STYLE_SYNTAX_THEME_OPTIONS,
+  resolveDocumentStyle,
+} from '../lib/document-style.js';
+import {
+  DOCUMENT_MARGIN_PRESET_LABELS,
+  DOCUMENT_MARGIN_PRESET_ORDER,
+} from '../lib/document-layout.js';
 
 const pickerArea = document.getElementById('picker-area');
 const pickerIcon = document.getElementById('picker-icon');
@@ -12,11 +25,254 @@ const mdFileName = document.getElementById('md-file-name');
 const imageCountEl = document.getElementById('image-count');
 const convertBtn = document.getElementById('convert');
 const status = document.getElementById('status');
+const resetStyleBtn = document.getElementById('reset-style');
+const stylePresetSelect = document.getElementById('style-preset');
 
 let allFiles = [];       // All File objects from directory picker
 let mdFiles = [];        // .md File objects
 let imageFiles = [];     // Image File objects
 let selectedMdFile = null;
+let styleOptions = clone(DEFAULT_STYLE_OPTIONS);
+let isRenderingStyleControls = false;
+
+const STYLE_STORAGE_KEY = 'documentStyleOptions';
+const STYLE_FIELDS = [
+  { id: 'body-font-family', path: ['body', 'fontFamily'], type: 'string' },
+  { id: 'body-font-size', path: ['body', 'fontSizePt'], type: 'number' },
+  { id: 'body-line-height', path: ['body', 'lineHeight'], type: 'number' },
+  { id: 'body-color', path: ['body', 'color'], type: 'string' },
+  { id: 'headings-font-family', path: ['headings', 'fontFamily'], type: 'string' },
+  { id: 'headings-color', path: ['headings', 'color'], type: 'string' },
+  { id: 'tables-border-color', path: ['tables', 'borderColor'], type: 'string' },
+  { id: 'tables-header-bg', path: ['tables', 'headerBackgroundColor'], type: 'string' },
+  { id: 'tables-header-text', path: ['tables', 'headerTextColor'], type: 'string' },
+  { id: 'code-font-family', path: ['code', 'fontFamily'], type: 'string' },
+  { id: 'code-font-size', path: ['code', 'fontSizePt'], type: 'number' },
+  { id: 'code-syntax-theme', path: ['code', 'syntaxTheme'], type: 'string' },
+  { id: 'code-inline-bg', path: ['code', 'inlineBackgroundColor'], type: 'string' },
+  { id: 'code-inline-italic', path: ['code', 'inlineItalic'], type: 'boolean' },
+  { id: 'code-block-bg', path: ['code', 'blockBackgroundColor'], type: 'string' },
+  { id: 'code-block-border', path: ['code', 'blockBorderColor'], type: 'string' },
+  { id: 'code-language-badge-color', path: ['code', 'languageBadgeColor'], type: 'string' },
+  { id: 'blockquote-bg', path: ['blockquote', 'backgroundColor'], type: 'string' },
+  { id: 'blockquote-text', path: ['blockquote', 'textColor'], type: 'string' },
+  { id: 'blockquote-border', path: ['blockquote', 'borderColor'], type: 'string' },
+  { id: 'blockquote-italic', path: ['blockquote', 'italic'], type: 'boolean' },
+  { id: 'page-margin-preset', path: ['page', 'marginPreset'], type: 'string' },
+].map((field) => ({ ...field, element: document.getElementById(field.id) }));
+
+function clone(value) {
+  return JSON.parse(JSON.stringify(value));
+}
+
+function isPlainObject(value) {
+  return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+}
+
+function normalizeStoredStyleOptions(value) {
+  const normalizedPreset = DOCUMENT_STYLE_PRESET_ORDER.includes(value?.preset)
+    ? value.preset
+    : DEFAULT_STYLE_OPTIONS.preset;
+  return {
+    preset: normalizedPreset,
+    overrides: isPlainObject(value?.overrides) ? clone(value.overrides) : {},
+  };
+}
+
+function getNestedValue(object, path) {
+  return path.reduce((current, key) => current?.[key], object);
+}
+
+function setNestedValue(object, path, value) {
+  let current = object;
+  for (let i = 0; i < path.length - 1; i++) {
+    const key = path[i];
+    if (!isPlainObject(current[key])) {
+      current[key] = {};
+    }
+    current = current[key];
+  }
+  current[path.at(-1)] = value;
+}
+
+function removeNestedValue(object, path) {
+  const parents = [];
+  let current = object;
+
+  for (let i = 0; i < path.length - 1; i++) {
+    const key = path[i];
+    if (!isPlainObject(current[key])) {
+      return;
+    }
+    parents.push([current, key]);
+    current = current[key];
+  }
+
+  delete current[path.at(-1)];
+
+  for (let i = parents.length - 1; i >= 0; i--) {
+    const [parent, key] = parents[i];
+    if (isPlainObject(parent[key]) && Object.keys(parent[key]).length === 0) {
+      delete parent[key];
+    }
+  }
+}
+
+function hasOverrides(overrides) {
+  if (!isPlainObject(overrides)) {
+    return false;
+  }
+  return Object.values(overrides).some((value) => {
+    if (isPlainObject(value)) {
+      return hasOverrides(value);
+    }
+    return true;
+  });
+}
+
+function populateSelect(selectEl, values, labels = {}) {
+  selectEl.innerHTML = '';
+  for (const value of values) {
+    const option = document.createElement('option');
+    option.value = value;
+    option.textContent = labels[value] || value;
+    selectEl.appendChild(option);
+  }
+}
+
+function capitalize(value) {
+  return value.charAt(0).toUpperCase() + value.slice(1);
+}
+
+function setupStyleControls() {
+  populateSelect(stylePresetSelect, DOCUMENT_STYLE_PRESET_ORDER, STYLE_PRESET_LABELS);
+  populateSelect(document.getElementById('body-font-family'), BODY_FONT_FAMILY_OPTIONS);
+  populateSelect(document.getElementById('headings-font-family'), BODY_FONT_FAMILY_OPTIONS);
+  populateSelect(document.getElementById('code-font-family'), CODE_FONT_FAMILY_OPTIONS);
+  populateSelect(
+    document.getElementById('code-syntax-theme'),
+    STYLE_SYNTAX_THEME_OPTIONS,
+    Object.fromEntries(STYLE_SYNTAX_THEME_OPTIONS.map((value) => [value, capitalize(value)]))
+  );
+  populateSelect(document.getElementById('page-margin-preset'), DOCUMENT_MARGIN_PRESET_ORDER, DOCUMENT_MARGIN_PRESET_LABELS);
+
+  stylePresetSelect.addEventListener('change', handlePresetChange);
+  resetStyleBtn.addEventListener('click', handleStyleReset);
+
+  for (const field of STYLE_FIELDS) {
+    field.element.addEventListener('change', () => {
+      void handleStyleFieldChange(field);
+    });
+  }
+}
+
+function getFieldValue(field) {
+  if (field.type === 'boolean') {
+    return field.element.checked;
+  }
+  if (field.type === 'number') {
+    return Number.parseFloat(field.element.value);
+  }
+  return field.element.value;
+}
+
+function setFieldValue(field, value) {
+  if (field.type === 'boolean') {
+    field.element.checked = Boolean(value);
+    return;
+  }
+  field.element.value = String(value);
+}
+
+function renderStyleControls() {
+  const resolvedStyle = resolveDocumentStyle(styleOptions);
+  isRenderingStyleControls = true;
+  stylePresetSelect.value = styleOptions.preset;
+  for (const field of STYLE_FIELDS) {
+    setFieldValue(field, getNestedValue(resolvedStyle, field.path));
+  }
+  isRenderingStyleControls = false;
+}
+
+async function persistStyleOptions() {
+  try {
+    await chrome.storage.local.set({ [STYLE_STORAGE_KEY]: styleOptions });
+  } catch {
+    // Storage failure should not block conversion.
+  }
+}
+
+async function loadStyleOptions() {
+  try {
+    const stored = await chrome.storage.local.get(STYLE_STORAGE_KEY);
+    styleOptions = normalizeStoredStyleOptions(stored[STYLE_STORAGE_KEY]);
+  } catch {
+    styleOptions = clone(DEFAULT_STYLE_OPTIONS);
+  }
+  renderStyleControls();
+}
+
+async function handlePresetChange() {
+  if (isRenderingStyleControls) return;
+
+  const nextPreset = stylePresetSelect.value;
+  if (nextPreset === styleOptions.preset) {
+    return;
+  }
+
+  if (hasOverrides(styleOptions.overrides)) {
+    const confirmed = window.confirm('Switching presets will replace your current custom style changes. Continue?');
+    if (!confirmed) {
+      renderStyleControls();
+      return;
+    }
+  }
+
+  styleOptions = {
+    preset: nextPreset,
+    overrides: {},
+  };
+  await persistStyleOptions();
+  renderStyleControls();
+}
+
+async function handleStyleReset() {
+  styleOptions = {
+    preset: styleOptions.preset,
+    overrides: {},
+  };
+  await persistStyleOptions();
+  renderStyleControls();
+}
+
+async function handleStyleFieldChange(field) {
+  if (isRenderingStyleControls) return;
+
+  const nextOverrides = clone(styleOptions.overrides);
+  setNestedValue(nextOverrides, field.path, getFieldValue(field));
+
+  const candidateStyle = resolveDocumentStyle({
+    preset: styleOptions.preset,
+    overrides: nextOverrides,
+  });
+  const presetStyle = resolveDocumentStyle({ preset: styleOptions.preset, overrides: {} });
+  const nextValue = getNestedValue(candidateStyle, field.path);
+  const presetValue = getNestedValue(presetStyle, field.path);
+
+  if (nextValue === presetValue) {
+    removeNestedValue(nextOverrides, field.path);
+  } else {
+    setNestedValue(nextOverrides, field.path, nextValue);
+  }
+
+  styleOptions = {
+    preset: styleOptions.preset,
+    overrides: nextOverrides,
+  };
+
+  await persistStyleOptions();
+  renderStyleControls();
+}
 
 // --- Directory picker ---
 
@@ -163,6 +419,7 @@ convertBtn.addEventListener('click', async () => {
       markdown,
       imageMap,
       mdRelativeDir,
+      styleOptions,
     });
 
     // Clear active ID before setting terminal state so late progress is dropped
@@ -231,3 +488,6 @@ async function readAllImages() {
 
   return imageMap;
 }
+
+setupStyleControls();
+void loadStyleOptions();

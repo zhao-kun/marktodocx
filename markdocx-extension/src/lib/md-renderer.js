@@ -1,6 +1,7 @@
 import MarkdownIt from 'markdown-it';
 import { HIDDEN_CODE_BLOCK_LANGUAGES } from './constants.js';
 import { highlightCode } from './syntax-highlighter.js';
+import { resolveDocumentStyle } from './document-style.js';
 
 function escapeHtml(value) {
   return value
@@ -23,19 +24,20 @@ function preserveInlineCodeWhitespace(text) {
     .replaceAll(' ', '&nbsp;');
 }
 
-function renderInlineCodeHtml(content) {
-  return `<i><span class="inline-code" style="background-color: #EFEFEF;">${preserveInlineCodeWhitespace(content)}</span></i>`;
+function renderInlineCodeHtml(content, resolvedStyle) {
+  const inlineCodeHtml = `<span class="inline-code" style="background-color: ${resolvedStyle.code.inlineBackgroundColor}; color: ${resolvedStyle.code.textColor};">${preserveInlineCodeWhitespace(content)}</span>`;
+  return resolvedStyle.code.inlineItalic ? `<i>${inlineCodeHtml}</i>` : inlineCodeHtml;
 }
 
-function renderCodeBlockHtml(content, language = '') {
+function renderCodeBlockHtml(content, resolvedStyle, language = '') {
   const normalized = content.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
   const showLanguageBadge = language && !HIDDEN_CODE_BLOCK_LANGUAGES.has(language.toLowerCase());
   const languageBadge = showLanguageBadge
-    ? `<div class="code-block-language">${escapeHtml(language)}</div>`
+    ? `<div class="code-block-language" style="color: ${resolvedStyle.code.languageBadgeColor};">${escapeHtml(language)}</div>`
     : '';
 
   // Try syntax highlighting for supported languages
-  const highlightedLines = highlightCode(normalized, language);
+  const highlightedLines = highlightCode(normalized, language, resolvedStyle.code.syntaxTheme);
 
   let lineHtmls;
   if (highlightedLines) {
@@ -56,7 +58,7 @@ function renderCodeBlockHtml(content, language = '') {
   return [
     '<table class="code-block-table" role="presentation" width="100%" style="width: 100%; border-collapse: collapse; table-layout: fixed;">',
     '  <tr>',
-    '    <td class="code-block-cell" style="border: 1px solid #d1d5db; background-color: #F0F0F0; padding: 8pt 10pt;">',
+    `    <td class="code-block-cell" style="border: 1px solid ${resolvedStyle.code.blockBorderColor}; background-color: ${resolvedStyle.code.blockBackgroundColor}; color: ${resolvedStyle.code.textColor}; padding: 8pt 10pt;">`,
     languageBadge,
     renderedLines,
     '    </td>',
@@ -65,7 +67,8 @@ function renderCodeBlockHtml(content, language = '') {
   ].join('\n');
 }
 
-export function createMarkdownRenderer() {
+export function createMarkdownRenderer(styleInput = resolveDocumentStyle()) {
+  const resolvedStyle = styleInput?.body ? styleInput : resolveDocumentStyle(styleInput);
   const md = new MarkdownIt({
     html: true,
     linkify: true,
@@ -81,20 +84,20 @@ export function createMarkdownRenderer() {
         return `${env.renderedMermaid.shift()}\n`;
       }
       // Fallback: if mermaid rendering was skipped or failed, show source
-      return `${renderCodeBlockHtml(token.content, 'mermaid')}\n`;
+      return `${renderCodeBlockHtml(token.content, resolvedStyle, 'mermaid')}\n`;
     }
 
-    return `${renderCodeBlockHtml(token.content, language)}\n`;
+    return `${renderCodeBlockHtml(token.content, resolvedStyle, language)}\n`;
   };
 
   md.renderer.rules.code_block = (tokens, idx) => {
     const token = tokens[idx];
-    return `${renderCodeBlockHtml(token.content)}\n`;
+    return `${renderCodeBlockHtml(token.content, resolvedStyle)}\n`;
   };
 
   md.renderer.rules.code_inline = (tokens, idx) => {
     const token = tokens[idx];
-    return renderInlineCodeHtml(token.content);
+    return renderInlineCodeHtml(token.content, resolvedStyle);
   };
 
   return md;

@@ -6,7 +6,7 @@
   <style>
     * { box-sizing: border-box; }
     body {
-      max-width: 480px;
+      max-width: 760px;
       margin: 48px auto;
       padding: 0 24px;
       font-family: system-ui, -apple-system, sans-serif;
@@ -99,6 +99,114 @@
       border-radius: 6px;
     }
 
+    .style-panel {
+      margin: 20px 0 18px;
+      padding: 16px;
+      background: #f8fafc;
+      border: 1px solid #dbe4ee;
+      border-radius: 10px;
+    }
+    .style-panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .style-panel h2 {
+      font-size: 18px;
+      margin: 0 0 4px;
+    }
+    .style-panel-subtitle {
+      font-size: 13px;
+      color: #667085;
+      margin: 0;
+    }
+    .ghost-button {
+      border: 1px solid #cbd5e1;
+      background: white;
+      color: #334155;
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .ghost-button:hover {
+      background: #f8fafc;
+    }
+    .style-panel select,
+    .style-panel input[type="number"],
+    .style-panel input[type="text"],
+    .style-panel input[type="color"] {
+      width: 100%;
+      padding: 8px 10px;
+      font-size: 14px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      background: white;
+    }
+    .style-panel input[type="color"] {
+      padding: 2px;
+      min-height: 38px;
+    }
+    .style-panel details {
+      margin-top: 12px;
+      border-top: 1px solid #dbe4ee;
+      padding-top: 12px;
+    }
+    .style-panel summary {
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      color: #334155;
+    }
+    .style-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+      margin-top: 12px;
+    }
+    .style-group {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 12px;
+    }
+    .style-group h3 {
+      font-size: 14px;
+      margin: 0 0 10px;
+      color: #1f2937;
+    }
+    .field-row {
+      margin-bottom: 10px;
+    }
+    .field-row:last-child {
+      margin-bottom: 0;
+    }
+    .field-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: #475569;
+      margin-bottom: 4px;
+    }
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .checkbox-row input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      margin: 0;
+    }
+    .checkbox-row .field-label {
+      margin: 0;
+      font-size: 13px;
+      font-weight: 500;
+      color: #334155;
+    }
+
     /* Convert button */
     #convert {
       width: 100%;
@@ -161,6 +269,134 @@
     <div class="md-file" id="md-file-name"></div>
     <div class="image-count" id="image-count"></div>
   </div>
+
+  <section class="style-panel" id="style-panel">
+    <div class="style-panel-header">
+      <div>
+        <h2>Style</h2>
+        <p class="style-panel-subtitle">Customize the generated DOCX appearance. Settings are reused next time.</p>
+      </div>
+      <button type="button" class="ghost-button" id="reset-style">Reset</button>
+    </div>
+
+    <div class="field-row">
+      <label class="field-label" for="style-preset">Preset</label>
+      <select id="style-preset"></select>
+    </div>
+
+    <details>
+      <summary>Advanced settings</summary>
+      <div class="style-grid">
+        <section class="style-group">
+          <h3>Typography</h3>
+          <div class="field-row">
+            <label class="field-label" for="body-font-family">Body font</label>
+            <select id="body-font-family"></select>
+          </div>
+          <div class="field-row">
+            <label class="field-label" for="body-font-size">Body font size (pt)</label>
+            <input id="body-font-size" type="number" min="9" max="14" step="1">
+          </div>
+          <div class="field-row">
+            <label class="field-label" for="body-line-height">Line height</label>
+            <input id="body-line-height" type="number" min="1.2" max="1.8" step="0.05">
+          </div>
+          <div class="field-row">
+            <label class="field-label" for="body-color">Body text color</label>
+            <input id="body-color" type="color">
+          </div>
+          <div class="field-row">
+            <label class="field-label" for="headings-font-family">Heading font</label>
+            <select id="headings-font-family"></select>
+          </div>
+          <div class="field-row">
+            <label class="field-label" for="headings-color">Heading color</label>
+            <input id="headings-color" type="color">
+          </div>
+        </section>
+
+        <section class="style-group">
+          <h3>Tables</h3>
+          <div class="field-row">
+            <label class="field-label" for="tables-border-color">Border color</label>
+            <input id="tables-border-color" type="color">
+          </div>
+          <div class="field-row">
+            <label class="field-label" for="tables-header-bg">Header background</label>
+            <input id="tables-header-bg" type="color">
+          </div>
+          <div class="field-row">
+            <label class="field-label" for="tables-header-text">Header text color</label>
+            <input id="tables-header-text" type="color">
+          </div>
+        </section>
+
+        <section class="style-group">
+          <h3>Code</h3>
+          <div class="field-row">
+            <label class="field-label" for="code-font-family">Code font</label>
+            <select id="code-font-family"></select>
+          </div>
+          <div class="field-row">
+            <label class="field-label" for="code-font-size">Code font size (pt)</label>
+            <input id="code-font-size" type="number" min="8" max="13" step="1">
+          </div>
+          <div class="field-row">
+            <label class="field-label" for="code-syntax-theme">Syntax theme</label>
+            <select id="code-syntax-theme"></select>
+          </div>
+          <div class="field-row">
+            <label class="field-label" for="code-inline-bg">Inline code background</label>
+            <input id="code-inline-bg" type="color">
+          </div>
+          <div class="field-row checkbox-row">
+            <input id="code-inline-italic" type="checkbox">
+            <label class="field-label" for="code-inline-italic">Italic inline code</label>
+          </div>
+          <div class="field-row">
+            <label class="field-label" for="code-block-bg">Code block background</label>
+            <input id="code-block-bg" type="color">
+          </div>
+          <div class="field-row">
+            <label class="field-label" for="code-block-border">Code block border</label>
+            <input id="code-block-border" type="color">
+          </div>
+          <div class="field-row">
+            <label class="field-label" for="code-language-badge-color">Language badge color</label>
+            <input id="code-language-badge-color" type="color">
+          </div>
+        </section>
+
+        <section class="style-group">
+          <h3>Blockquotes</h3>
+          <div class="field-row">
+            <label class="field-label" for="blockquote-bg">Background</label>
+            <input id="blockquote-bg" type="color">
+          </div>
+          <div class="field-row">
+            <label class="field-label" for="blockquote-text">Text color</label>
+            <input id="blockquote-text" type="color">
+          </div>
+          <div class="field-row">
+            <label class="field-label" for="blockquote-border">Border color</label>
+            <input id="blockquote-border" type="color">
+          </div>
+          <div class="field-row checkbox-row">
+            <input id="blockquote-italic" type="checkbox">
+            <label class="field-label" for="blockquote-italic">Italic blockquotes</label>
+          </div>
+        </section>
+
+        <section class="style-group">
+          <h3>Page Layout</h3>
+          <div class="field-row">
+            <label class="field-label" for="page-margin-preset">Margins</label>
+            <select id="page-margin-preset"></select>
+          </div>
+        </section>
+      </div>
+    </details>
+  </section>
 
   <button id="convert" disabled>Convert to DOCX</button>
   <div id="status"></div>

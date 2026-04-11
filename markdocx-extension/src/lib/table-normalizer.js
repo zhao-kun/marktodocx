@@ -1,4 +1,5 @@
-import { DOCX_CONTENT_WIDTH_PX } from './constants.js';
+import { resolveDocumentLayout } from './document-layout.js';
+import { resolveDocumentStyle } from './document-style.js';
 
 function getTableCellSpan(cell) {
   const colspan = Number.parseInt(cell.getAttribute('colspan') || '1', 10);
@@ -13,11 +14,144 @@ function getTableColumnCount(table) {
   );
 }
 
+function preserveBlockquoteLineBreaks(blockquote, doc) {
+  const paragraphs = [...blockquote.querySelectorAll('p')];
+
+  for (const paragraph of paragraphs) {
+    const textNodes = [];
+    const walker = doc.createTreeWalker(paragraph, NodeFilter.SHOW_TEXT);
+    let currentNode = walker.nextNode();
+
+    while (currentNode) {
+      textNodes.push(currentNode);
+      currentNode = walker.nextNode();
+    }
+
+    for (const textNode of textNodes) {
+      const text = textNode.nodeValue;
+      if (!text || !text.includes('\n')) {
+        continue;
+      }
+
+      const fragment = doc.createDocumentFragment();
+      const parts = text.split('\n');
+      for (let i = 0; i < parts.length; i++) {
+        if (parts[i] !== '') {
+          fragment.appendChild(doc.createTextNode(parts[i]));
+        }
+        if (i < parts.length - 1) {
+          fragment.appendChild(doc.createElement('br'));
+        }
+      }
+
+      textNode.replaceWith(fragment);
+    }
+  }
+}
+
+function splitBlockquoteParagraphsOnBreaks(blockquote, doc) {
+  const paragraphs = [...blockquote.querySelectorAll('p')];
+
+  for (const paragraph of paragraphs) {
+    const childNodes = [...paragraph.childNodes];
+    if (!childNodes.some((node) => node.nodeName === 'BR')) {
+      paragraph.style.margin = '0';
+      continue;
+    }
+
+    const replacement = doc.createDocumentFragment();
+    let nextParagraph = doc.createElement('p');
+    nextParagraph.style.margin = '0';
+
+    for (const childNode of childNodes) {
+      if (childNode.nodeName === 'BR') {
+        if (!nextParagraph.hasChildNodes()) {
+          nextParagraph.appendChild(doc.createTextNode(' '));
+        }
+        replacement.appendChild(nextParagraph);
+        nextParagraph = doc.createElement('p');
+        nextParagraph.style.margin = '0';
+        continue;
+      }
+
+      nextParagraph.appendChild(childNode.cloneNode(true));
+    }
+
+    if (!nextParagraph.hasChildNodes()) {
+      nextParagraph.appendChild(doc.createTextNode(' '));
+    }
+    replacement.appendChild(nextParagraph);
+    paragraph.replaceWith(replacement);
+  }
+}
+
+function transformBlockquoteToTable(blockquote, doc, resolvedStyle) {
+  const table = doc.createElement('table');
+  table.className = 'blockquote-table';
+  table.setAttribute('role', 'presentation');
+  table.setAttribute('width', '100%');
+  table.style.width = '100%';
+  table.style.borderCollapse = 'collapse';
+  table.style.tableLayout = 'fixed';
+  table.style.margin = '0 0 10pt';
+
+  const row = doc.createElement('tr');
+  const cell = doc.createElement('td');
+  cell.style.border = 'none';
+  cell.style.borderLeft = `4px solid ${resolvedStyle.blockquote.borderColor}`;
+  cell.style.backgroundColor = resolvedStyle.blockquote.backgroundColor;
+  cell.style.color = resolvedStyle.blockquote.textColor;
+  cell.style.fontStyle = resolvedStyle.blockquote.italic ? 'italic' : 'normal';
+  cell.style.padding = '6pt 0 6pt 12pt';
+  cell.style.verticalAlign = 'top';
+
+  const childNodes = [...blockquote.childNodes].filter((node) => {
+    return !(node.nodeType === Node.TEXT_NODE && !node.nodeValue.trim());
+  });
+
+  if (childNodes.length === 0) {
+    const paragraph = doc.createElement('p');
+    paragraph.style.margin = '0';
+    paragraph.appendChild(doc.createTextNode(' '));
+    cell.appendChild(paragraph);
+  } else {
+    for (const childNode of childNodes) {
+      if (childNode.nodeType === Node.ELEMENT_NODE && childNode.tagName === 'P') {
+        const paragraph = doc.createElement('p');
+        paragraph.style.margin = '0';
+        const paragraphChildren = [...childNode.childNodes];
+        if (paragraphChildren.length === 0) {
+          paragraph.appendChild(doc.createTextNode(' '));
+        } else {
+          for (const paragraphChild of paragraphChildren) {
+            paragraph.appendChild(paragraphChild.cloneNode(true));
+          }
+        }
+        cell.appendChild(paragraph);
+        continue;
+      }
+
+      const paragraph = doc.createElement('p');
+      paragraph.style.margin = '0';
+      paragraph.appendChild(childNode.cloneNode(true));
+      cell.appendChild(paragraph);
+    }
+  }
+
+  row.appendChild(cell);
+  table.appendChild(row);
+  blockquote.replaceWith(table);
+}
+
 /**
  * Normalize tables and blockquote styles for DOCX output.
  * Uses native DOMParser (available in offscreen document) instead of JSDOM.
  */
-export function normalizeTables(html) {
+export function normalizeTables(
+  html,
+  resolvedStyle = resolveDocumentStyle(),
+  layoutMetrics = resolveDocumentLayout(resolvedStyle.page.marginPreset)
+) {
   const parser = new DOMParser();
   const doc = parser.parseFromString(`<!DOCTYPE html><html><body>${html}</body></html>`, 'text/html');
 
@@ -26,9 +160,9 @@ export function normalizeTables(html) {
 
   for (const table of tables) {
     const columnCount = getTableColumnCount(table);
-    table.setAttribute('width', String(DOCX_CONTENT_WIDTH_PX));
-    table.style.width = `${DOCX_CONTENT_WIDTH_PX}px`;
-    table.style.maxWidth = `${DOCX_CONTENT_WIDTH_PX}px`;
+    table.setAttribute('width', String(layoutMetrics.contentWidthPx));
+    table.style.width = `${layoutMetrics.contentWidthPx}px`;
+    table.style.maxWidth = `${layoutMetrics.contentWidthPx}px`;
     table.style.tableLayout = 'fixed';
     table.style.borderCollapse = 'collapse';
 
@@ -37,7 +171,7 @@ export function normalizeTables(html) {
       const span = getTableCellSpan(cell);
       const cellWidthPx = Math.max(
         48,
-        Math.floor((DOCX_CONTENT_WIDTH_PX * span) / columnCount)
+        Math.floor((layoutMetrics.contentWidthPx * span) / columnCount)
       );
 
       cell.setAttribute('width', String(cellWidthPx));
@@ -48,8 +182,8 @@ export function normalizeTables(html) {
       cell.style.whiteSpace = 'normal';
 
       if (cell.tagName === 'TH') {
-        cell.style.backgroundColor = '#595959';
-        cell.style.color = '#FFFFFF';
+        cell.style.backgroundColor = resolvedStyle.tables.headerBackgroundColor;
+        cell.style.color = resolvedStyle.tables.headerTextColor;
         cell.style.fontWeight = '700';
       }
     }
@@ -57,13 +191,9 @@ export function normalizeTables(html) {
 
   const blockquotes = [...doc.querySelectorAll('blockquote')];
   for (const blockquote of blockquotes) {
-    blockquote.style.display = 'block';
-    blockquote.style.backgroundColor = '#EFEFEF';
-    blockquote.style.color = '#334155';
-    blockquote.style.fontStyle = 'italic';
-    blockquote.style.borderLeft = '4px solid #cbd5e1';
-    blockquote.style.marginLeft = '0';
-    blockquote.style.padding = '6pt 0 6pt 12pt';
+    preserveBlockquoteLineBreaks(blockquote, doc);
+    splitBlockquoteParagraphsOnBreaks(blockquote, doc);
+    transformBlockquoteToTable(blockquote, doc, resolvedStyle);
   }
 
   return doc.body.innerHTML;

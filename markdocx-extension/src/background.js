@@ -85,6 +85,7 @@ async function handleConvertMdToDocx(message) {
         markdown: message.markdown,
         imageMap: message.imageMap,
         mdRelativeDir: message.mdRelativeDir,
+        styleOptions: message.styleOptions,
       }),
       new Promise((_, reject) =>
         setTimeout(() => reject(new Error('Conversion timed out. The document may be too complex.')), CONVERSION_TIMEOUT_MS)

@@ -18,33 +18,57 @@ hljs.registerLanguage('py', python);
 hljs.registerLanguage('sh', bash);
 hljs.registerLanguage('shell', bash);
 
-// GitHub-like light theme — compound keys (full class value) checked before primary keys
-const COLOR_MAP = {
-  // Compound sub-scope entries (exact class attribute match)
-  'hljs-title function_': '#8250df',
-  'hljs-title class_': '#8250df',
-  'hljs-variable language_': '#cf222e',
-  'hljs-variable constant_': '#0550ae',
-  'hljs-meta keyword_': '#cf222e',
-  'hljs-meta string_': '#0a3069',
-  // Primary entries
-  'hljs-keyword': '#cf222e',
-  'hljs-built_in': '#8250df',
-  'hljs-type': '#8250df',
-  'hljs-string': '#0a3069',
-  'hljs-number': '#0550ae',
-  'hljs-literal': '#0550ae',
-  'hljs-comment': '#6e7781',
-  'hljs-title': '#8250df',
-  'hljs-variable': '#953800',
-  'hljs-attr': '#0550ae',
-  'hljs-operator': '#cf222e',
-  'hljs-property': '#0550ae',
-  'hljs-meta': '#6e7781',
-  'hljs-section': '#0550ae',
-  'hljs-regexp': '#0a3069',
-  'hljs-symbol': '#0550ae',
-  'hljs-doctag': '#cf222e',
+const COLOR_PALETTES = {
+  light: {
+    'hljs-title function_': '#8250df',
+    'hljs-title class_': '#8250df',
+    'hljs-variable language_': '#cf222e',
+    'hljs-variable constant_': '#0550ae',
+    'hljs-meta keyword_': '#cf222e',
+    'hljs-meta string_': '#0a3069',
+    'hljs-keyword': '#cf222e',
+    'hljs-built_in': '#8250df',
+    'hljs-type': '#8250df',
+    'hljs-string': '#0a3069',
+    'hljs-number': '#0550ae',
+    'hljs-literal': '#0550ae',
+    'hljs-comment': '#6e7781',
+    'hljs-title': '#8250df',
+    'hljs-variable': '#953800',
+    'hljs-attr': '#0550ae',
+    'hljs-operator': '#cf222e',
+    'hljs-property': '#0550ae',
+    'hljs-meta': '#6e7781',
+    'hljs-section': '#0550ae',
+    'hljs-regexp': '#0a3069',
+    'hljs-symbol': '#0550ae',
+    'hljs-doctag': '#cf222e',
+  },
+  dark: {
+    'hljs-title function_': '#d2a8ff',
+    'hljs-title class_': '#d2a8ff',
+    'hljs-variable language_': '#ff7b72',
+    'hljs-variable constant_': '#79c0ff',
+    'hljs-meta keyword_': '#ff7b72',
+    'hljs-meta string_': '#a5d6ff',
+    'hljs-keyword': '#ff7b72',
+    'hljs-built_in': '#d2a8ff',
+    'hljs-type': '#d2a8ff',
+    'hljs-string': '#a5d6ff',
+    'hljs-number': '#79c0ff',
+    'hljs-literal': '#79c0ff',
+    'hljs-comment': '#8b949e',
+    'hljs-title': '#d2a8ff',
+    'hljs-variable': '#ffa657',
+    'hljs-attr': '#79c0ff',
+    'hljs-operator': '#ff7b72',
+    'hljs-property': '#79c0ff',
+    'hljs-meta': '#8b949e',
+    'hljs-section': '#79c0ff',
+    'hljs-regexp': '#a5d6ff',
+    'hljs-symbol': '#79c0ff',
+    'hljs-doctag': '#ff7b72',
+  },
 };
 
 /**
@@ -52,12 +76,12 @@ const COLOR_MAP = {
  * Tries full value first (compound match), then first class only (primary match).
  * Returns null if no match — caller should unwrap the span.
  */
-function resolveColor(classValue) {
+function resolveColor(classValue, palette) {
   // Compound match: e.g. "hljs-title function_"
-  if (COLOR_MAP[classValue]) return COLOR_MAP[classValue];
+  if (palette[classValue]) return palette[classValue];
   // Primary match: first class only, e.g. "hljs-title" from "hljs-title function_"
   const primary = classValue.split(' ')[0];
-  if (COLOR_MAP[primary]) return COLOR_MAP[primary];
+  if (palette[primary]) return palette[primary];
   return null;
 }
 
@@ -66,9 +90,9 @@ function resolveColor(classValue) {
  * Spans with no matching color become bare <span> tags (no attributes),
  * preserving DOM balance. The text inside inherits the default code block color.
  */
-function classesToInlineStyles(html) {
+function classesToInlineStyles(html, palette) {
   return html.replace(/<span class="([^"]*)">/g, (match, classValue) => {
-    const color = resolveColor(classValue);
+    const color = resolveColor(classValue, palette);
     if (color) return `<span style="color: ${color};">`;
     return '<span>';
   });
@@ -158,10 +182,11 @@ function preserveWhitespaceTagAware(html) {
  *   inline styles, and preserved whitespace. Returns null if the language is
  *   not supported (caller should use the monochrome fallback path).
  */
-export function highlightCode(code, language) {
+export function highlightCode(code, language, syntaxTheme = 'light') {
   if (!language) return null;
   const lang = language.toLowerCase();
   if (!hljs.getLanguage(lang)) return null;
+  const palette = COLOR_PALETTES[syntaxTheme] || COLOR_PALETTES.light;
 
   // Strip trailing newline — markdown-it fence content always ends with \n,
   // which would produce a spurious empty line after splitting
@@ -175,7 +200,7 @@ export function highlightCode(code, language) {
   }
 
   // Convert class attributes to inline styles
-  const html = classesToInlineStyles(highlighted.value);
+  const html = classesToInlineStyles(highlighted.value, palette);
 
   // Split into lines with balanced spans
   const lines = splitLinesBalanced(html);
