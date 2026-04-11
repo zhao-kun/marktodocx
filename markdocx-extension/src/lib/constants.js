@@ -17,6 +17,7 @@ export const DOCX_PAGE_MARGINS = {
 };
 
 export const TWIPS_PER_PIXEL = 15;
+export const MERMAID_RENDER_SCALE = 2;
 export const DOCX_CONTENT_WIDTH_PX = Math.floor(
   (DOCX_PAGE_SIZE.width - DOCX_PAGE_MARGINS.left - DOCX_PAGE_MARGINS.right) / TWIPS_PER_PIXEL
 );

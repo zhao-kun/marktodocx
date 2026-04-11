@@ -4,6 +4,8 @@ import {
   FLOWCHART_NODE_SPACING,
   FLOWCHART_RANK_SPACING,
   DOCX_CONTENT_HEIGHT_PX,
+  DOCX_CONTENT_WIDTH_PX,
+  MERMAID_RENDER_SCALE,
 } from './constants.js';
 
 let initialized = false;
@@ -144,7 +146,7 @@ export async function renderMermaidToImageTag(code, index) {
   svgHeight = svgHeight || 600;
 
   // 3. Draw SVG onto canvas at 2x scale (matching CLI's --scale 2)
-  const scale = 2;
+  const scale = MERMAID_RENDER_SCALE;
   const canvasWidth = Math.ceil(svgWidth * scale);
   const canvasHeight = Math.ceil(svgHeight * scale);
 
@@ -176,7 +178,7 @@ export async function renderMermaidToImageTag(code, index) {
   const naturalHeight = Math.round(bounds.height / scale);
 
   // Cap display width at 960px (matching CLI behavior)
-  let displayWidth = Math.min(naturalWidth, 960);
+  let displayWidth = Math.min(naturalWidth, DOCX_CONTENT_WIDTH_PX);
   let displayHeight = Math.round(naturalHeight * (displayWidth / naturalWidth));
 
   // Cap display height to page content area so the diagram fits on one page

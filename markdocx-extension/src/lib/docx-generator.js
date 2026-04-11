@@ -1,6 +1,12 @@
 import JSZip from 'jszip';
 import htmlToDocx from 'html-to-docx';
-import { DOCX_PAGE_SIZE, DOCX_PAGE_MARGINS } from './constants.js';
+import {
+  DOCX_PAGE_SIZE,
+  DOCX_PAGE_MARGINS,
+  DOCX_CONTENT_WIDTH_PX,
+  DOCX_CONTENT_HEIGHT_PX,
+  MERMAID_RENDER_SCALE,
+} from './constants.js';
 
 const EMUS_PER_PIXEL = 9525;
 
@@ -58,44 +64,93 @@ export function buildHtmlDocument(contentHtml) {
   ].join('\n');
 }
 
-function collectMermaidExtents(htmlDocument) {
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(htmlDocument, 'text/html');
-  const mermaidImages = [...doc.querySelectorAll('.mermaid-diagram img')];
-
-  return mermaidImages.map((image) => ({
-    descr: image.getAttribute('alt') || '',
-    cx: Math.round(Number(image.getAttribute('width') || '0') * EMUS_PER_PIXEL),
-    cy: Math.round(Number(image.getAttribute('height') || '0') * EMUS_PER_PIXEL),
-  })).filter((image) => image.descr && image.cx > 0 && image.cy > 0);
-}
-
-function patchDrawingExtent(block, image) {
-  let updated = block.replace(/<wp:extent cx="\d+" cy="\d+"\/>/, `<wp:extent cx="${image.cx}" cy="${image.cy}"/>`);
-  updated = updated.replace(/<a:ext cx="\d+" cy="\d+"\/>/, `<a:ext cx="${image.cx}" cy="${image.cy}"/>`);
-  return updated;
-}
-
-async function patchMermaidImageExtents(docxData, mermaidImages) {
-  if (mermaidImages.length === 0) {
-    return docxData;
+function readPngDimensions(bytes) {
+  if (bytes.length < 24) {
+    return null;
   }
 
+  const signature = [137, 80, 78, 71, 13, 10, 26, 10];
+  for (let i = 0; i < signature.length; i++) {
+    if (bytes[i] !== signature[i]) {
+      return null;
+    }
+  }
+
+  const width = (bytes[16] << 24) | (bytes[17] << 16) | (bytes[18] << 8) | bytes[19];
+  const height = (bytes[20] << 24) | (bytes[21] << 16) | (bytes[22] << 8) | bytes[23];
+  if (width <= 0 || height <= 0) {
+    return null;
+  }
+
+  return { width, height };
+}
+
+function computeMermaidDisplaySize(imageWidth, imageHeight) {
+  const naturalWidth = Math.max(1, Math.round(imageWidth / MERMAID_RENDER_SCALE));
+  const naturalHeight = Math.max(1, Math.round(imageHeight / MERMAID_RENDER_SCALE));
+
+  let displayWidth = Math.min(naturalWidth, DOCX_CONTENT_WIDTH_PX);
+  let displayHeight = Math.round(naturalHeight * (displayWidth / naturalWidth));
+
+  if (displayHeight > DOCX_CONTENT_HEIGHT_PX) {
+    displayHeight = DOCX_CONTENT_HEIGHT_PX;
+    displayWidth = Math.round(naturalWidth * (displayHeight / naturalHeight));
+  }
+
+  return {
+    cx: Math.round(displayWidth * EMUS_PER_PIXEL),
+    cy: Math.round(displayHeight * EMUS_PER_PIXEL),
+  };
+}
+
+async function patchMermaidImageExtents(docxData) {
   const zip = await JSZip.loadAsync(docxData);
   const documentXmlFile = zip.file('word/document.xml');
+  const documentRelsFile = zip.file('word/_rels/document.xml.rels');
   if (!documentXmlFile) {
     return docxData;
   }
 
   let documentXml = await documentXmlFile.async('string');
+  const documentRels = documentRelsFile ? await documentRelsFile.async('string') : '';
 
-  for (const image of mermaidImages) {
-    const escapedDescr = image.descr.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const drawingPattern = new RegExp(`(<w:drawing>[\\s\\S]*?<pic:cNvPr[^>]*descr="${escapedDescr}"[^>]*\/>[\\s\\S]*?<wp:extent cx=")\\d+(" cy=")\\d+("\\/>[\\s\\S]*?<a:ext cx=")\\d+(" cy=")\\d+("\\/[\\s\\S]*?<\\/w:drawing>)`);
+  const relTargetById = new Map();
+  for (const match of documentRels.matchAll(/<Relationship[^>]*Id="([^"]+)"[^>]*Target="([^"]+)"/g)) {
+    relTargetById.set(match[1], match[2]);
+  }
 
-    documentXml = documentXml.replace(drawingPattern, (match, wpPrefix, wpCyPrefix, wpSuffix, aPrefix, aCyPrefix, aSuffix) => {
-      return `${wpPrefix}${image.cx}${wpCyPrefix}${image.cy}${wpSuffix}${aPrefix}${image.cx}${aCyPrefix}${image.cy}${aSuffix}`;
-    });
+  const drawingBlocks = [...documentXml.matchAll(/<w:drawing>[\s\S]*?<\/w:drawing>/g)].map((match) => match[0]);
+
+  for (const drawingBlock of drawingBlocks) {
+    if (!drawingBlock.includes('descr="Mermaid diagram ')) {
+      continue;
+    }
+
+    const embedMatch = drawingBlock.match(/<a:blip[^>]*r:embed="([^"]+)"/);
+    if (!embedMatch) {
+      continue;
+    }
+
+    const target = relTargetById.get(embedMatch[1]);
+    if (!target) {
+      continue;
+    }
+
+    const mediaPath = target.startsWith('media/') ? `word/${target}` : `word/media/${target.split('/').pop()}`;
+    const mediaFile = zip.file(mediaPath);
+    if (!mediaFile) {
+      continue;
+    }
+
+    const dimensions = readPngDimensions(await mediaFile.async('uint8array'));
+    if (!dimensions) {
+      continue;
+    }
+
+    const { cx, cy } = computeMermaidDisplaySize(dimensions.width, dimensions.height);
+    let updatedBlock = drawingBlock.replace(/<wp:extent cx="\d+" cy="\d+"\/>/, `<wp:extent cx="${cx}" cy="${cy}"/>`);
+    updatedBlock = updatedBlock.replace(/<a:ext cx="\d+" cy="\d+"\/>/, `<a:ext cx="${cx}" cy="${cy}"/>`);
+    documentXml = documentXml.replace(drawingBlock, updatedBlock);
   }
 
   zip.file('word/document.xml', documentXml);
@@ -103,8 +158,6 @@ async function patchMermaidImageExtents(docxData, mermaidImages) {
 }
 
 export async function generateDocx(htmlDocument) {
-  const mermaidImages = collectMermaidExtents(htmlDocument);
-
   const docxBuffer = await htmlToDocx(htmlDocument, null, {
     table: { row: { cantSplit: false } },
     pageSize: DOCX_PAGE_SIZE,
@@ -113,7 +166,7 @@ export async function generateDocx(htmlDocument) {
     header: false,
   });
 
-  const patchedDocx = await patchMermaidImageExtents(docxBuffer, mermaidImages);
+  const patchedDocx = await patchMermaidImageExtents(docxBuffer);
   const uint8 = await toUint8Array(patchedDocx);
 
   if (uint8.byteLength === 0) {
