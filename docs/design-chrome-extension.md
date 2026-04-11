@@ -363,6 +363,25 @@ This affects the popup UI (must prompt for folder, not just a single file), the 
 - Add extension icons
 - Prepare Chrome Web Store listing
 
+### Phase 5: Code Block Syntax Highlighting
+
+- Add syntax highlighting for Python, Go, Java, Bash, JavaScript, and TypeScript code blocks
+- Convert highlight.js token classes into inline styles so colors survive HTML -> DOCX
+- Keep unsupported languages on the existing monochrome fallback path
+
+### Phase 6: Page Overflow Handling
+
+- Ensure long code blocks break across pages without visible per-line seams
+- Ensure Mermaid diagrams fit the page without clipping or distorted aspect ratios
+- Preserve image sharpness by sizing the displayed drawing extent instead of downsampling the embedded bitmap
+
+### Phase 7: User Style Customization
+
+- Add a structured style options panel in the page UI
+- Let users customize document typography, tables, code, and blockquotes without editing source files
+- Persist the last-used style settings locally and apply them to future conversions
+- Keep the default output identical when the user does not change any style options
+
 ---
 
 ## 7. Open Questions
@@ -370,7 +389,7 @@ This affects the popup UI (must prompt for folder, not just a single file), the 
 1. **Image handling**: The CLI tool only supports local images. Should the extension also support pasting images or fetching remote images via `fetch()`?
 2. **File association**: Should the extension register as a handler for `.md` files, or only work through the popup UI?
 3. **Batch conversion**: Should the extension support converting multiple Markdown files at once? (Note: with the directory picker approach, multi-file conversion within a folder becomes natural.)
-4. **Style customization**: Should users be able to customize fonts, colors, or page margins through the popup UI?
+4. ~~**Style customization**: Should users be able to customize fonts, colors, or page margins through the popup UI?~~ **Resolved:** Yes. Add a structured style customization feature in Phase 7 with presets plus validated field-level overrides. Support curated typography/color/layout controls, but do not allow arbitrary CSS injection in v1.
 5. ~~**docx vs html-to-docx**: Should we start with the polyfill approach (faster) or go directly to the `docx` library (safer)?~~ **Resolved:** Start with html-to-docx (Option A) after a time-boxed spike. Migrate to `docx` (Option B) only if needed.
 
 ## 8. Pre-Implementation Spike
@@ -700,7 +719,261 @@ The display width is already capped at 960 px. Add a height cap: if the trimmed 
 
 ---
 
-## 11. Implementation Checklist
+## 11. Phase 7: User Style Customization
+
+### 11.1 Goal
+
+Allow users to customize the visual style of the generated DOCX without editing code or Markdown content. The feature should cover the high-value formatting surfaces that materially affect document appearance while keeping the configuration safe, deterministic, and easy to understand.
+
+### 11.2 Product Requirements
+
+1. **Default compatibility:** If the user does not change any style options, the generated DOCX must remain visually equivalent to the current default output.
+2. **Structured configuration only:** v1 must expose curated controls and validated values, not arbitrary CSS, HTML, or raw theme JSON editing.
+3. **Per-conversion application:** Style options are chosen in the page UI and sent with each conversion request; the DOCX output must not depend on any hidden runtime state inside the offscreen document.
+4. **Persistence:** The last-used style settings should be stored in `chrome.storage.local` and preloaded the next time the user opens the extension page.
+5. **Safe fallback:** Invalid, missing, or partial style values must be normalized against defaults before rendering so conversion never fails because of styling input.
+6. **Single source of truth:** The same resolved style object must drive Markdown rendering, HTML/CSS generation, DOM normalization, and DOCX post-processing to prevent drift between surfaces.
+7. **DOCX-first validation:** Font and style customization must be validated against generated `.docx` output in real viewers (Word and/or LibreOffice), not only against intermediate HTML, because `html-to-docx` does not perfectly preserve CSS font behavior.
+8. **Schema-safe persistence:** Stored settings must always be merged against the full latest default schema, with missing fields filled from defaults and unknown fields ignored. A version field is optional in v1 and not required if full-schema normalization is enforced.
+9. **Explicit preset-switch behavior:** Switching presets must replace the current override set with the target preset's defaults. v1 does not remember separate overrides per preset.
+10. **Per-conversion layout metrics:** Margin-dependent values such as content width and content height must be derived per conversion and passed to all layout-sensitive modules instead of being imported as static constants.
+
+### 11.3 V1 Customization Scope
+
+The v1 scope should focus on the styling areas users are most likely to notice and request.
+
+| Area | User-facing options | Default source today | Notes |
+| --- | --- | --- | --- |
+| Body text | Font family, font size, line height, text color | `buildHtmlDocument()` body CSS | Highest-value global typography control |
+| Headings | Font family, text color | `buildHtmlDocument()` heading CSS | Keep per-level sizes fixed in v1 to avoid layout instability |
+| Tables | Header background color, header text color, border color | `buildHtmlDocument()` + `normalizeTables()` | Directly requested by users |
+| Inline code | Background color, italic on/off | `renderInlineCodeHtml()` + `.inline-code` CSS | Current implementation hardcodes italic + gray fill |
+| Code blocks | Code font family, code font size, background color, border color, language badge color | `renderCodeBlockHtml()` + CSS in `buildHtmlDocument()` | High-value for technical documents |
+| Syntax highlighting | Theme preset (`light`, `dark`) | `syntax-highlighter.js` color map | Needed to avoid unreadable colors when code block surfaces change |
+| Blockquotes | Background color, text color, left border color, italic on/off | `normalizeTables()` + `buildHtmlDocument()` | Directly requested by users |
+| Page layout | Margin preset (`default`, `compact`, `wide`) | `DOCX_PAGE_MARGINS` | Worth exposing because it affects table and image fit |
+
+### 11.4 Recommended Non-Goals for v1
+
+- No arbitrary custom CSS input
+- No arbitrary syntax token color editing
+- No section-specific overrides inside one document
+- No per-heading-level font-size controls
+- No live full-document preview inside the extension page
+- No separate style settings for Mermaid diagrams beyond existing fit behavior
+- No font embedding or custom font-file upload in v1
+
+These can be revisited later, but they should not be part of the first implementation because they increase UI complexity and validation cost without comparable user value.
+
+### 11.5 UX Design
+
+Add a new **Style** panel to the existing extension page, below the selected-file summary and above the **Convert to DOCX** button.
+
+**Recommended UI structure:**
+
+- **Preset selector:** Dropdown with `Default`, `Minimal`, and `Report`. Choosing a preset resets all advanced fields to that preset's defaults. If the current settings differ from the active preset, show a confirmation dialog before overwriting overrides.
+- **Advanced settings accordion:** Collapsed by default. Groups: `Typography`, `Tables`, `Code`, `Blockquotes`, `Page Layout`.
+- **Reset button:** Restores the active preset defaults or the system default theme.
+- **Persistence behavior:** Save changes immediately to `chrome.storage.local` and load the last-used preset and overrides on page open.
+
+The UI should not attempt to remember a different override set for each preset in v1. Preset switching is intentionally simple and destructive after confirmation.
+
+The user experience should stay simple: most users pick a preset and convert; advanced users expand the panel and adjust specific fields.
+
+### 11.6 Configuration Model
+
+Pass a structured `styleOptions` object through the existing message flow:
+
+```js
+{
+  preset: 'default',
+  overrides: {
+    body: {
+      fontFamily: 'Calibri',
+      fontSizePt: 11,
+      lineHeight: 1.5,
+      color: '#111827'
+    },
+    headings: {
+      fontFamily: 'Calibri',
+      color: '#0f172a'
+    },
+    tables: {
+      borderColor: '#4b5563',
+      headerBackgroundColor: '#595959',
+      headerTextColor: '#FFFFFF'
+    },
+    code: {
+      fontFamily: 'Cascadia Code',
+      fontSizePt: 10,
+      syntaxTheme: 'light',
+      inlineBackgroundColor: '#EFEFEF',
+      inlineItalic: true,
+      blockBackgroundColor: '#F0F0F0',
+      blockBorderColor: '#d1d5db',
+      languageBadgeColor: '#475569'
+    },
+    blockquote: {
+      backgroundColor: '#EFEFEF',
+      textColor: '#334155',
+      borderColor: '#cbd5e1',
+      italic: true
+    },
+    page: {
+      marginPreset: 'default'
+    }
+  }
+}
+```
+
+The offscreen document should resolve this into a normalized immutable style object before any rendering begins.
+
+For stored settings, `resolveDocumentStyle()` must always merge the incoming object against the full current default schema, not just the selected preset subtree. That is the v1 migration story for future added fields such as new code theme options.
+
+### 11.7 Validation Rules
+
+- Colors: accept only 6-digit hex colors (`#RRGGBB`)
+- Body font size: clamp to a safe range such as 9-14 pt
+- Code font size: clamp to a safe range such as 8-13 pt
+- Line height: clamp to a safe range such as 1.2-1.8
+- Fonts: offer a curated dropdown instead of free text in v1, limited to broadly available fonts such as `Calibri`, `Arial`, `Cambria`, `Georgia`, `Times New Roman`, `Consolas`, and `Cascadia Code`
+- Code syntax theme: offer only `light` and `dark` preset palettes in v1
+- Margin preset: map to a known set of twip constants rather than user-entered numeric fields
+
+This keeps the output predictable and avoids pathological documents with unreadable text or broken layout.
+
+**Margin preset mapping:**
+
+| Preset | Top | Right | Bottom | Left | Approx content width | Approx content height |
+| --- | --- | --- | --- | --- | --- | --- |
+| `default` | 1080 | 900 | 1080 | 900 | 673 px | 978 px |
+| `compact` | 720 | 720 | 720 | 720 | 697 px | 1026 px |
+| `wide` | 1440 | 1440 | 1440 | 1440 | 601 px | 930 px |
+
+These values are derived from the current A4 page size in `constants.js` and must be recalculated through shared layout helpers, not duplicated manually per module.
+
+### 11.8 Architecture Changes
+
+The current styling logic is split across multiple places and includes hardcoded values in both CSS and inline HTML:
+
+- `md-renderer.js` hardcodes inline code styling and code block cell styling
+- `syntax-highlighter.js` hardcodes the light-theme syntax color map
+- `table-normalizer.js` hardcodes table header and blockquote inline styles
+- `docx-generator.js` hardcodes the document CSS for body text, headings, tables, code, and images
+- `constants.js` exports static content width and content height values that currently assume one fixed margin set
+
+To support customization cleanly, introduce a shared style module and a shared layout module:
+
+```text
+markdocx-extension/src/lib/
+├── document-style.js        # NEW: presets, defaults, validation, style resolution
+├── document-layout.js       # NEW: margin presets + derived content dimensions per conversion
+├── md-renderer.js           # Modified: accepts resolved style object
+├── syntax-highlighter.js    # Modified: accepts resolved syntax theme/palette
+├── mermaid-renderer.js      # Modified: accepts resolved layout metrics
+├── table-normalizer.js      # Modified: accepts resolved style object and layout metrics
+└── docx-generator.js        # Modified: builds CSS and DOCX options from resolved style/layout objects
+```
+
+**`document-style.js` responsibilities:**
+
+1. Define built-in presets (`default`, `minimal`, `report`)
+2. Merge preset values with user overrides
+3. Validate and clamp user input
+4. Resolve syntax theme selection for code highlighting
+5. Merge persisted settings against the full latest default schema
+6. Export a fully resolved style object for the renderer pipeline
+7. Export helper functions for CSS-safe values if needed
+
+**`document-layout.js` responsibilities:**
+
+1. Define `default`, `compact`, and `wide` margin presets in twips
+2. Resolve the final page margins for a conversion
+3. Derive `contentWidthPx` and `contentHeightPx` from page size, margins, and `TWIPS_PER_PIXEL`
+4. Export immutable layout metrics used by Mermaid sizing, table normalization, and DOCX generation
+
+`constants.js` should retain only immutable page/unit constants such as `DOCX_PAGE_SIZE`, `TWIPS_PER_PIXEL`, and `MERMAID_RENDER_SCALE`. Margin presets and derived content dimensions should move out of static module-level exports.
+
+Implementation note: remove `DOCX_PAGE_MARGINS`, `DOCX_CONTENT_WIDTH_PX`, and `DOCX_CONTENT_HEIGHT_PX` from `constants.js` during the refactor, and update all existing import sites to consume resolved layout metrics instead. The codebase should not end in a mixed state where some modules still import old static layout values while others use `layoutMetrics`.
+
+**Message flow changes:**
+
+```text
+page.js
+  -> sendMessage({ markdown, imageMap, mdRelativeDir, styleOptions })
+background.js
+  -> forward styleOptions unchanged
+offscreen.js
+  -> resolveDocumentStyle(styleOptions)
+  -> resolveDocumentLayout(resolvedStyle.page.marginPreset)
+  -> createMarkdownRenderer(resolvedStyle)
+  -> renderMermaidToImageTag(code, index, layoutMetrics, resolvedStyle)
+  -> normalizeTables(html, resolvedStyle, layoutMetrics)
+  -> buildHtmlDocument(html, resolvedStyle)
+  -> generateDocx(html, resolvedStyle, layoutMetrics)
+```
+
+### 11.9 Rendering Changes
+
+**`md-renderer.js`**
+
+- `createMarkdownRenderer()` should accept `resolvedStyle`
+- `renderInlineCodeHtml()` must stop hardcoding gray background and italic state; these values should come from `resolvedStyle.code`
+- If `resolvedStyle.code.inlineItalic` is `false`, do not emit the current `<i>` wrapper around inline code at all
+- `renderCodeBlockHtml()` must stop hardcoding code block border/background colors; use `resolvedStyle.code`
+- Language badge color should be emitted as an inline style from `md-renderer.js` for reliability; CSS in `docx-generator.js` should remain responsible for font family, size, and spacing
+
+**`syntax-highlighter.js`**
+
+- Replace the single hardcoded GitHub-like palette with named preset palettes such as `light` and `dark`
+- `highlightCode()` should accept the resolved syntax theme or palette from `resolvedStyle.code.syntaxTheme`
+- Arbitrary token-by-token color editing remains out of scope in v1; only theme-level palette switching is supported
+
+**`table-normalizer.js`**
+
+- `normalizeTables(html, resolvedStyle, layoutMetrics)` should apply table header colors and border colors from `resolvedStyle.tables`
+- Blockquote inline normalization should use `resolvedStyle.blockquote`
+- Table widths must come from `layoutMetrics.contentWidthPx`, not a static import from `constants.js`
+
+**`mermaid-renderer.js`**
+
+- `renderMermaidToImageTag()` should accept `layoutMetrics` so width and height caps respect the selected margin preset
+- Mermaid sizing must not import a static content width or height constant
+
+**`docx-generator.js`**
+
+- `buildHtmlDocument(contentHtml, resolvedStyle)` should generate the CSS from the resolved style object instead of embedding fixed color/font constants
+- `generateDocx(htmlDocument, resolvedStyle, layoutMetrics)` should use resolved page margins from `layoutMetrics.pageMargins`
+- Font-family customization should be treated as best-effort CSS passed to `html-to-docx`; acceptance must be based on generated `.docx` inspection, not on the HTML alone
+
+This keeps Markdown rendering, syntax coloring, layout-sensitive sizing, and CSS generation consistent. Without this refactor, the user would change one setting in the UI and only some parts of the document would actually update.
+
+### 11.10 Preset Recommendations
+
+Use three presets as concrete starting points:
+
+| Preset | Body / headings | Table header | Code | Blockquote | Margins |
+| --- | --- | --- | --- | --- | --- |
+| `default` | `Calibri` 11pt / `Calibri`, `#0f172a` | `#595959` / `#FFFFFF`, border `#4b5563` | theme `light`, bg `#F0F0F0`, border `#d1d5db` | bg `#EFEFEF`, text `#334155`, border `#cbd5e1`, italic `true` | `default` |
+| `minimal` | `Calibri` 11pt / `Calibri`, `#0f172a` | `#E2E8F0` / `#1E293B`, border `#94A3B8` | theme `light`, bg `#F8FAFC`, border `#CBD5E1` | bg `#F8FAFC`, text `#475569`, border `#CBD5E1`, italic `false` | `compact` |
+| `report` | `Calibri` 11pt / `Cambria`, `#1F2937` | `#1F4E79` / `#FFFFFF`, border `#5B728A` | theme `light`, bg `#F7F7F7`, border `#C7CDD4` | bg `#F3F6FA`, text `#334155`, border `#9DB2C8`, italic `false` | `wide` |
+
+Presets are only starting points. The stored override object should let the user adjust one area without having to fork an entire theme definition.
+
+### 11.11 Implementation Plan
+
+1. Create `src/lib/document-style.js` with defaults, presets, syntax-theme selection, validation, and merge logic
+2. Create `src/lib/document-layout.js` with margin presets and derived layout metrics
+3. Add style controls to `public/page/index.html` and wire them in `src/page/page.js`
+4. Persist style settings in `chrome.storage.local`
+5. Extend the message protocol to include `styleOptions`
+6. Refactor `md-renderer.js`, `syntax-highlighter.js`, `table-normalizer.js`, `mermaid-renderer.js`, and `docx-generator.js` to consume the resolved style/layout objects
+7. Verify that the default preset produces unchanged output for existing sample documents
+8. Verify that font changes, margin presets, and syntax-theme changes are reflected in generated `.docx` files, not just HTML
+9. Test at least one non-default preset and one advanced override per category (table header colors, body font size, blockquote italic off, code block background change)
+10. Update repository architecture notes in `CLAUDE.md` after the refactor lands
+
+## 12. Implementation Checklist
 
 ### Phase 0: Spike (DONE)
 
@@ -725,58 +998,78 @@ The display width is already capped at 960 px. Add a height cap: if the trimmed 
 
 ### Phase 1: Scaffold & Directory-Based Input
 
-- [ ] Replace single-button popup with directory picker UI (`<input type="file" webkitdirectory>` or `showDirectoryPicker()`).
-- [ ] Implement `.md` file discovery from selected directory.
-- [ ] Implement image resolver: match relative `src` paths from Markdown against directory file list, convert to base64 data URIs.
-- [ ] Update message protocol: send `{ markdown, imageMap }` instead of raw text.
-- [ ] Port `markdown-it` custom renderers from `md-to-docx.mjs` (`renderCodeBlockHtml`, `renderInlineCodeHtml`, `createMarkdownRenderer`).
-- [ ] Port `inlineLocalImages()` to use pre-resolved image map instead of `fs.readFile`.
-- [ ] Port `normalizeTables()` and blockquote styling — replace `JSDOM` with native `DOMParser` in offscreen.
-- [ ] Port `buildHtmlDocument()` and constants (`DOCX_PAGE_SIZE`, `DOCX_PAGE_MARGINS`, etc.).
-- [ ] Verify end-to-end: select folder → parse Markdown → resolve images → render HTML → generate DOCX with real content.
+- [x] Replace single-button popup with directory picker UI (`<input type="file" webkitdirectory>` or `showDirectoryPicker()`).
+- [x] Implement `.md` file discovery from selected directory.
+- [x] Implement image resolver: match relative `src` paths from Markdown against directory file list, convert to base64 data URIs.
+- [x] Update message protocol: send `{ markdown, imageMap }` instead of raw text.
+- [x] Port `markdown-it` custom renderers from `md-to-docx.mjs` (`renderCodeBlockHtml`, `renderInlineCodeHtml`, `createMarkdownRenderer`).
+- [x] Port `inlineLocalImages()` to use pre-resolved image map instead of `fs.readFile`.
+- [x] Port `normalizeTables()` and blockquote styling — replace `JSDOM` with native `DOMParser` in offscreen.
+- [x] Port `buildHtmlDocument()` and constants (`DOCX_PAGE_SIZE`, `DOCX_PAGE_MARGINS`, etc.).
+- [x] Verify end-to-end: select folder → parse Markdown → resolve images → render HTML → generate DOCX with real content.
 
 ### Phase 2: Mermaid Rendering
 
-- [ ] Add `mermaid` npm dependency to the extension.
-- [ ] Initialize `mermaid` in the offscreen document with flowchart config matching CLI settings (`FLOWCHART_WRAPPING_WIDTH`, `FLOWCHART_NODE_SPACING`, `FLOWCHART_RANK_SPACING`).
-- [ ] Implement `renderMermaidToImageTag()` browser version: `mermaid.render()` → SVG string → Canvas → PNG.
-- [ ] Implement pixel-based trim (replaces `sharp.trim()`) via Canvas `getImageData` bounding box scan.
-- [ ] Integrate Mermaid rendering into the conversion pipeline: extract mermaid fences from parsed tokens, render to PNG data URIs, inject into HTML via the existing queue mechanism.
-- [ ] Verify Mermaid output matches CLI quality for flowcharts, sequence diagrams, and other diagram types.
+- [x] Add `mermaid` npm dependency to the extension.
+- [x] Initialize `mermaid` in the offscreen document with flowchart config matching CLI settings (`FLOWCHART_WRAPPING_WIDTH`, `FLOWCHART_NODE_SPACING`, `FLOWCHART_RANK_SPACING`).
+- [x] Implement `renderMermaidToImageTag()` browser version: `mermaid.render()` → SVG string → Canvas → PNG.
+- [x] Implement pixel-based trim (replaces `sharp.trim()`) via Canvas `getImageData` bounding box scan.
+- [x] Integrate Mermaid rendering into the conversion pipeline: extract mermaid fences from parsed tokens, render to PNG data URIs, inject into HTML via the existing queue mechanism.
+- [x] Verify Mermaid output matches CLI quality for flowcharts, sequence diagrams, and other diagram types.
 
 ### Phase 3: DOCX Generation (Integration)
 
-- [ ] Wire up full pipeline in offscreen: markdown-it parse → Mermaid render → HTML render → image inline → table normalize → `html-to-docx`.
-- [ ] Pass `html-to-docx` options matching CLI (`pageSize`, `margins`, `cantSplit`, no header/footer).
-- [ ] Verify generated DOCX matches CLI output for the test Markdown files in `test-markdown/`.
-- [ ] Handle conversion errors gracefully and route to popup UI.
+- [x] Wire up full pipeline in offscreen: markdown-it parse → Mermaid render → HTML render → image inline → table normalize → `html-to-docx`.
+- [x] Pass `html-to-docx` options matching CLI (`pageSize`, `margins`, `cantSplit`, no header/footer).
+- [x] Verify generated DOCX matches CLI output for the test Markdown files in `test-markdown/`.
+- [x] Handle conversion errors gracefully and route to popup UI.
 
 ### Phase 4: Polish & Distribution
 
-- [ ] Add progress feedback in popup (parsing, rendering Mermaid, generating DOCX).
-- [ ] Add error display with actionable messages.
-- [ ] Test edge cases: no images, no Mermaid, empty file, large files.
-- [ ] Add extension icons (16, 32, 48, 128 px).
-- [ ] Prepare Chrome Web Store listing.
+- [x] Add progress feedback in popup (parsing, rendering Mermaid, generating DOCX).
+- [x] Add error display with actionable messages.
+- [x] Test edge cases: no images, no Mermaid, empty file, large files.
+- [x] Add extension icons (16, 32, 48, 128 px).
+- [x] Prepare Chrome Web Store listing.
 
 ### Phase 5: Code Block Syntax Highlighting
 
-- [ ] Add `highlight.js` npm dependency.
-- [ ] Create `src/lib/syntax-highlighter.js`: import highlight.js core + Python, Go, Java, Bash, JavaScript, TypeScript grammars; register languages with aliases.
-- [ ] Define inline color map for `hljs-*` classes (GitHub-like light theme, see §9.5).
-- [ ] Implement class-to-inline-style conversion (regex replacement of `class="hljs-*"` → `style="color: #xxx"`).
-- [ ] Implement line-safe splitting with span-stack tracking to handle multi-line tokens (§9.4.1).
-- [ ] Implement tag-aware whitespace preservation that only replaces spaces/tabs in text nodes, not inside HTML tags (§9.4.2).
-- [ ] Modify `renderCodeBlockHtml()` in `md-renderer.js`: call `highlightCode()`, use returned array for highlighted path, fall back to existing monochrome path when `null`.
-- [ ] Build and verify: fenced code blocks for all six languages display colored tokens.
-- [ ] Test multi-line tokens: block comments and multi-line strings must render with correct colors across lines.
-- [ ] Verify DOCX output: open generated .docx and confirm syntax colors are preserved in the document.
+- [x] Add `highlight.js` npm dependency.
+- [x] Create `src/lib/syntax-highlighter.js`: import highlight.js core + Python, Go, Java, Bash, JavaScript, TypeScript grammars; register languages with aliases.
+- [x] Define inline color map for `hljs-*` classes (GitHub-like light theme, see §9.5).
+- [x] Implement class-to-inline-style conversion (regex replacement of `class="hljs-*"` → `style="color: #xxx"`).
+- [x] Implement line-safe splitting with span-stack tracking to handle multi-line tokens (§9.4.1).
+- [x] Implement tag-aware whitespace preservation that only replaces spaces/tabs in text nodes, not inside HTML tags (§9.4.2).
+- [x] Modify `renderCodeBlockHtml()` in `md-renderer.js`: call `highlightCode()`, use returned array for highlighted path, fall back to existing monochrome path when `null`.
+- [x] Build and verify: fenced code blocks for all six languages display colored tokens.
+- [x] Test multi-line tokens: block comments and multi-line strings must render with correct colors across lines.
+- [x] Verify DOCX output: open generated .docx and confirm syntax colors are preserved in the document.
 
 ### Phase 6: Page Overflow Handling
 
-- [ ] Modify `renderCodeBlockHtml()` in `md-renderer.js`: emit one `<tr><td>` per line with position-based border/padding styles (first/middle/last, see §10.2).
-- [ ] Update CSS in `docx-generator.js`: add styles for `.code-block-first`, `.code-block-middle`, `.code-block-last`.
-- [ ] Add `DOCX_CONTENT_HEIGHT_PX` constant to `constants.js`.
-- [ ] Modify `renderMermaidToImageTag()` in `mermaid-renderer.js`: cap image height to `DOCX_CONTENT_HEIGHT_PX`, scale width proportionally, emit both `width` and `height` on `<img>`.
-- [ ] Test with a long code block (50+ lines) and verify it breaks across pages cleanly.
-- [ ] Test with a tall Mermaid diagram and verify it fits within a single page.
+- [x] Modify `renderCodeBlockHtml()` in `md-renderer.js`: emit one `<tr><td>` per line with position-based border/padding styles (first/middle/last, see §10.2).
+- [x] Update CSS in `docx-generator.js`: add styles for `.code-block-first`, `.code-block-middle`, `.code-block-last`.
+- [x] Add `DOCX_CONTENT_HEIGHT_PX` constant to `constants.js`.
+- [x] Modify `renderMermaidToImageTag()` in `mermaid-renderer.js`: cap image height to `DOCX_CONTENT_HEIGHT_PX`, scale width proportionally, emit both `width` and `height` on `<img>`.
+- [x] Test with a long code block (50+ lines) and verify it breaks across pages cleanly.
+- [x] Test with a tall Mermaid diagram and verify it fits within a single page.
+
+### Phase 7: User Style Customization
+
+- [ ] Create `src/lib/document-style.js` with defaults, presets, validation, and style resolution.
+- [ ] Create `src/lib/document-layout.js` with explicit margin presets and derived content width/height per conversion.
+- [ ] Remove `DOCX_PAGE_MARGINS`, `DOCX_CONTENT_WIDTH_PX`, and `DOCX_CONTENT_HEIGHT_PX` from `constants.js` and update existing import sites to use resolved layout metrics.
+- [ ] Add a `Style` panel to `public/page/index.html` with a preset selector and advanced settings groups.
+- [ ] Update `src/page/page.js` to load and save style settings from `chrome.storage.local`.
+- [ ] Extend the conversion request payload to include `styleOptions`.
+- [ ] Update `background.js` to forward `styleOptions` unchanged.
+- [ ] Update `offscreen.js` to resolve styles and layout metrics once per conversion and pass them through the rendering pipeline.
+- [ ] Refactor `md-renderer.js` to remove hardcoded inline code/code block colors, handle inline italic on/off structurally, and emit language badge color inline.
+- [ ] Refactor `syntax-highlighter.js` to support at least `light` and `dark` syntax-theme palettes.
+- [ ] Refactor `table-normalizer.js` to apply table header, border, and blockquote styles from the resolved style object and to size tables from layout metrics.
+- [ ] Refactor `mermaid-renderer.js` to size diagrams from layout metrics instead of static content constants.
+- [ ] Refactor `docx-generator.js` to generate document CSS from the resolved style object and DOCX page margins from resolved layout metrics.
+- [ ] Verify that the default preset preserves current output for existing sample documents.
+- [ ] Verify that font selections are honored as well as `html-to-docx` allows in generated `.docx` files, and document the known limitations if some fonts do not render reliably.
+- [ ] Verify that non-default presets update table headers, body typography, code styling, syntax theme, blockquote styling, and margin-driven layout as expected.
+- [ ] Update `CLAUDE.md` architecture notes after the refactor is implemented.
