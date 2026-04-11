@@ -425,16 +425,16 @@ Code blocks are rendered as plain monochrome text inside a styled `<table>` cell
 
 ### 9.2 Goal
 
-Add syntax highlighting for **Python, Go, Java, and Bash** code blocks. Tokens (keywords, strings, comments, numbers, etc.) should render with distinct inline colors that survive the HTML → DOCX conversion via `html-to-docx`.
+Add syntax highlighting for **Python, Go, Java, Bash, JavaScript, and TypeScript** code blocks. Tokens (keywords, strings, comments, numbers, etc.) should render with distinct inline colors that survive the HTML → DOCX conversion via `html-to-docx`.
 
 ### 9.3 Approach: highlight.js with Inline Styles
 
 **Library choice: [highlight.js](https://highlightjs.org/)**
 
 - Pure JavaScript, browser-compatible, no dependencies
-- Supports all four target languages out of the box
+- Supports all six target languages out of the box
 - Produces `<span class="hljs-keyword">...</span>` markup that can be mapped to inline styles
-- Tree-shakeable: can import only the four needed language grammars to minimize bundle size
+- Tree-shakeable: can import only the needed language grammars to minimize bundle size
 - Well-maintained, widely used (GitHub, Stack Overflow)
 
 **Why not alternatives:**
@@ -445,24 +445,68 @@ Add syntax highlighting for **Python, Go, Java, and Bash** code blocks. Tokens (
 
 The highlighting hooks into the existing `renderCodeBlockHtml()` function in `md-renderer.js`. Currently this function calls `preserveCodeWhitespace()` on each raw line. With highlighting:
 
-```
+```text
 Before (current):
   raw code string → split lines → escapeHtml → preserveCodeWhitespace → monochrome HTML
 
 After (with highlighting):
-  raw code string → hljs.highlight(code, {language}) → highlighted HTML with <span> classes
+  raw code string → hljs.highlight(code, {language})
+    → highlighted HTML with <span> classes
     → convert CSS classes to inline styles (required for html-to-docx)
-    → split lines → wrap in .code-block-line divs
+    → line-safe split (see §9.4.1)
+    → whitespace preservation on text nodes only (see §9.4.2)
+    → wrap in .code-block-line divs
 ```
 
 **Critical constraint:** `html-to-docx` does not process `<style>` blocks or CSS classes for inline element colors. All colors must be applied as `style="color: #xxx"` attributes directly on `<span>` elements. This means we cannot use highlight.js's CSS themes directly — we must map `hljs-*` classes to inline style attributes after highlighting.
+
+#### 9.4.1 Line Splitting with Multi-Line Tokens
+
+highlight.js tokens can span multiple lines. For example, a multi-line string or block comment produces a single `<span>` whose text content contains `\n` characters:
+
+```html
+<span class="hljs-comment">/* line 1
+line 2
+line 3 */</span>
+```
+
+Naively splitting the highlighted HTML on `\n` would produce unbalanced markup (opening `<span>` on one line, closing `</span>` on another). The splitter must track open `<span>` tags across line breaks:
+
+1. Walk the highlighted HTML character by character, tracking a stack of currently open `<span>` tags (with their attributes).
+2. On encountering `\n`, close all open spans, emit the completed line, start a new line, and re-open the spans from the stack.
+3. On `<span ...>`, push onto the stack. On `</span>`, pop.
+4. After the final character, emit the last line.
+
+This produces per-line HTML fragments where every line has balanced `<span>` tags, even when the original token crossed lines.
+
+#### 9.4.2 Whitespace Preservation After Highlighting
+
+The current `preserveCodeWhitespace()` in `md-renderer.js:13` calls `escapeHtml()` before replacing spaces and tabs with `&nbsp;`. If applied to already-highlighted HTML, it would escape `<span>` tags into literal `&lt;span&gt;` text, destroying all highlighting.
+
+The highlighted output must use a **tag-aware** whitespace pass instead:
+
+- Walk each line's HTML, distinguishing tag markup (`<span ...>`, `</span>`) from text content.
+- Only replace spaces → `&nbsp;` and tabs → `&nbsp;&nbsp;&nbsp;&nbsp;` inside text content segments.
+- Leave tag markup untouched.
+
+This can be implemented with a simple state machine or regex that matches either HTML tags or inter-tag text, applying substitutions only to the text matches.
+
+For **unhighlighted** code blocks (unsupported language or no language specified), the existing `escapeHtml` + `preserveCodeWhitespace` path is still used — no change needed.
 
 ### 9.5 Color Theme
 
 Use a GitHub-like light theme that reads well on the #F0F0F0 code block background:
 
-| Token | Class | Color |
-|---|---|---|
+**highlight.js sub-scope class format:** highlight.js v11 emits sub-scoped tokens as a single `<span>` with multiple CSS classes. The first scope segment gets the `hljs-` prefix; subsequent segments get a trailing underscore instead. Examples:
+
+- Scope `title.function` → `<span class="hljs-title function_">`
+- Scope `variable.language` → `<span class="hljs-variable language_">`
+- Scope `title.class.inherited` → `<span class="hljs-title class_ inherited__">`
+
+The color map uses the **exact class attribute value** as the key for compound entries. The resolver looks up the full `class` value first (compound match), then falls back to the first class only (primary match). If neither matches, the span is unwrapped.
+
+| Token | CSS classes (map key) | Color |
+| --- | --- | --- |
 | Keyword | `hljs-keyword` | `#cf222e` (red) |
 | Built-in | `hljs-built_in` | `#8250df` (purple) |
 | Type | `hljs-type` | `#8250df` (purple) |
@@ -470,15 +514,23 @@ Use a GitHub-like light theme that reads well on the #F0F0F0 code block backgrou
 | Number | `hljs-number` | `#0550ae` (blue) |
 | Literal (true/false/null) | `hljs-literal` | `#0550ae` (blue) |
 | Comment | `hljs-comment` | `#6e7781` (gray) |
-| Function/title | `hljs-title` | `#8250df` (purple) |
-| Variable | `hljs-variable` | `#953800` (orange) |
+| Function name | `hljs-title function_` | `#8250df` (purple) |
+| Class name | `hljs-title class_` | `#8250df` (purple) |
+| Title (generic) | `hljs-title` | `#8250df` (purple) |
+| Language variable (this/self) | `hljs-variable language_` | `#cf222e` (red) |
+| Constant variable | `hljs-variable constant_` | `#0550ae` (blue) |
+| Variable (generic) | `hljs-variable` | `#953800` (orange) |
 | Attribute | `hljs-attr` | `#0550ae` (blue) |
 | Params | `hljs-params` | `#24292f` (default) |
 | Punctuation | `hljs-punctuation` | `#24292f` (default) |
 | Meta/preprocessor | `hljs-meta` | `#6e7781` (gray) |
+| Meta keyword | `hljs-meta keyword_` | `#cf222e` (red) |
+| Meta string | `hljs-meta string_` | `#0a3069` (dark blue) |
 | Operator | `hljs-operator` | `#cf222e` (red) |
 | Property | `hljs-property` | `#0550ae` (blue) |
-| Default (unhighlighted) | — | `#24292f` (near-black) |
+| Subst (template expr) | `hljs-subst` | `#24292f` (default) |
+| Section | `hljs-section` | `#0550ae` (blue) |
+| Default (no match) | — | span unwrapped, inherits `#24292f` |
 
 ### 9.6 Architecture
 
@@ -489,54 +541,69 @@ markdocx-extension/src/lib/
 ```
 
 **`syntax-highlighter.js` responsibilities:**
-1. Import highlight.js core and four language grammars (python, go, java, bash)
-2. Register the languages
+
+1. Import highlight.js core and six language grammars (python, go, java, bash, javascript, typescript)
+2. Register the languages (including `js` → javascript and `ts` → typescript aliases)
 3. Export `highlightCode(code, language)` which:
-   - Returns unhighlighted (escaped) HTML if the language is not supported
-   - Calls `hljs.highlight(code, { language })` for supported languages
-   - Walks the result HTML to replace `class="hljs-*"` with `style="color: #xxx"` via regex
-   - Returns the highlighted HTML string with inline styles
+   - Returns `null` if the language is not supported (caller falls back to monochrome path)
+   - Calls `hljs.highlight(code, { language, ignoreIllegals: true })` for supported languages. The `ignoreIllegals` flag is required because code fences commonly contain partial snippets, pseudo-code, or fragments that would otherwise cause highlight.js to throw an `IllegalError`. If highlighting still fails despite this flag (e.g. grammar bug), catch the error and return `null` to fall back to monochrome.
+   - Converts `class` attributes to `style="color: #xxx"` via regex. highlight.js v11 emits single-class spans (`class="hljs-keyword"`) and multi-class sub-scoped spans (`class="hljs-title function_"`, `class="hljs-variable language_"`) — see §9.5 for the exact class format. The resolver extracts the full `class` attribute value, looks it up in the color map as-is (compound match), then falls back to the first class only (primary match). If neither matches, the span is unwrapped (removed) so the text inherits the default code block color.
+   - Splits lines safely using the span-tracking algorithm from §9.4.1
+   - Applies tag-aware whitespace preservation from §9.4.2
+   - Returns an array of per-line HTML strings, each with balanced tags and preserved whitespace
 
 **`md-renderer.js` changes:**
-- `renderCodeBlockHtml()` calls `highlightCode(content, language)` to get pre-highlighted HTML
-- Highlighted HTML is already escaped by highlight.js, so skip the manual `escapeHtml` step for highlighted content
-- Split highlighted HTML into lines and wrap each in `.code-block-line` divs
-- Whitespace preservation (`&nbsp;` for spaces, tabs) still applied after highlighting
+
+- `renderCodeBlockHtml()` calls `highlightCode(content, language)`
+- If `highlightCode` returns an array (supported language): use the pre-processed lines directly, skip `escapeHtml`/`preserveCodeWhitespace`
+- If `highlightCode` returns `null` (unsupported language): use the existing monochrome path unchanged
 
 ### 9.7 Bundle Size Impact
 
-highlight.js core: ~30 KB minified. Each language grammar: 2-8 KB. With four languages:
+highlight.js core: ~30 KB minified. Each language grammar: 2-8 KB. With six languages:
 
 | Component | Size (min) |
-|---|---|
+| --- | --- |
 | highlight.js core | ~30 KB |
 | Python grammar | ~5 KB |
 | Go grammar | ~3 KB |
 | Java grammar | ~5 KB |
 | Bash grammar | ~3 KB |
-| **Total addition** | **~46 KB** |
+| JavaScript grammar | ~6 KB |
+| TypeScript grammar | ~4 KB |
+| **Total addition** | **~56 KB** |
 
 This is negligible compared to the existing offscreen bundle (2.1 MB).
 
 ### 9.8 Scope and Non-Goals
 
 **In scope:**
-- Syntax highlighting for Python, Go, Java, Bash fenced code blocks
+
+- Syntax highlighting for Python, Go, Java, Bash, JavaScript, TypeScript fenced code blocks
+- Common aliases supported: `js` → javascript, `ts` → typescript
 - Colors survive into DOCX output via inline styles
 - Unsupported languages fall back to current monochrome rendering (no error)
 
 **Not in scope:**
+
 - Auto-detection of language when no fence info string is provided
 - Line numbers in code blocks
 - Custom theme configuration by users
-- Additional languages beyond the four requested (can be added later by registering more grammars)
+- Additional languages beyond the six listed (can be added later by registering more grammars)
 
 ### 9.9 Implementation Plan
 
 1. Add `highlight.js` dependency to `markdocx-extension/package.json`
-2. Create `src/lib/syntax-highlighter.js` — register four languages, implement class-to-inline-style conversion
-3. Modify `src/lib/md-renderer.js` — integrate `highlightCode()` into `renderCodeBlockHtml()`
-4. Build and test with code blocks in all four languages
+2. Create `src/lib/syntax-highlighter.js`:
+   - Register six language grammars (python, go, java, bash, javascript, typescript) with aliases
+   - Implement class-to-inline-style conversion via regex
+   - Implement line-safe splitting with span-stack tracking (§9.4.1)
+   - Implement tag-aware whitespace preservation (§9.4.2)
+   - Export `highlightCode(code, language)` returning `string[] | null`
+3. Modify `src/lib/md-renderer.js`:
+   - Call `highlightCode()` in `renderCodeBlockHtml()`
+   - Branch: if array returned, use highlighted lines; if null, use existing monochrome path
+4. Build and test with code blocks in all six languages, including multi-line strings and block comments
 5. Verify DOCX output preserves colors
 
 ---
@@ -603,8 +670,12 @@ This is negligible compared to the existing offscreen bundle (2.1 MB).
 ### Phase 5: Code Block Syntax Highlighting
 
 - [ ] Add `highlight.js` npm dependency.
-- [ ] Create `src/lib/syntax-highlighter.js`: import highlight.js core + Python, Go, Java, Bash grammars; register languages; implement `highlightCode(code, language)` with class-to-inline-style conversion.
+- [ ] Create `src/lib/syntax-highlighter.js`: import highlight.js core + Python, Go, Java, Bash, JavaScript, TypeScript grammars; register languages with aliases.
 - [ ] Define inline color map for `hljs-*` classes (GitHub-like light theme, see §9.5).
-- [ ] Modify `renderCodeBlockHtml()` in `md-renderer.js`: call `highlightCode()` for supported languages, preserve whitespace after highlighting, fall back to monochrome for unsupported languages.
-- [ ] Build and verify: fenced code blocks for all four languages display colored tokens.
+- [ ] Implement class-to-inline-style conversion (regex replacement of `class="hljs-*"` → `style="color: #xxx"`).
+- [ ] Implement line-safe splitting with span-stack tracking to handle multi-line tokens (§9.4.1).
+- [ ] Implement tag-aware whitespace preservation that only replaces spaces/tabs in text nodes, not inside HTML tags (§9.4.2).
+- [ ] Modify `renderCodeBlockHtml()` in `md-renderer.js`: call `highlightCode()`, use returned array for highlighted path, fall back to existing monochrome path when `null`.
+- [ ] Build and verify: fenced code blocks for all six languages display colored tokens.
+- [ ] Test multi-line tokens: block comments and multi-line strings must render with correct colors across lines.
 - [ ] Verify DOCX output: open generated .docx and confirm syntax colors are preserved in the document.
