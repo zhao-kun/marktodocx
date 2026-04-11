@@ -21,6 +21,10 @@ export const DOCX_CONTENT_WIDTH_PX = Math.floor(
   (DOCX_PAGE_SIZE.width - DOCX_PAGE_MARGINS.left - DOCX_PAGE_MARGINS.right) / TWIPS_PER_PIXEL
 );
 
+export const DOCX_CONTENT_HEIGHT_PX = Math.floor(
+  (DOCX_PAGE_SIZE.height - DOCX_PAGE_MARGINS.top - DOCX_PAGE_MARGINS.bottom) / TWIPS_PER_PIXEL
+);
+
 export const IMAGE_EXTENSIONS = new Map([
   ['.png', 'image/png'],
   ['.jpg', 'image/jpeg'],

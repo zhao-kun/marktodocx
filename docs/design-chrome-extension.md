@@ -608,7 +608,99 @@ This is negligible compared to the existing offscreen bundle (2.1 MB).
 
 ---
 
-## 10. Implementation Checklist
+## 10. Phase 6: Page Overflow Handling for Code Blocks and Mermaid Diagrams
+
+### 10.1 Problem
+
+Code blocks and Mermaid diagrams can exceed the page content height (14,678 twips / ~978 px at A4 with current margins). When this happens:
+
+- **Code blocks**: Rendered as a single `<table>` row. The global `cantSplit: true` option in `html-to-docx` prevents this row from breaking across pages. Word either pushes the entire block to the next page (where it still doesn't fit) or truncates it. Long code blocks are silently cut off.
+- **Mermaid diagrams**: Rendered as a single `<img>`. Images cannot break across pages. If the image height exceeds the page content area, Word either scales it down (losing readability) or clips it depending on the viewer.
+
+### 10.2 Solution: Code Blocks
+
+**Change code block HTML structure from single-row to multi-row table.**
+
+Current structure (one row, all lines in one cell):
+
+```html
+<table class="code-block-table">
+  <tr>
+    <td class="code-block-cell">
+      <div class="code-block-line">line 1</div>
+      <div class="code-block-line">line 2</div>
+      ...hundreds of lines...
+    </td>
+  </tr>
+</table>
+```
+
+New structure (one row per line):
+
+```html
+<table class="code-block-table">
+  <tr><td class="code-block-cell code-block-first">language badge + line 1</td></tr>
+  <tr><td class="code-block-cell code-block-middle">line 2</td></tr>
+  <tr><td class="code-block-cell code-block-middle">line 3</td></tr>
+  ...
+  <tr><td class="code-block-cell code-block-last">line N</td></tr>
+</table>
+```
+
+With one line per row, `cantSplit: true` still applies to each individual row (a single line of code will never split mid-line, which is correct), but the table as a whole can break across pages because Word page-breaks between rows.
+
+**Styling per position:**
+
+| Position | Top border | Bottom border | Padding top | Padding bottom |
+| --- | --- | --- | --- | --- |
+| First row (or only row) | 1px solid | none | 8pt | 0 |
+| Middle rows | none | none | 0 | 0 |
+| Last row (or only row) | none | 1px solid | 0 | 8pt |
+| Only row (single line) | 1px solid | 1px solid | 8pt | 8pt |
+
+All rows share: left/right border 1px solid #d1d5db, background #F0F0F0, left/right padding 10pt. The language badge renders inside the first row's cell, before the first line of code.
+
+This gives the code block a seamless visual appearance (one continuous bordered block) while allowing Word to insert page breaks between any two lines.
+
+**Changes required:**
+
+- `md-renderer.js`: `renderCodeBlockHtml()` emits one `<tr>` per line instead of wrapping all lines in a single `<td>`
+- `docx-generator.js`: Add CSS for `.code-block-first`, `.code-block-middle`, `.code-block-last` position classes
+- No changes to `syntax-highlighter.js` — it already returns an array of per-line HTML strings
+
+### 10.3 Solution: Mermaid Diagrams
+
+**Cap image height to page content height, scaling proportionally.**
+
+The page content area is:
+
+```text
+Content height = DOCX_PAGE_SIZE.height - margins.top - margins.bottom
+               = 16838 - 1080 - 1080 = 14678 twips
+               = 14678 / 15 ≈ 978 px
+```
+
+The display width is already capped at 960 px. Add a height cap: if the trimmed image height (at display width) would exceed the content height in pixels, scale both dimensions down proportionally so the image fits within a single page.
+
+**CSS conflict:** The current `img` rule in `docx-generator.js` sets `height: auto`, which would override any explicit `height` attribute on the `<img>` tag. The Mermaid diagram's `.mermaid-diagram img` selector must override this with an explicit height. Add a more specific rule: `.mermaid-diagram img { height: initial; }` so that the `height` attribute on the tag takes effect.
+
+**Changes required:**
+
+- `constants.js`: Add `DOCX_CONTENT_HEIGHT_PX` constant (derived like `DOCX_CONTENT_WIDTH_PX`)
+- `mermaid-renderer.js`: After computing `displayWidth`, compute the corresponding `displayHeight` from the aspect ratio. If `displayHeight` exceeds `DOCX_CONTENT_HEIGHT_PX`, scale both down. Emit both `width` and `height` attributes on the `<img>` tag.
+- `docx-generator.js`: Add `.mermaid-diagram img { height: initial; }` CSS rule to prevent the generic `img { height: auto; }` from overriding the explicit height attribute.
+
+### 10.4 Implementation Plan
+
+1. Modify `renderCodeBlockHtml()` in `md-renderer.js` to emit one `<tr><td>` per line with position-based styling
+2. Update CSS in `docx-generator.js` for the new position classes
+3. Add `DOCX_CONTENT_HEIGHT_PX` to `constants.js`
+4. Modify `renderMermaidToImageTag()` in `mermaid-renderer.js` to cap image height
+5. Build and test with a long code block (50+ lines) and a tall Mermaid diagram
+
+---
+
+## 11. Implementation Checklist
 
 ### Phase 0: Spike (DONE)
 
@@ -679,3 +771,12 @@ This is negligible compared to the existing offscreen bundle (2.1 MB).
 - [ ] Build and verify: fenced code blocks for all six languages display colored tokens.
 - [ ] Test multi-line tokens: block comments and multi-line strings must render with correct colors across lines.
 - [ ] Verify DOCX output: open generated .docx and confirm syntax colors are preserved in the document.
+
+### Phase 6: Page Overflow Handling
+
+- [ ] Modify `renderCodeBlockHtml()` in `md-renderer.js`: emit one `<tr><td>` per line with position-based border/padding styles (first/middle/last, see §10.2).
+- [ ] Update CSS in `docx-generator.js`: add styles for `.code-block-first`, `.code-block-middle`, `.code-block-last`.
+- [ ] Add `DOCX_CONTENT_HEIGHT_PX` constant to `constants.js`.
+- [ ] Modify `renderMermaidToImageTag()` in `mermaid-renderer.js`: cap image height to `DOCX_CONTENT_HEIGHT_PX`, scale width proportionally, emit both `width` and `height` on `<img>`.
+- [ ] Test with a long code block (50+ lines) and verify it breaks across pages cleanly.
+- [ ] Test with a tall Mermaid diagram and verify it fits within a single page.

@@ -1,5 +1,8 @@
+import JSZip from 'jszip';
 import htmlToDocx from 'html-to-docx';
 import { DOCX_PAGE_SIZE, DOCX_PAGE_MARGINS } from './constants.js';
+
+const EMUS_PER_PIXEL = 9525;
 
 async function toUint8Array(data) {
   if (data instanceof Blob) {
@@ -45,6 +48,7 @@ export function buildHtmlDocument(contentHtml) {
     '    hr { border: none; border-top: 1px solid #cbd5e1; margin: 14pt 0; }',
     '    img { max-width: 100%; height: auto; display: block; margin: 8pt auto; }',
     '    .mermaid-diagram { text-align: center; margin: 12pt 0; }',
+    '    .mermaid-diagram img { width: auto; height: initial; max-width: none; }',
     '  </style>',
     '</head>',
     '<body>',
@@ -54,16 +58,63 @@ export function buildHtmlDocument(contentHtml) {
   ].join('\n');
 }
 
+function collectMermaidExtents(htmlDocument) {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(htmlDocument, 'text/html');
+  const mermaidImages = [...doc.querySelectorAll('.mermaid-diagram img')];
+
+  return mermaidImages.map((image) => ({
+    descr: image.getAttribute('alt') || '',
+    cx: Math.round(Number(image.getAttribute('width') || '0') * EMUS_PER_PIXEL),
+    cy: Math.round(Number(image.getAttribute('height') || '0') * EMUS_PER_PIXEL),
+  })).filter((image) => image.descr && image.cx > 0 && image.cy > 0);
+}
+
+function patchDrawingExtent(block, image) {
+  let updated = block.replace(/<wp:extent cx="\d+" cy="\d+"\/>/, `<wp:extent cx="${image.cx}" cy="${image.cy}"/>`);
+  updated = updated.replace(/<a:ext cx="\d+" cy="\d+"\/>/, `<a:ext cx="${image.cx}" cy="${image.cy}"/>`);
+  return updated;
+}
+
+async function patchMermaidImageExtents(docxData, mermaidImages) {
+  if (mermaidImages.length === 0) {
+    return docxData;
+  }
+
+  const zip = await JSZip.loadAsync(docxData);
+  const documentXmlFile = zip.file('word/document.xml');
+  if (!documentXmlFile) {
+    return docxData;
+  }
+
+  let documentXml = await documentXmlFile.async('string');
+
+  for (const image of mermaidImages) {
+    const escapedDescr = image.descr.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const drawingPattern = new RegExp(`(<w:drawing>[\\s\\S]*?<pic:cNvPr[^>]*descr="${escapedDescr}"[^>]*\/>[\\s\\S]*?<wp:extent cx=")\\d+(" cy=")\\d+("\\/>[\\s\\S]*?<a:ext cx=")\\d+(" cy=")\\d+("\\/[\\s\\S]*?<\\/w:drawing>)`);
+
+    documentXml = documentXml.replace(drawingPattern, (match, wpPrefix, wpCyPrefix, wpSuffix, aPrefix, aCyPrefix, aSuffix) => {
+      return `${wpPrefix}${image.cx}${wpCyPrefix}${image.cy}${wpSuffix}${aPrefix}${image.cx}${aCyPrefix}${image.cy}${aSuffix}`;
+    });
+  }
+
+  zip.file('word/document.xml', documentXml);
+  return zip.generateAsync({ type: 'uint8array' });
+}
+
 export async function generateDocx(htmlDocument) {
+  const mermaidImages = collectMermaidExtents(htmlDocument);
+
   const docxBuffer = await htmlToDocx(htmlDocument, null, {
-    table: { row: { cantSplit: true } },
+    table: { row: { cantSplit: false } },
     pageSize: DOCX_PAGE_SIZE,
     margins: DOCX_PAGE_MARGINS,
     footer: false,
     header: false,
   });
 
-  const uint8 = await toUint8Array(docxBuffer);
+  const patchedDocx = await patchMermaidImageExtents(docxBuffer, mermaidImages);
+  const uint8 = await toUint8Array(patchedDocx);
 
   if (uint8.byteLength === 0) {
     throw new Error(`html-to-docx returned empty output (type: ${docxBuffer?.constructor?.name})`);

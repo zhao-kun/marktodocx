@@ -1,5 +1,6 @@
 import MarkdownIt from 'markdown-it';
 import { HIDDEN_CODE_BLOCK_LANGUAGES } from './constants.js';
+import { highlightCode } from './syntax-highlighter.js';
 
 function escapeHtml(value) {
   return value
@@ -28,16 +29,29 @@ function renderInlineCodeHtml(content) {
 
 function renderCodeBlockHtml(content, language = '') {
   const normalized = content.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
-  const lines = normalized.split('\n');
-  const trailingEmptyLine = lines.length > 1 && lines.at(-1) === '';
-  const visibleLines = trailingEmptyLine ? lines.slice(0, -1) : lines;
-  const renderedLines = (visibleLines.length === 0 ? [''] : visibleLines)
-    .map((line) => `<div class="code-block-line">${line === '' ? '&nbsp;' : preserveCodeWhitespace(line)}</div>`)
-    .join('');
   const showLanguageBadge = language && !HIDDEN_CODE_BLOCK_LANGUAGES.has(language.toLowerCase());
   const languageBadge = showLanguageBadge
     ? `<div class="code-block-language">${escapeHtml(language)}</div>`
     : '';
+
+  // Try syntax highlighting for supported languages
+  const highlightedLines = highlightCode(normalized, language);
+
+  let lineHtmls;
+  if (highlightedLines) {
+    // Highlighted path — lines already have inline styles and preserved whitespace
+    lineHtmls = highlightedLines;
+  } else {
+    // Monochrome fallback — original path for unsupported languages
+    const lines = normalized.split('\n');
+    const trailingEmptyLine = lines.length > 1 && lines.at(-1) === '';
+    const visibleLines = trailingEmptyLine ? lines.slice(0, -1) : lines;
+    lineHtmls = (visibleLines.length === 0 ? [''] : visibleLines)
+      .map((line) => line === '' ? '&nbsp;' : preserveCodeWhitespace(line));
+  }
+  const renderedLines = lineHtmls
+    .map((lineHtml) => `<div class="code-block-line">${lineHtml}</div>`)
+    .join('');
 
   return [
     '<table class="code-block-table" role="presentation" width="100%" style="width: 100%; border-collapse: collapse; table-layout: fixed;">',

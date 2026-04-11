@@ -3,6 +3,7 @@ import {
   FLOWCHART_WRAPPING_WIDTH,
   FLOWCHART_NODE_SPACING,
   FLOWCHART_RANK_SPACING,
+  DOCX_CONTENT_HEIGHT_PX,
 } from './constants.js';
 
 let initialized = false;
@@ -170,15 +171,26 @@ export async function renderMermaidToImageTag(code, index) {
   const croppedData = ctx.getImageData(bounds.left, bounds.top, bounds.width, bounds.height);
   trimmedCtx.putImageData(croppedData, 0, 0);
 
+  // bounds.width/height are at 2x scale — convert to 1x for display dimensions
+  const naturalWidth = Math.round(bounds.width / scale);
+  const naturalHeight = Math.round(bounds.height / scale);
+
+  // Cap display width at 960px (matching CLI behavior)
+  let displayWidth = Math.min(naturalWidth, 960);
+  let displayHeight = Math.round(naturalHeight * (displayWidth / naturalWidth));
+
+  // Cap display height to page content area so the diagram fits on one page
+  if (displayHeight > DOCX_CONTENT_HEIGHT_PX) {
+    displayHeight = DOCX_CONTENT_HEIGHT_PX;
+    displayWidth = Math.round(naturalWidth * (displayHeight / naturalHeight));
+  }
+
   // 6. Convert to PNG data URI
   const dataUri = trimmedCanvas.toDataURL('image/png');
 
-  // Cap display width at 960px (matching CLI behavior)
-  const displayWidth = Math.min(bounds.width, 960);
-
   return [
     '<div class="mermaid-diagram">',
-    `  <img src="${dataUri}" alt="Mermaid diagram ${index + 1}" width="${displayWidth}" />`,
+    `  <img src="${dataUri}" alt="Mermaid diagram ${index + 1}" width="${displayWidth}" height="${displayHeight}" style="width: ${displayWidth}px; height: ${displayHeight}px;" />`,
     '</div>',
   ].join('\n');
 }

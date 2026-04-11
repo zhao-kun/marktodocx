@@ -4,5 +4,7 @@ node_modules/
 *.docx
 test-markdown/
 markdocx-extension/node_modules/
+markdocx-extension/out/
 dist/
+test-*
 

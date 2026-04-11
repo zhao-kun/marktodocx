@@ -8,12 +8,20 @@
   },
   "dependencies": {
     "buffer": "^6.0.3",
+    "highlight.js": "^11.11.1",
     "html-to-docx": "^1.8.0",
+    "jszip": "^3.10.1",
     "markdown-it": "^14.1.1",
     "mermaid": "^11.14.0"
   },
   "devDependencies": {
     "vite": "^8.0.8",
     "vite-plugin-node-polyfills": "^0.26.0"
-  }
+  },
+  "version": "1.0.0",
+  "main": "test-highlight.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": ""
 }
