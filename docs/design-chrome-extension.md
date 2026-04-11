@@ -417,7 +417,131 @@ The spike is implemented in `markdocx-extension/`. All checklist items in §9 ve
 
 The offscreen bundle is large due to polyfills. Acceptable for v1 — can be optimized later by tree-shaking unused polyfill paths.
 
-## 9. Implementation Checklist
+## 9. Phase 5: Code Block Syntax Highlighting
+
+### 9.1 Current State
+
+Code blocks are rendered as plain monochrome text inside a styled `<table>` cell (`md-renderer.js:renderCodeBlockHtml`). All code is the same color (#111827 body text), with only a gray background (#F0F0F0) and a language badge distinguishing code from prose. There is no syntax highlighting — keywords, strings, comments, and other tokens are visually indistinguishable.
+
+### 9.2 Goal
+
+Add syntax highlighting for **Python, Go, Java, and Bash** code blocks. Tokens (keywords, strings, comments, numbers, etc.) should render with distinct inline colors that survive the HTML → DOCX conversion via `html-to-docx`.
+
+### 9.3 Approach: highlight.js with Inline Styles
+
+**Library choice: [highlight.js](https://highlightjs.org/)**
+
+- Pure JavaScript, browser-compatible, no dependencies
+- Supports all four target languages out of the box
+- Produces `<span class="hljs-keyword">...</span>` markup that can be mapped to inline styles
+- Tree-shakeable: can import only the four needed language grammars to minimize bundle size
+- Well-maintained, widely used (GitHub, Stack Overflow)
+
+**Why not alternatives:**
+- `Prism.js` — similar capability, but highlight.js has better markdown-it integration via `markdown-it-highlightjs` or direct API usage
+- `shiki` — uses TextMate grammars for higher fidelity, but depends on WASM (oniguruma) which is blocked by extension CSP (`wasm-eval` not allowed). Not viable in MV3.
+
+### 9.4 Integration Point
+
+The highlighting hooks into the existing `renderCodeBlockHtml()` function in `md-renderer.js`. Currently this function calls `preserveCodeWhitespace()` on each raw line. With highlighting:
+
+```
+Before (current):
+  raw code string → split lines → escapeHtml → preserveCodeWhitespace → monochrome HTML
+
+After (with highlighting):
+  raw code string → hljs.highlight(code, {language}) → highlighted HTML with <span> classes
+    → convert CSS classes to inline styles (required for html-to-docx)
+    → split lines → wrap in .code-block-line divs
+```
+
+**Critical constraint:** `html-to-docx` does not process `<style>` blocks or CSS classes for inline element colors. All colors must be applied as `style="color: #xxx"` attributes directly on `<span>` elements. This means we cannot use highlight.js's CSS themes directly — we must map `hljs-*` classes to inline style attributes after highlighting.
+
+### 9.5 Color Theme
+
+Use a GitHub-like light theme that reads well on the #F0F0F0 code block background:
+
+| Token | Class | Color |
+|---|---|---|
+| Keyword | `hljs-keyword` | `#cf222e` (red) |
+| Built-in | `hljs-built_in` | `#8250df` (purple) |
+| Type | `hljs-type` | `#8250df` (purple) |
+| String | `hljs-string` | `#0a3069` (dark blue) |
+| Number | `hljs-number` | `#0550ae` (blue) |
+| Literal (true/false/null) | `hljs-literal` | `#0550ae` (blue) |
+| Comment | `hljs-comment` | `#6e7781` (gray) |
+| Function/title | `hljs-title` | `#8250df` (purple) |
+| Variable | `hljs-variable` | `#953800` (orange) |
+| Attribute | `hljs-attr` | `#0550ae` (blue) |
+| Params | `hljs-params` | `#24292f` (default) |
+| Punctuation | `hljs-punctuation` | `#24292f` (default) |
+| Meta/preprocessor | `hljs-meta` | `#6e7781` (gray) |
+| Operator | `hljs-operator` | `#cf222e` (red) |
+| Property | `hljs-property` | `#0550ae` (blue) |
+| Default (unhighlighted) | — | `#24292f` (near-black) |
+
+### 9.6 Architecture
+
+```
+markdocx-extension/src/lib/
+├── md-renderer.js          # Modified: calls highlightCode() before building HTML
+└── syntax-highlighter.js   # NEW: highlight.js setup + class-to-inline-style conversion
+```
+
+**`syntax-highlighter.js` responsibilities:**
+1. Import highlight.js core and four language grammars (python, go, java, bash)
+2. Register the languages
+3. Export `highlightCode(code, language)` which:
+   - Returns unhighlighted (escaped) HTML if the language is not supported
+   - Calls `hljs.highlight(code, { language })` for supported languages
+   - Walks the result HTML to replace `class="hljs-*"` with `style="color: #xxx"` via regex
+   - Returns the highlighted HTML string with inline styles
+
+**`md-renderer.js` changes:**
+- `renderCodeBlockHtml()` calls `highlightCode(content, language)` to get pre-highlighted HTML
+- Highlighted HTML is already escaped by highlight.js, so skip the manual `escapeHtml` step for highlighted content
+- Split highlighted HTML into lines and wrap each in `.code-block-line` divs
+- Whitespace preservation (`&nbsp;` for spaces, tabs) still applied after highlighting
+
+### 9.7 Bundle Size Impact
+
+highlight.js core: ~30 KB minified. Each language grammar: 2-8 KB. With four languages:
+
+| Component | Size (min) |
+|---|---|
+| highlight.js core | ~30 KB |
+| Python grammar | ~5 KB |
+| Go grammar | ~3 KB |
+| Java grammar | ~5 KB |
+| Bash grammar | ~3 KB |
+| **Total addition** | **~46 KB** |
+
+This is negligible compared to the existing offscreen bundle (2.1 MB).
+
+### 9.8 Scope and Non-Goals
+
+**In scope:**
+- Syntax highlighting for Python, Go, Java, Bash fenced code blocks
+- Colors survive into DOCX output via inline styles
+- Unsupported languages fall back to current monochrome rendering (no error)
+
+**Not in scope:**
+- Auto-detection of language when no fence info string is provided
+- Line numbers in code blocks
+- Custom theme configuration by users
+- Additional languages beyond the four requested (can be added later by registering more grammars)
+
+### 9.9 Implementation Plan
+
+1. Add `highlight.js` dependency to `markdocx-extension/package.json`
+2. Create `src/lib/syntax-highlighter.js` — register four languages, implement class-to-inline-style conversion
+3. Modify `src/lib/md-renderer.js` — integrate `highlightCode()` into `renderCodeBlockHtml()`
+4. Build and test with code blocks in all four languages
+5. Verify DOCX output preserves colors
+
+---
+
+## 10. Implementation Checklist
 
 ### Phase 0: Spike (DONE)
 
@@ -475,3 +599,12 @@ The offscreen bundle is large due to polyfills. Acceptable for v1 — can be opt
 - [ ] Test edge cases: no images, no Mermaid, empty file, large files.
 - [ ] Add extension icons (16, 32, 48, 128 px).
 - [ ] Prepare Chrome Web Store listing.
+
+### Phase 5: Code Block Syntax Highlighting
+
+- [ ] Add `highlight.js` npm dependency.
+- [ ] Create `src/lib/syntax-highlighter.js`: import highlight.js core + Python, Go, Java, Bash grammars; register languages; implement `highlightCode(code, language)` with class-to-inline-style conversion.
+- [ ] Define inline color map for `hljs-*` classes (GitHub-like light theme, see §9.5).
+- [ ] Modify `renderCodeBlockHtml()` in `md-renderer.js`: call `highlightCode()` for supported languages, preserve whitespace after highlighting, fall back to monochrome for unsupported languages.
+- [ ] Build and verify: fenced code blocks for all four languages display colored tokens.
+- [ ] Verify DOCX output: open generated .docx and confirm syntax colors are preserved in the document.

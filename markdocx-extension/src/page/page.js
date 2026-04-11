@@ -107,10 +107,27 @@ function selectMdFile(file) {
   convertBtn.disabled = false;
 }
 
+// --- Progress updates from offscreen via service worker ---
+
+let activeConversionId = null;
+
+chrome.runtime.onMessage.addListener((message) => {
+  if (message.type === 'CONVERSION_PROGRESS'
+      && activeConversionId
+      && message.conversionId === activeConversionId) {
+    status.textContent = message.text;
+  }
+});
+
 // --- Conversion ---
+
+let conversionCounter = 0;
 
 convertBtn.addEventListener('click', async () => {
   if (!selectedMdFile) return;
+
+  const conversionId = `conv-${++conversionCounter}-${Date.now()}`;
+  activeConversionId = conversionId;
 
   convertBtn.disabled = true;
   status.textContent = 'Reading files...';
@@ -119,6 +136,13 @@ convertBtn.addEventListener('click', async () => {
   try {
     // 1. Read the markdown file
     const markdown = await selectedMdFile.text();
+
+    if (!markdown.trim()) {
+      status.textContent = 'The selected Markdown file is empty.';
+      status.className = 'error';
+      activeConversionId = null;
+      return;
+    }
 
     // 2. Read ALL image files into a map keyed by path relative to root folder.
     //    The offscreen document resolves image references after markdown rendering
@@ -135,10 +159,14 @@ convertBtn.addEventListener('click', async () => {
     status.textContent = 'Converting to DOCX...';
     const response = await chrome.runtime.sendMessage({
       type: 'CONVERT_MD_TO_DOCX',
+      conversionId,
       markdown,
       imageMap,
       mdRelativeDir,
     });
+
+    // Clear active ID before setting terminal state so late progress is dropped
+    activeConversionId = null;
 
     if (response.success) {
       // Decode base64 and trigger download
@@ -166,6 +194,7 @@ convertBtn.addEventListener('click', async () => {
       status.className = 'error';
     }
   } catch (error) {
+    activeConversionId = null;
     status.textContent = `Error: ${error.message}`;
     status.className = 'error';
   } finally {

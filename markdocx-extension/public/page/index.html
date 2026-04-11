@@ -2,29 +2,31 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <title>markdocx</title>
   <style>
+    * { box-sizing: border-box; }
     body {
-      width: 360px;
-      padding: 16px;
+      max-width: 480px;
+      margin: 48px auto;
+      padding: 0 24px;
       font-family: system-ui, -apple-system, sans-serif;
-      margin: 0;
       color: #1a1a1a;
     }
     h1 {
-      font-size: 16px;
+      font-size: 22px;
       margin: 0 0 4px;
     }
     .subtitle {
-      font-size: 12px;
+      font-size: 13px;
       color: #666;
-      margin: 0 0 14px;
+      margin: 0 0 20px;
     }
 
     /* Directory picker */
     .picker-area {
       border: 2px dashed #ccc;
       border-radius: 8px;
-      padding: 20px 16px;
+      padding: 28px 16px;
       text-align: center;
       cursor: pointer;
       transition: border-color 0.15s, background-color 0.15s;
@@ -39,11 +41,11 @@
       background-color: #e6f4ea;
     }
     .picker-icon {
-      font-size: 28px;
-      margin-bottom: 6px;
+      font-size: 32px;
+      margin-bottom: 8px;
     }
     .picker-label {
-      font-size: 13px;
+      font-size: 14px;
       color: #555;
     }
     .picker-area.has-folder .picker-label {
@@ -55,12 +57,12 @@
 
     /* File info */
     .file-info {
-      font-size: 12px;
+      font-size: 13px;
       color: #555;
-      margin-bottom: 12px;
-      padding: 8px 10px;
+      margin-bottom: 14px;
+      padding: 10px 12px;
       background: #f5f5f5;
-      border-radius: 4px;
+      border-radius: 6px;
       display: none;
     }
     .file-info.visible {
@@ -77,31 +79,31 @@
 
     /* Markdown file selector */
     .md-selector {
-      margin-bottom: 12px;
+      margin-bottom: 14px;
       display: none;
     }
     .md-selector.visible {
       display: block;
     }
     .md-selector label {
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 600;
       display: block;
       margin-bottom: 4px;
     }
     .md-selector select {
       width: 100%;
-      padding: 6px 8px;
-      font-size: 13px;
+      padding: 8px 10px;
+      font-size: 14px;
       border: 1px solid #ccc;
-      border-radius: 4px;
+      border-radius: 6px;
     }
 
     /* Convert button */
     #convert {
       width: 100%;
-      padding: 10px;
-      font-size: 14px;
+      padding: 12px;
+      font-size: 15px;
       cursor: pointer;
       border: none;
       border-radius: 6px;
@@ -120,17 +122,17 @@
 
     /* Status */
     #status {
-      margin-top: 10px;
-      font-size: 13px;
+      margin-top: 12px;
+      font-size: 14px;
       color: #333;
-      min-height: 20px;
+      min-height: 24px;
     }
     .error { color: #d93025; }
     .success { color: #188038; }
 
     /* Change folder link */
     .change-folder {
-      font-size: 11px;
+      font-size: 12px;
       color: #4285f4;
       cursor: pointer;
       text-decoration: underline;
@@ -163,6 +165,6 @@
   <button id="convert" disabled>Convert to DOCX</button>
   <div id="status"></div>
 
-  <script src="popup.js"></script>
+  <script type="module" src="page.js"></script>
 </body>
 </html>

@@ -71,23 +71,24 @@ function findTrimBounds(imageData) {
 }
 
 /**
- * Load an SVG string into an Image element via blob URL.
- * Returns a promise that resolves with the loaded Image.
+ * Load an SVG string into an Image element via data URI.
+ *
+ * Using a data URI instead of a blob URL avoids canvas tainting.
+ * Mermaid flowcharts with htmlLabels emit <foreignObject> containing
+ * HTML, which causes the browser to treat a blob-URL-loaded SVG as
+ * cross-origin, tainting the canvas and blocking getImageData().
+ * A data URI with the SVG inlined does not trigger this restriction.
  */
 function loadSvgAsImage(svgString) {
   return new Promise((resolve, reject) => {
-    const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
+    const encoded = encodeURIComponent(svgString);
+    const dataUri = `data:image/svg+xml;charset=utf-8,${encoded}`;
     const img = new Image();
-    img.onload = () => {
-      URL.revokeObjectURL(url);
-      resolve(img);
-    };
+    img.onload = () => resolve(img);
     img.onerror = (err) => {
-      URL.revokeObjectURL(url);
       reject(new Error(`Failed to load SVG as image: ${err}`));
     };
-    img.src = url;
+    img.src = dataUri;
   });
 }
 
@@ -151,7 +152,7 @@ export async function renderMermaidToImageTag(code, index) {
   const canvas = document.createElement('canvas');
   canvas.width = canvasWidth;
   canvas.height = canvasHeight;
-  const ctx = canvas.getContext('2d');
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
 
   // Transparent background (matching CLI's -b transparent)
   ctx.clearRect(0, 0, canvasWidth, canvasHeight);
@@ -180,16 +181,4 @@ export async function renderMermaidToImageTag(code, index) {
     `  <img src="${dataUri}" alt="Mermaid diagram ${index + 1}" width="${displayWidth}" />`,
     '</div>',
   ].join('\n');
-}
-
-/**
- * Render all mermaid blocks and return an array of HTML strings
- * to be consumed by the markdown-it renderer queue.
- */
-export async function renderMermaidBlocks(mermaidCodes) {
-  const rendered = [];
-  for (let i = 0; i < mermaidCodes.length; i++) {
-    rendered.push(await renderMermaidToImageTag(mermaidCodes[i], i));
-  }
-  return rendered;
 }

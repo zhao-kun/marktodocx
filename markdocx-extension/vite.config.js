@@ -22,7 +22,7 @@ export default defineConfig({
     modulePreload: false,
     rollupOptions: {
       input: {
-        'popup/popup': resolve(__dirname, 'src/popup/popup.js'),
+        'page/page': resolve(__dirname, 'src/page/page.js'),
         background: resolve(__dirname, 'src/background.js'),
         'offscreen/offscreen': resolve(__dirname, 'src/offscreen/offscreen.js'),
       },
