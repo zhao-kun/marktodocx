@@ -1056,20 +1056,20 @@ Presets are only starting points. The stored override object should let the user
 
 ### Phase 7: User Style Customization
 
-- [ ] Create `src/lib/document-style.js` with defaults, presets, validation, and style resolution.
-- [ ] Create `src/lib/document-layout.js` with explicit margin presets and derived content width/height per conversion.
-- [ ] Remove `DOCX_PAGE_MARGINS`, `DOCX_CONTENT_WIDTH_PX`, and `DOCX_CONTENT_HEIGHT_PX` from `constants.js` and update existing import sites to use resolved layout metrics.
-- [ ] Add a `Style` panel to `public/page/index.html` with a preset selector and advanced settings groups.
-- [ ] Update `src/page/page.js` to load and save style settings from `chrome.storage.local`.
-- [ ] Extend the conversion request payload to include `styleOptions`.
-- [ ] Update `background.js` to forward `styleOptions` unchanged.
-- [ ] Update `offscreen.js` to resolve styles and layout metrics once per conversion and pass them through the rendering pipeline.
-- [ ] Refactor `md-renderer.js` to remove hardcoded inline code/code block colors, handle inline italic on/off structurally, and emit language badge color inline.
-- [ ] Refactor `syntax-highlighter.js` to support at least `light` and `dark` syntax-theme palettes.
-- [ ] Refactor `table-normalizer.js` to apply table header, border, and blockquote styles from the resolved style object and to size tables from layout metrics.
-- [ ] Refactor `mermaid-renderer.js` to size diagrams from layout metrics instead of static content constants.
-- [ ] Refactor `docx-generator.js` to generate document CSS from the resolved style object and DOCX page margins from resolved layout metrics.
-- [ ] Verify that the default preset preserves current output for existing sample documents.
-- [ ] Verify that font selections are honored as well as `html-to-docx` allows in generated `.docx` files, and document the known limitations if some fonts do not render reliably.
-- [ ] Verify that non-default presets update table headers, body typography, code styling, syntax theme, blockquote styling, and margin-driven layout as expected.
-- [ ] Update `CLAUDE.md` architecture notes after the refactor is implemented.
+- [x] Create `src/lib/document-style.js` with defaults, presets, validation, and style resolution.
+- [x] Create `src/lib/document-layout.js` with explicit margin presets and derived content width/height per conversion.
+- [x] Remove `DOCX_PAGE_MARGINS`, `DOCX_CONTENT_WIDTH_PX`, and `DOCX_CONTENT_HEIGHT_PX` from `constants.js` and update existing import sites to use resolved layout metrics.
+- [x] Add a `Style` panel to `public/page/index.html` with a preset selector and advanced settings groups.
+- [x] Update `src/page/page.js` to load and save style settings from `chrome.storage.local`.
+- [x] Extend the conversion request payload to include `styleOptions`.
+- [x] Update `background.js` to forward `styleOptions` unchanged.
+- [x] Update `offscreen.js` to resolve styles and layout metrics once per conversion and pass them through the rendering pipeline.
+- [x] Refactor `md-renderer.js` to remove hardcoded inline code/code block colors, handle inline italic on/off structurally, and emit language badge color inline.
+- [x] Refactor `syntax-highlighter.js` to support at least `light` and `dark` syntax-theme palettes.
+- [x] Refactor `table-normalizer.js` to apply table header, border, and blockquote styles from the resolved style object and to size tables from layout metrics.
+- [x] Refactor `mermaid-renderer.js` to size diagrams from layout metrics instead of static content constants.
+- [x] Refactor `docx-generator.js` to generate document CSS from the resolved style object and DOCX page margins from resolved layout metrics.
+- [x] Verify that the default preset preserves current output for existing sample documents.
+- [x] Verify that font selections are honored as well as `html-to-docx` allows in generated `.docx` files, and document the known limitations if some fonts do not render reliably.
+- [x] Verify that non-default presets update table headers, body typography, code styling, syntax theme, blockquote styling, and margin-driven layout as expected.
+- [x] Update `CLAUDE.md` architecture notes after the refactor is implemented.
