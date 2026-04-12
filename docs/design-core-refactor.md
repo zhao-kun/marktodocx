@@ -15,7 +15,7 @@ markdocx currently has two conversion surfaces with different implementation mat
 1. **CLI** - `md-to-docx.mjs`, a Node.js monolith with its own Markdown-to-DOCX pipeline.
 2. **Chrome extension** - `markdocx-extension/`, the newer modular implementation with shared renderer modules, style/layout support, and the latest behavior fixes.
 
-As of yesterday's work, the Chrome extension is the most complete implementation and already supports:
+As of Chrome extension Phase 7 completion, the Chrome extension is the most complete implementation and already supports:
 
 - Markdown to DOCX conversion for headings, lists, tables, code blocks, local images, and Mermaid diagrams.
 - Style presets and advanced style overrides.
@@ -210,6 +210,7 @@ Important: the Node family does **not** run the whole document conversion inside
 ```text
 markdocx/
 ├── package.json
+├── scripts/
 ├── packages/
 │   ├── core/
 │   │   ├── src/
@@ -235,14 +236,25 @@ markdocx/
 │   │   │   ├── image-fs.js
 │   │   │   └── mermaid-adapter.js
 │   │   └── package.json
-│   └── runtime-node-mermaid-browser/
+│   └── runtime-node-mermaid/
 │       ├── src/
+│       │   ├── index.js
+│       │   └── mermaid-puppeteer.js
 │       └── package.json
 ├── apps/
 │   ├── chrome-extension/
+│   │   ├── package.json
+│   │   └── src/
 │   ├── vscode-extension/
+│   │   ├── package.json
+│   │   └── src/
 │   ├── cli/
+│   │   ├── package.json
+│   │   └── bin/
 │   └── agent-skill/
+│       ├── SKILL.md
+│       ├── package.json
+│       └── skill.mjs
 ├── docs/
 └── test-markdown/
 ```
@@ -251,7 +263,7 @@ Rationale:
 
 - `packages/core` owns behavior.
 - `packages/runtime-browser` and `packages/runtime-node` adapt the behavior to real environments.
-- `packages/runtime-node-mermaid-browser` is optional and narrow. It belongs to the Node runtime family, not a third product family.
+- `packages/runtime-node-mermaid` is optional and narrow. It belongs to the Node runtime family, not a third product family.
 - `apps/*` stay thin.
 
 ### 4.3 Shared Core Responsibilities
@@ -263,10 +275,13 @@ Rationale:
 - Code block rendering and syntax highlighting.
 - Mermaid block extraction and replacement contract.
 - Local image resolution contract.
+- Shared image inlining logic built on top of the image-resolution contract.
 - Table and blockquote normalization rules.
 - Full HTML document generation.
 - DOCX generation and post-processing.
 - Fixture-driven parity utilities.
+
+`syntax-highlighter.js` belongs in core because it is pure JavaScript and has no DOM dependency.
 
 `@markdocx/core` must not depend on:
 
@@ -291,12 +306,78 @@ Minimum runtime contract:
 
 ```js
 /**
+ * @typedef {Object} ParsedHtml
+ * @property {Document} document
+ * @property {Element} body
+ *
+ * @typedef {Object} ResolveImageRequest
+ * @property {string} src
+ * @property {string} baseDir
+ * @property {object=} context
+ *
+ * @typedef {Object} ResolveImageResult
+ * @property {string} dataUri
+ *
+ * @typedef {Object} MermaidRenderResult
+ * @property {string} htmlFragment
+ *
+ * @typedef {Object} LayoutMetrics
+ * @property {number} contentWidthPx
+ * @property {number} contentHeightPx
+ *
  * @typedef {Object} MarkdocxRuntime
- * @property {(relativePath: string, baseDir: string) => Promise<{ dataUri: string } | null>} resolveImage
+ * @property {(request: ResolveImageRequest) => Promise<ResolveImageResult | null>} resolveImage
  * @property {(html: string) => ParsedHtml} parseHtml
- * @property {(code: string, index: number, layoutMetrics: object) => Promise<string>} renderMermaid
+ * @property {(code: string, index: number, layoutMetrics: LayoutMetrics) => Promise<MermaidRenderResult>} renderMermaid
  */
 ```
+
+`ParsedHtml` is intentionally a narrow contract. Core is allowed to rely only on this DOM subset:
+
+Document methods:
+
+- `createElement`
+- `createTextNode`
+- `createDocumentFragment`
+
+Element methods and properties:
+
+- `querySelector`
+- `querySelectorAll`
+- `getAttribute`
+- `setAttribute`
+- `removeAttribute`
+- `innerHTML`
+- `children`
+
+Node methods and properties:
+
+- `appendChild`
+- `replaceWith`
+- `cloneNode`
+- `textContent`
+- `childNodes`
+- `parentNode`
+
+If core needs anything beyond this subset, the design contract must be expanded explicitly and tested against both browser and Node adapters.
+
+If core uses `innerHTML` for serialization, not just mutation, the parity fixture set must include an adapter-serialization test that diffs serialized output for identical input between native DOM and linkedom.
+
+Core only uses `cloneNode(true)` on HTML elements. It does not use cloning on SVG trees.
+
+The same HTML normalization fixture set must be executed against both adapters so adapter compatibility is verified by tests, not assumed.
+
+`resolveImage` uses a request object because browser and Node hosts do not interpret path context the same way. Browser hosts can ignore `baseDir` and rely on `context.imageMap`; Node hosts can use `src` plus `baseDir` directly.
+
+`renderMermaid` must return one canonical HTML fragment shape:
+
+```html
+<div class="mermaid-diagram"><img src="data:image/png;base64,..." alt="Mermaid diagram N"></div>
+```
+
+That fragment shape is part of the contract. Hosts must not return a bare data URI or a structurally different wrapper.
+
+Buffer handling is intentionally outside the runtime contract. `@markdocx/core` stays import-clean; browser Buffer polyfills are the responsibility of the browser runtime/app bundling layer, and Node uses native Buffer. Consumers of `@markdocx/core` in a browser environment must have Buffer polyfilled at module-load time, not only at call time, because `html-to-docx` touches Buffer during module initialization.
 
 The shared pipeline stays the same across hosts:
 
@@ -305,7 +386,7 @@ The shared pipeline stays the same across hosts:
 3. Extract Mermaid blocks.
 4. Ask the runtime to render Mermaid.
 5. Render Markdown into HTML.
-6. Resolve local images through the runtime.
+6. Resolve local images through the runtime and inline them through shared core logic.
 7. Normalize tables and blockquotes through the runtime DOM adapter.
 8. Build the full HTML document.
 9. Convert HTML to DOCX.
@@ -338,10 +419,20 @@ For Mermaid, Node runtime should use this rule:
 
 1. **Default requirement:** preserve parity with browser-family output.
 2. **Implementation preference:** keep the main document pipeline pure Node.
-3. **Allowed escape hatch:** if strict parity for Mermaid cannot be achieved with a pure Node renderer, use a small browser-backed Mermaid helper package only for Mermaid images.
-4. **Failure behavior:** if the document contains Mermaid and the parity-preserving Mermaid helper is unavailable, fail with a clear error rather than emit a divergent document.
+3. **Chosen helper mechanism:** use `@markdocx/runtime-node-mermaid`, implemented as a narrow Puppeteer-based Mermaid renderer with a Puppeteer version pinned in package management so the bundled Chromium version is pinned implicitly. The default plan is to use bundled Chromium, not an externally managed browser.
+4. **Install tradeoff:** CLI and agent skill stay lean for non-Mermaid documents. Mermaid documents require the Node Mermaid helper package to be installed and available.
+5. **Failure behavior:** if the document contains Mermaid and the parity-preserving Mermaid helper is unavailable, fail with a clear error rather than emit a divergent document.
+6. **Execution mode:** `@markdocx/runtime-node-mermaid` runs Puppeteer in headless `new` mode. CI images must install the Puppeteer Linux dependency set required by Chromium.
 
 This keeps the heavy browser dependency off the main CLI and skill path for non-Mermaid documents while still honoring the parity requirement when Mermaid is used.
+
+Version pinning is mandatory for deterministic output:
+
+- one Mermaid version across the repository
+- one `html-to-docx` version across the repository
+- one Chromium version implicitly pinned by the pinned Puppeteer version used in `@markdocx/runtime-node-mermaid`
+
+The root workspace manifest should enforce this with `overrides` so workspaces cannot drift silently.
 
 ---
 
@@ -365,6 +456,8 @@ Plan:
 - Use the browser runtime family in a hidden webview.
 - The webview hosts the browser runtime and core bundle.
 - The extension host handles command registration, workspace file access, style settings, and output file writing.
+- Use `retainContextWhenHidden: true` for a single retained hidden webview so runtime startup and Mermaid initialization are amortized across conversions. This costs memory, but it is the preferred tradeoff for parity and responsiveness.
+- The browser runtime bundle used in the webview must be self-contained, loaded through `asWebviewUri`, and compatible with strict webview CSP.
 
 Why this family:
 
@@ -394,9 +487,25 @@ CLI style configuration must be first-class, not deferred:
 
 CLI precedence order:
 
-1. Explicit CLI args
-2. Environment variables
-3. Default preset
+1. `--style-preset` establishes the base preset.
+2. `--style-json` overlays object values on top of the preset.
+3. `--set` overlays targeted keys on top of both preset and style JSON.
+4. Within repeated `--set` arguments, later arguments win.
+5. CLI arguments as a group override environment variables.
+6. Environment variables override defaults.
+7. Default preset is last.
+
+`MARKDOCX_STYLE_SET` uses semicolon-separated dotted-path assignments, for example:
+
+```text
+code.fontSizePt=11;blockquote.italic=false;page.marginPreset=wide
+```
+
+`--set` uses the same dotted-path assignment syntax and always overrides values coming from `--style-preset` and `--style-json`.
+
+Precedence is by option kind, not by command-line position. `--set` always overrides `--style-json` and `--style-preset` regardless of argument order.
+
+The current root `md-to-docx.mjs` is frozen as of Phase A. After that point, all CLI behavior changes must flow through the Node runtime family plan rather than ad hoc edits to the legacy monolith.
 
 ### 5.4 Agent Skill
 
@@ -405,6 +514,7 @@ Plan:
 - Rebuild the skill on the same Node runtime family as CLI.
 - Keep the skill wrapper focused on parameter parsing, file or content input, and output handling.
 - Use the same style schema as CLI.
+- This design assumes the first skill target runs in a local Node environment with filesystem access. If a later skill host is sandboxed and cannot read local files, it should get a separate adapter that accepts markdown and image blobs explicitly rather than silently changing the Node runtime assumptions.
 
 Skill style configuration must support:
 
@@ -413,9 +523,14 @@ Skill style configuration must support:
 
 Skill precedence order:
 
-1. Explicit skill parameters
-2. Environment variables
-3. Default preset
+1. `stylePreset` establishes the base preset.
+2. `styleJson` overlays object values on top of the preset.
+3. `styleSet` overlays targeted keys on top of both preset and style JSON.
+4. Explicit skill parameters as a group override environment variables.
+5. Environment variables override defaults.
+6. Default preset is last.
+
+`styleSet` is a string parameter using the same dotted-path assignment syntax as CLI `--set` and `MARKDOCX_STYLE_SET`, not an object. Agents passing an object should use `styleJson` instead.
 
 No UI is required or desired for CLI and skill.
 
@@ -428,6 +543,24 @@ No UI is required or desired for CLI and skill.
 For the same Markdown input and same style options, all four hosts must produce the same normalized DOCX output.
 
 We will define parity on normalized DOCX contents, not raw zip bytes. Metadata such as timestamps may differ and should be stripped before comparison.
+
+Normalization rules are part of this design, not just the comparison script implementation. The comparison script must at minimum normalize:
+
+- `docProps/core.xml` created timestamp
+- `docProps/core.xml` modified timestamp
+- `docProps/core.xml` revision
+- `word/document.xml` `w:rsid*` attributes
+- `word/settings.xml` rsid lists
+
+If later drift introduces additional non-semantic metadata fields, the design must be updated before the comparison script is changed.
+
+For Mermaid content, parity is defined at the SVG layer plus declared display extents, not at the final PNG raster layer. The comparison tooling should compare canonical Mermaid SVG output hashes and the width/height extents declared for the final embedded image. It may decode embedded PNGs to inspect dimensions, but Mermaid PNG pixels are not a CI-gating parity signal.
+
+This is intentional. Under the two-runtime-family design, Chrome extension, VSCode extension, and Node-family helpers do not necessarily rasterize through the same Chromium build, so pixel-identical PNG output is not a stable contract. If Mermaid layout, styling, or semantics change, the SVG changes and parity still fails loudly.
+
+Phase A should also generate one reference rasterization for each Mermaid-heavy fixture as a non-gating visual baseline. Visual drift against that baseline should raise a warning for manual review, not a CI failure.
+
+Font handling also needs a declared rule: parity checks compare declared font names and document structure, not machine-local font rasterization. The fixture corpus should use an approved document font list and assume fonts are referenced by name rather than embedded. Font substitution at viewer time is outside the parity contract and is treated as a user environment concern rather than a refactor concern.
 
 ### 6.2 What Is Shared
 
@@ -459,9 +592,11 @@ To keep parity credible:
 
 1. Pin one Mermaid version across the repository.
 2. Pin one Mermaid config and layout constant set.
-3. Use one browser-family Mermaid renderer as the canonical reference.
-4. Make the Node family match that renderer either directly or through the narrow browser-backed Mermaid helper.
+3. Use one canonical Mermaid SVG output as the reference parity artifact.
+4. Make the Node family rasterize Mermaid through the narrow Puppeteer-based helper package, while the browser family continues to rasterize in-host.
 5. Do not introduce a silent degraded mode into the default path.
+
+See §4.6 for the concrete pinning and Puppeteer mechanism rules.
 
 ### 6.5 Fixture and Parity Tests
 
@@ -480,9 +615,10 @@ Parity script requirements:
 
 1. Convert the same fixture through every supported host.
 2. Unzip the DOCX files.
-3. Strip known metadata noise.
+3. Strip known metadata noise. See §6.1 for the authoritative normalization rules.
 4. Compare `word/document.xml` and other relevant payload files.
-5. Fail the build on any host mismatch.
+5. For Mermaid content, compare canonical SVG hashes and declared image extents rather than embedded PNG byte streams.
+6. Fail the build on any host mismatch.
 
 ---
 
@@ -513,9 +649,22 @@ Each host maps its own surface into the same shared schema:
 
 This mapping must be documented and tested.
 
-### 7.3 Optional Future Schema Artifact
+### 7.3 Shared JSON Schema
 
-After the refactor is stable, we should add a shared JSON schema for `styleOptions` so CLI, skill, and extension settings validation all derive from the same source.
+A shared JSON schema for `styleOptions` is required, not optional future work.
+
+Reason:
+
+- CLI `--style-json`
+- skill `styleJson`
+- Chrome extension UI mapping
+- VSCode settings mapping
+
+all need one validation source to avoid drift.
+
+The schema artifact should land no later than the shared-core extraction phase.
+
+CLI argument parsing and skill parameter parsing must validate against this schema before Phase D and Phase F close, so the schema is the actual validation source rather than documentation.
 
 ---
 
@@ -530,10 +679,14 @@ Proposed root workspace commands:
 - `npm run build:core`
 - `npm run build:runtime-browser`
 - `npm run build:runtime-node`
+- `npm run build:runtime-node-mermaid`
 - `npm run build:chrome-extension`
 - `npm run build:vscode-extension`
 - `npm run build:cli`
 - `npm run build:agent-skill`
+- `npm run dev:chrome-extension`
+- `npm run dev:vscode-extension`
+- `npm run dev:cli`
 - `npm run test:parity`
 - `npm run smoke:all`
 
@@ -542,9 +695,16 @@ Proposed package names:
 - `@markdocx/core`
 - `@markdocx/runtime-browser`
 - `@markdocx/runtime-node`
-- `@markdocx/runtime-node-mermaid-browser`
+- `@markdocx/runtime-node-mermaid`
 
 Migration should preserve current user-facing entry points until replacements are proven by parity gates.
+
+Root manifest transition rule:
+
+- Today the root `package.json` is the active CLI package and holds legacy CLI dependencies.
+- In Phase B, the root manifest becomes a workspaces-first shell.
+- Legacy CLI dependencies move temporarily into `apps/cli/package.json` if they are still needed during migration.
+- Once the Node runtime family is in place, obsolete dependencies such as `sharp`, `jsdom`, `@mermaid-js/mermaid-cli`, and duplicated rendering libraries are removed.
 
 ### Phase A - Freeze Current Browser Output
 
@@ -556,14 +716,19 @@ Work:
 
 1. Add a shared DOCX comparison script.
 2. Generate golden outputs from the current Chrome extension for the fixture set.
-3. Add fixtures for style presets and yesterday's rendering regressions.
+3. Add fixtures for style presets and known recent regressions, specifically the blockquote background regression and the custom-style propagation regression.
 4. Add a root script target for parity checking.
+5. Record the exact git SHA used to generate the initial golden corpus.
+6. Freeze the legacy root CLI implementation for feature work.
+7. Add a core unit test harness alongside parity tooling.
 
 Concrete package and file work:
 
 - Keep current `markdocx-extension/` in place during this phase.
 - Add `scripts/compare-docx.mjs`.
 - Add `test-markdown/__golden__/` for normalized golden outputs.
+- Record the Chrome extension donor SHA in the golden fixture metadata or design notes.
+- Add non-gating visual Mermaid raster baselines for manual review.
 
 Build commands:
 
@@ -588,8 +753,9 @@ Work:
 
 1. Extract style and layout modules.
 2. Extract Markdown rendering and syntax highlighting.
-3. Extract HTML normalization and DOCX generation.
+3. Extract image inlining, HTML normalization, and DOCX generation.
 4. Introduce runtime contracts for image resolution, DOM parsing, and Mermaid rendering.
+5. Add the shared JSON schema for `styleOptions`.
 
 Concrete package and file work:
 
@@ -601,9 +767,11 @@ Concrete package and file work:
   - `constants.js`
   - `md-renderer.js`
   - `syntax-highlighter.js`
+  - `image-inliner.js`
   - `table-normalizer.js`
   - `docx-generator.js`
 - Add `packages/core/src/contracts/runtime.js` or equivalent JSDoc contract file.
+- Convert the root manifest into a workspaces-first manifest in this phase.
 
 Build commands:
 
@@ -617,7 +785,7 @@ Migration checkpoint:
 
 Gate:
 
-- Chrome extension rebuilt on `@markdocx/core` still matches the golden set.
+- Chrome extension rebuilt on `@markdocx/core` still produces a normalized match against the golden set.
 
 ### Phase C - Build Browser Runtime Family
 
@@ -654,7 +822,7 @@ Migration checkpoint:
 
 Gate:
 
-- Chrome extension still matches the golden set.
+- Chrome extension still produces a normalized match against the golden set.
 
 ### Phase D - Build Node Runtime Family
 
@@ -678,9 +846,7 @@ Concrete package and file work:
   - `packages/runtime-node/src/dom-linkedom.js`
   - `packages/runtime-node/src/mermaid-adapter.js`
   - `packages/runtime-node/src/index.js`
-- If Mermaid parity requires browser help, add:
-  - `packages/runtime-node-mermaid-browser/package.json`
-  - a narrow Mermaid rendering helper only
+- Add `packages/runtime-node-mermaid/package.json` and implement the narrow Puppeteer-based Mermaid helper.
 - Replace `md-to-docx.mjs` implementation with a thin CLI wrapper that calls the Node runtime.
 - Preserve top-level CLI compatibility via a temporary shim if needed.
 
@@ -785,6 +951,7 @@ Concrete package and file work:
 
 - Add `scripts/smoke-all-hosts.mjs`.
 - Add CI workflow entries for core, runtimes, and apps.
+- Move `markdocx-extension/` to `apps/chrome-extension/` in this phase, after the extension app has become a thin wrapper over `@markdocx/core` and `@markdocx/runtime-browser`.
 - Remove obsolete renderer duplicates and old monolith paths after parity is stable.
 
 Build commands:
@@ -792,6 +959,7 @@ Build commands:
 - `npm run build:core`
 - `npm run build:runtime-browser`
 - `npm run build:runtime-node`
+- `npm run build:runtime-node-mermaid`
 - `npm run build:chrome-extension`
 - `npm run build:vscode-extension`
 - `npm run build:cli`
@@ -806,6 +974,10 @@ Gate:
 
 - Fresh clone builds cleanly and all host parity checks pass.
 
+CI requirement:
+
+- Parity checks run on every pull request, not only on nightly or release builds.
+
 ---
 
 ## 9. Risks and Tradeoffs
@@ -813,7 +985,7 @@ Gate:
 | Risk | Why it matters | Mitigation |
 | --- | --- | --- |
 | Runtime drift between browser and Node | Violates the same-result requirement | Use shared core, pinned versions, shared fixtures, and a strict parity gate |
-| Mermaid rendering mismatch | Mermaid is the most likely source of host divergence | Use one canonical Mermaid config and a browser-compatible adapter for Node when needed |
+| Mermaid rendering mismatch | Mermaid is the most likely source of host divergence | Pin Mermaid/config/layout; define parity at SVG+extent level; route Node-family rasterization through `@markdocx/runtime-node-mermaid` |
 | CLI or skill dependency bloat | Conflicts with the small-host requirement | Keep the main pipeline Node-native and isolate any browser-backed helper to Mermaid only |
 | Over-abstracting too early | Can make the repo harder to understand | Extract only stable behavior from the current extension, keep host wrappers thin |
 | Silent feature degradation | Creates support and trust problems | Fail fast when a parity-preserving path is unavailable |
@@ -839,7 +1011,7 @@ This refactor is complete when all of the following are true:
 7. The repository structure is clearer than the current split implementation.
 8. CLI and agent skill do not require a full-document browser runtime for the common path.
 9. Any required browser-backed helper inside the Node family is narrow, explicit, and parity-driven.
-10. CI fails on host output drift.
+10. CI fails on host output drift and runs parity checks on every pull request, not only on nightly or release jobs.
 
 ---
 
@@ -864,8 +1036,10 @@ This section turns the design into a next-session work breakdown.
 
 - [ ] Add `scripts/compare-docx.mjs`.
 - [ ] Define DOCX normalization rules for metadata stripping.
+- [ ] Add a core unit test harness alongside parity tooling.
 - [ ] Create golden outputs from the current Chrome extension.
 - [ ] Add fixtures for style presets, Mermaid, local images, and blockquote edge cases.
+- [ ] Add non-gating visual Mermaid raster baselines for manual review.
 - [ ] Add `npm run test:parity`.
 
 ### Epic 2 - Shared Core Extraction
@@ -874,9 +1048,11 @@ This section turns the design into a next-session work breakdown.
 - [ ] Create `packages/core/package.json`.
 - [ ] Move style/layout modules into `packages/core/src/style/`.
 - [ ] Move Markdown renderer and syntax highlighter into `packages/core/src/markdown/`.
+- [ ] Move `image-inliner.js` into `packages/core/src/html/`.
 - [ ] Move HTML normalization into `packages/core/src/html/`.
 - [ ] Move DOCX generation into `packages/core/src/docx/`.
 - [ ] Add runtime contracts.
+- [ ] Add the shared JSON schema for `styleOptions`.
 - [ ] Build Chrome extension against the extracted core.
 
 ### Epic 3 - Browser Runtime Family
@@ -894,10 +1070,10 @@ This section turns the design into a next-session work breakdown.
 - [ ] Add filesystem image resolver.
 - [ ] Add lightweight DOM adapter.
 - [ ] Add Node runtime composition entry.
-- [ ] Decide whether Mermaid parity needs the narrow browser-backed helper.
-- [ ] If yes, create `packages/runtime-node-mermaid-browser/` for Mermaid only.
+- [ ] Create `packages/runtime-node-mermaid/` for Puppeteer-based Mermaid rendering only.
 - [ ] Replace CLI monolith with a thin wrapper.
 - [ ] Add CLI style args and env parsing.
+- [ ] Add an explicit fail-fast test for the "Mermaid helper missing" path.
 - [ ] Validate CLI parity against golden outputs.
 
 ### Epic 5 - VSCode Extension
@@ -922,7 +1098,7 @@ This section turns the design into a next-session work breakdown.
 
 - [ ] Add `scripts/smoke-all-hosts.mjs`.
 - [ ] Add CI workflow for all package builds.
-- [ ] Add CI parity checks.
+- [ ] Add CI parity checks on every pull request.
 - [ ] Remove obsolete monolith code after parity is stable.
 - [ ] Update README and repo architecture notes.
 
