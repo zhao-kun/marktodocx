@@ -551,10 +551,13 @@ Normalization rules are part of this design, not just the comparison script impl
 - `docProps/core.xml` revision
 - `word/document.xml` `w:rsid*` attributes
 - `word/settings.xml` rsid lists
+- WordprocessingML hex color literals inside `w:color` and `w:shd` elements, where letter casing is not semantic
 
 If later drift introduces additional non-semantic metadata fields, the design must be updated before the comparison script is changed.
 
 For Mermaid content, parity is defined at the SVG layer plus declared display extents, not at the final PNG raster layer. The comparison tooling should compare canonical Mermaid SVG output hashes and the width/height extents declared for the final embedded image. It may decode embedded PNGs to inspect dimensions, but Mermaid PNG pixels are not a CI-gating parity signal.
+
+To make that rule executable at the DOCX layer, the DOCX comparison should canonicalize Mermaid-generated raster media references by diagram order rather than by PNG bytes. Document XML still gates on the declared embedded image extents and placement, while Mermaid SVG hashes gate diagram semantics and layout.
 
 This is intentional. Under the two-runtime-family design, Chrome extension, VSCode extension, and Node-family helpers do not necessarily rasterize through the same Chromium build, so pixel-identical PNG output is not a stable contract. If Mermaid layout, styling, or semantics change, the SVG changes and parity still fails loudly.
 
@@ -617,8 +620,12 @@ Parity script requirements:
 2. Unzip the DOCX files.
 3. Strip known metadata noise. See §6.1 for the authoritative normalization rules.
 4. Compare `word/document.xml` and other relevant payload files.
-5. For Mermaid content, compare canonical SVG hashes and declared image extents rather than embedded PNG byte streams.
+5. For Mermaid content, compare canonical SVG hashes produced through the same host Mermaid runtime that the host uses during conversion, and compare declared image extents rather than embedded PNG byte streams.
 6. Fail the build on any host mismatch.
+
+The parity entry points must build the Chrome extension before generating goldens or running parity so `markdocx-extension/dist/` reflects the current workspace sources rather than stale artifacts.
+
+The golden manifest should summarize both donor SHA and donor tree state at the top level. A dirty donor tree is an allowed transitional state during development, but it must be visible in the manifest and treated as a reproducibility debt to burn down.
 
 ---
 
@@ -952,6 +959,7 @@ Concrete package and file work:
 - Add `scripts/smoke-all-hosts.mjs`.
 - Add CI workflow entries for core, runtimes, and apps.
 - Move `markdocx-extension/` to `apps/chrome-extension/` in this phase, after the extension app has become a thin wrapper over `@markdocx/core` and `@markdocx/runtime-browser`.
+- Update parity tooling paths and build entry points in the same phase so golden generation and parity checks continue to target the built Chrome extension rather than hard-coded pre-move source paths.
 - Remove obsolete renderer duplicates and old monolith paths after parity is stable.
 
 Build commands:
@@ -1034,13 +1042,13 @@ This section turns the design into a next-session work breakdown.
 
 ### Epic 1 - Parity Baseline
 
-- [ ] Add `scripts/compare-docx.mjs`.
-- [ ] Define DOCX normalization rules for metadata stripping.
-- [ ] Add a core unit test harness alongside parity tooling.
-- [ ] Create golden outputs from the current Chrome extension.
-- [ ] Add fixtures for style presets, Mermaid, local images, and blockquote edge cases.
-- [ ] Add non-gating visual Mermaid raster baselines for manual review.
-- [ ] Add `npm run test:parity`.
+- [x] Add `scripts/compare-docx.mjs`.
+- [x] Define DOCX normalization rules for metadata stripping.
+- [x] Add a core unit test harness alongside parity tooling.
+- [x] Create golden outputs from the current Chrome extension.
+- [x] Add fixtures for style presets, Mermaid, local images, and blockquote edge cases.
+- [x] Add non-gating visual Mermaid raster baselines for manual review.
+- [x] Add `npm run test:parity`.
 
 ### Epic 2 - Shared Core Extraction
 

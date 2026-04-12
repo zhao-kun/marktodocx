@@ -11,7 +11,10 @@ import {
 import {
   DOCUMENT_MARGIN_PRESET_LABELS,
   DOCUMENT_MARGIN_PRESET_ORDER,
+  resolveDocumentLayout,
 } from '../lib/document-layout.js';
+import { createMarkdownRenderer, extractMermaidBlocks } from '../lib/md-renderer.js';
+import { renderMermaidArtifacts } from '../lib/mermaid-renderer.js';
 
 const pickerArea = document.getElementById('picker-area');
 const pickerIcon = document.getElementById('picker-icon');
@@ -488,6 +491,31 @@ async function readAllImages() {
 
   return imageMap;
 }
+
+async function renderMermaidArtifactsForParity(markdown, runtimeStyleOptions) {
+  const resolvedStyle = resolveDocumentStyle(normalizeStoredStyleOptions(runtimeStyleOptions));
+  const layoutMetrics = resolveDocumentLayout(resolvedStyle.page.marginPreset);
+  const md = createMarkdownRenderer(resolvedStyle);
+  const mermaidCodes = extractMermaidBlocks(markdown, md);
+  const results = [];
+
+  for (let index = 0; index < mermaidCodes.length; index += 1) {
+    const artifact = await renderMermaidArtifacts(mermaidCodes[index], index, layoutMetrics);
+    results.push({
+      index,
+      svg: artifact.svg,
+      pngBase64: artifact.pngDataUri.replace(/^data:image\/png;base64,/, ''),
+      displayWidth: artifact.displayWidth,
+      displayHeight: artifact.displayHeight,
+    });
+  }
+
+  return results;
+}
+
+window.__MARKDOCX_PARITY__ = {
+  renderMermaidArtifactsForParity,
+};
 
 setupStyleControls();
 void loadStyleOptions();

@@ -9,14 +9,8 @@ import { resolveDocumentLayout } from './document-layout.js';
 
 let initialized = false;
 
-/**
- * Initialize mermaid with config matching the CLI's settings
- * (md-to-docx.mjs lines 134-148).
- */
-function ensureInitialized() {
-  if (initialized) return;
-
-  mermaid.initialize({
+function getMermaidConfig() {
+  return {
     startOnLoad: false,
     theme: 'default',
     securityLevel: 'loose',
@@ -31,7 +25,17 @@ function ensureInitialized() {
       rankSpacing: FLOWCHART_RANK_SPACING,
       padding: 10,
     },
-  });
+  };
+}
+
+/**
+ * Initialize mermaid with config matching the CLI's settings
+ * (md-to-docx.mjs lines 134-148).
+ */
+function ensureInitialized() {
+  if (initialized) return;
+
+  mermaid.initialize(getMermaidConfig());
 
   initialized = true;
 }
@@ -94,35 +98,16 @@ function loadSvgAsImage(svgString) {
   });
 }
 
-/**
- * Render a single Mermaid block to an HTML img tag with PNG data URI.
- *
- * Pipeline (from design doc §4.3):
- *   mermaid.render(id, code) → SVG string
- *     → Image from SVG blob URL
- *     → draw onto Canvas (2x scale, matching CLI's --scale 2)
- *     → scan pixels to find bounding box (replaces sharp.trim())
- *     → crop to bounding box
- *     → canvas.toDataURL('image/png')
- *     → HTML img tag
- */
-export async function renderMermaidToImageTag(code, index, layoutMetrics = resolveDocumentLayout()) {
+export async function renderMermaidArtifacts(code, index, layoutMetrics = resolveDocumentLayout()) {
   ensureInitialized();
 
   const id = `mermaid-diagram-${index}`;
-
-  // 1. Render to SVG via mermaid
   const { svg } = await mermaid.render(id, code);
 
-  // 2. Extract SVG dimensions from the rendered output
   const parser = new DOMParser();
   const svgDoc = parser.parseFromString(svg, 'image/svg+xml');
   const svgEl = svgDoc.documentElement;
 
-  // Extract intrinsic size. Prefer viewBox because Mermaid often emits
-  // percentage-based width/height (e.g. "100%") on the outer <svg>, and
-  // parseFloat("100%") would produce a bogus 100px. The viewBox always
-  // contains the real geometry.
   let svgWidth;
   let svgHeight;
 
@@ -136,7 +121,6 @@ export async function renderMermaidToImageTag(code, index, layoutMetrics = resol
   if (!svgWidth || !svgHeight) {
     const rawW = svgEl.getAttribute('width');
     const rawH = svgEl.getAttribute('height');
-    // Only trust absolute values — skip percentages or other relative units
     if (rawW && /^[\d.]+$/.test(rawW)) svgWidth = parseFloat(rawW);
     if (rawH && /^[\d.]+$/.test(rawH)) svgHeight = parseFloat(rawH);
   }
@@ -144,7 +128,6 @@ export async function renderMermaidToImageTag(code, index, layoutMetrics = resol
   svgWidth = svgWidth || 800;
   svgHeight = svgHeight || 600;
 
-  // 3. Draw SVG onto canvas at 2x scale (matching CLI's --scale 2)
   const scale = MERMAID_RENDER_SCALE;
   const canvasWidth = Math.ceil(svgWidth * scale);
   const canvasHeight = Math.ceil(svgHeight * scale);
@@ -156,15 +139,12 @@ export async function renderMermaidToImageTag(code, index, layoutMetrics = resol
   canvas.height = canvasHeight;
   const ctx = canvas.getContext('2d', { willReadFrequently: true });
 
-  // Transparent background (matching CLI's -b transparent)
   ctx.clearRect(0, 0, canvasWidth, canvasHeight);
   ctx.drawImage(img, 0, 0, canvasWidth, canvasHeight);
 
-  // 4. Pixel-based trim (replaces sharp.trim())
   const fullImageData = ctx.getImageData(0, 0, canvasWidth, canvasHeight);
   const bounds = findTrimBounds(fullImageData);
 
-  // 5. Crop to bounding box
   const trimmedCanvas = document.createElement('canvas');
   trimmedCanvas.width = bounds.width;
   trimmedCanvas.height = bounds.height;
@@ -172,25 +152,47 @@ export async function renderMermaidToImageTag(code, index, layoutMetrics = resol
   const croppedData = ctx.getImageData(bounds.left, bounds.top, bounds.width, bounds.height);
   trimmedCtx.putImageData(croppedData, 0, 0);
 
-  // bounds.width/height are at 2x scale — convert to 1x for display dimensions
   const naturalWidth = Math.round(bounds.width / scale);
   const naturalHeight = Math.round(bounds.height / scale);
 
   let displayWidth = Math.min(naturalWidth, layoutMetrics.contentWidthPx);
   let displayHeight = Math.round(naturalHeight * (displayWidth / naturalWidth));
 
-  // Cap display height to page content area so the diagram fits on one page
   if (displayHeight > layoutMetrics.contentHeightPx) {
     displayHeight = layoutMetrics.contentHeightPx;
     displayWidth = Math.round(naturalWidth * (displayHeight / naturalHeight));
   }
 
-  // 6. Convert to PNG data URI
-  const dataUri = trimmedCanvas.toDataURL('image/png');
+  const pngDataUri = trimmedCanvas.toDataURL('image/png');
+
+  return {
+    svg,
+    pngDataUri,
+    naturalWidth,
+    naturalHeight,
+    displayWidth,
+    displayHeight,
+  };
+}
+
+/**
+ * Render a single Mermaid block to an HTML img tag with PNG data URI.
+ *
+ * Pipeline (from design doc §4.3):
+ *   mermaid.render(id, code) → SVG string
+ *     → Image from SVG blob URL
+ *     → draw onto Canvas (2x scale, matching CLI's --scale 2)
+ *     → scan pixels to find bounding box (replaces sharp.trim())
+ *     → crop to bounding box
+ *     → canvas.toDataURL('image/png')
+ *     → HTML img tag
+ */
+export async function renderMermaidToImageTag(code, index, layoutMetrics = resolveDocumentLayout()) {
+  const artifact = await renderMermaidArtifacts(code, index, layoutMetrics);
 
   return [
     '<div class="mermaid-diagram">',
-    `  <img src="${dataUri}" alt="Mermaid diagram ${index + 1}" width="${displayWidth}" height="${displayHeight}" style="width: ${displayWidth}px; height: ${displayHeight}px;" />`,
+    `  <img src="${artifact.pngDataUri}" alt="Mermaid diagram ${index + 1}" width="${artifact.displayWidth}" height="${artifact.displayHeight}" style="width: ${artifact.displayWidth}px; height: ${artifact.displayHeight}px;" />`,
     '</div>',
   ].join('\n');
 }
