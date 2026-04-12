@@ -2,12 +2,18 @@
   "name": "markdown-word-converter",
   "private": true,
   "type": "module",
+  "workspaces": [
+    "packages/*",
+    "markdocx-extension"
+  ],
   "scripts": {
     "convert": "node md-to-docx.mjs",
-    "build:extension": "npm --prefix markdocx-extension run build",
-    "generate:goldens": "npm run build:extension && node scripts/generate-extension-goldens.mjs",
+    "build:core": "npm run build -w @markdocx/core",
+    "build:chrome-extension": "npm run build -w markdocx-extension",
+    "build:extension": "npm run build:chrome-extension",
+    "generate:goldens": "npm run build:chrome-extension && node scripts/generate-extension-goldens.mjs",
     "test:unit": "node --test tests/*.test.mjs",
-    "test:parity": "npm run build:extension && npm run test:unit && node scripts/run-fixture-parity.mjs"
+    "test:parity": "npm run build:chrome-extension && npm run test:unit && node scripts/run-fixture-parity.mjs"
   },
   "dependencies": {
     "@mermaid-js/mermaid-cli": "^11.12.0",

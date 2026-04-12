@@ -1,0 +1,191 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://markdocx.dev/schema/style-options.schema.json",
+  "title": "Markdocx Style Options",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "preset",
+    "overrides"
+  ],
+  "properties": {
+    "preset": {
+      "type": "string",
+      "enum": [
+        "default",
+        "minimal",
+        "report"
+      ]
+    },
+    "overrides": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "body": {
+          "$ref": "#/$defs/bodyStyle"
+        },
+        "headings": {
+          "$ref": "#/$defs/headingsStyle"
+        },
+        "tables": {
+          "$ref": "#/$defs/tableStyle"
+        },
+        "code": {
+          "$ref": "#/$defs/codeStyle"
+        },
+        "blockquote": {
+          "$ref": "#/$defs/blockquoteStyle"
+        },
+        "page": {
+          "$ref": "#/$defs/pageStyle"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "hexColor": {
+      "type": "string",
+      "pattern": "^#[0-9a-fA-F]{6}$"
+    },
+    "bodyFontFamily": {
+      "type": "string",
+      "enum": [
+        "Calibri",
+        "Arial",
+        "Cambria",
+        "Georgia",
+        "Times New Roman",
+        "Cascadia Code",
+        "Consolas",
+        "Courier New",
+        "Monaco"
+      ]
+    },
+    "codeFontFamily": {
+      "type": "string",
+      "enum": [
+        "Cascadia Code",
+        "Consolas",
+        "Courier New",
+        "Monaco"
+      ]
+    },
+    "bodyStyle": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "fontFamily": {
+          "$ref": "#/$defs/bodyFontFamily"
+        },
+        "fontSizePt": {
+          "type": "number",
+          "minimum": 9,
+          "maximum": 14
+        },
+        "lineHeight": {
+          "type": "number",
+          "minimum": 1.2,
+          "maximum": 1.8
+        },
+        "color": {
+          "$ref": "#/$defs/hexColor"
+        }
+      }
+    },
+    "headingsStyle": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "fontFamily": {
+          "$ref": "#/$defs/bodyFontFamily"
+        },
+        "color": {
+          "$ref": "#/$defs/hexColor"
+        }
+      }
+    },
+    "tableStyle": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "borderColor": {
+          "$ref": "#/$defs/hexColor"
+        },
+        "headerBackgroundColor": {
+          "$ref": "#/$defs/hexColor"
+        },
+        "headerTextColor": {
+          "$ref": "#/$defs/hexColor"
+        }
+      }
+    },
+    "codeStyle": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "fontFamily": {
+          "$ref": "#/$defs/codeFontFamily"
+        },
+        "fontSizePt": {
+          "type": "number",
+          "minimum": 8,
+          "maximum": 13
+        },
+        "syntaxTheme": {
+          "type": "string",
+          "enum": [
+            "light",
+            "dark"
+          ]
+        },
+        "inlineBackgroundColor": {
+          "$ref": "#/$defs/hexColor"
+        },
+        "inlineItalic": {
+          "type": "boolean"
+        },
+        "blockBackgroundColor": {
+          "$ref": "#/$defs/hexColor"
+        },
+        "blockBorderColor": {
+          "$ref": "#/$defs/hexColor"
+        },
+        "languageBadgeColor": {
+          "$ref": "#/$defs/hexColor"
+        }
+      }
+    },
+    "blockquoteStyle": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "backgroundColor": {
+          "$ref": "#/$defs/hexColor"
+        },
+        "textColor": {
+          "$ref": "#/$defs/hexColor"
+        },
+        "borderColor": {
+          "$ref": "#/$defs/hexColor"
+        },
+        "italic": {
+          "type": "boolean"
+        }
+      }
+    },
+    "pageStyle": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "marginPreset": {
+          "type": "string",
+          "enum": [
+            "default",
+            "compact",
+            "wide"
+          ]
+        }
+      }
+    }
+  }
+}

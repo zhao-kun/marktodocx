@@ -1,0 +1,19 @@
+{
+  "name": "@markdocx/core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.js",
+    "./style-options.schema.json": "./src/style/style-options.schema.json"
+  },
+  "scripts": {
+    "build": "node --input-type=module -e \"import('./src/index.js')\""
+  },
+  "dependencies": {
+    "highlight.js": "^11.11.1",
+    "html-to-docx": "^1.8.0",
+    "jszip": "^3.10.1",
+    "markdown-it": "^14.1.1"
+  }
+}

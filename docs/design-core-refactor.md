@@ -1052,16 +1052,16 @@ This section turns the design into a next-session work breakdown.
 
 ### Epic 2 - Shared Core Extraction
 
-- [ ] Initialize workspaces in the root `package.json`.
-- [ ] Create `packages/core/package.json`.
-- [ ] Move style/layout modules into `packages/core/src/style/`.
-- [ ] Move Markdown renderer and syntax highlighter into `packages/core/src/markdown/`.
-- [ ] Move `image-inliner.js` into `packages/core/src/html/`.
-- [ ] Move HTML normalization into `packages/core/src/html/`.
-- [ ] Move DOCX generation into `packages/core/src/docx/`.
-- [ ] Add runtime contracts.
-- [ ] Add the shared JSON schema for `styleOptions`.
-- [ ] Build Chrome extension against the extracted core.
+- [x] Initialize workspaces in the root `package.json`.
+- [x] Create `packages/core/package.json`.
+- [x] Move style/layout modules into `packages/core/src/style/`.
+- [x] Move Markdown renderer and syntax highlighter into `packages/core/src/markdown/`.
+- [x] Move `image-inliner.js` into `packages/core/src/html/`.
+- [x] Move HTML normalization into `packages/core/src/html/`.
+- [x] Move DOCX generation into `packages/core/src/docx/`.
+- [x] Add runtime contracts.
+- [x] Add the shared JSON schema for `styleOptions`.
+- [x] Build Chrome extension against the extracted core.
 
 ### Epic 3 - Browser Runtime Family
 
