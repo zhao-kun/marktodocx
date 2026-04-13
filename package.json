@@ -11,11 +11,15 @@
     "build:core": "npm run build -w @markdocx/core",
     "build:runtime-browser": "npm run build -w @markdocx/runtime-browser",
     "build:runtime-node": "npm run build -w @markdocx/runtime-node",
+    "build:runtime-node-mermaid": "npm run build -w @markdocx/runtime-node-mermaid",
+    "build:cli": "node scripts/build-cli-check.mjs",
     "build:chrome-extension": "npm run build -w markdocx-extension",
     "build:extension": "npm run build:chrome-extension",
     "generate:goldens": "npm run build:chrome-extension && node scripts/generate-extension-goldens.mjs",
     "test:unit": "node --test tests/*.test.mjs",
-    "test:parity": "npm run build:chrome-extension && npm run test:unit && node scripts/run-fixture-parity.mjs"
+    "test:parity": "npm run build:chrome-extension && npm run test:unit && node scripts/run-fixture-parity.mjs",
+    "test:parity:cli": "npm run build:cli && node scripts/run-cli-parity.mjs",
+    "test:parity:all": "npm run test:parity && npm run test:parity:cli"
   },
   "overrides": {
     "highlight.js": "^11.11.1",
@@ -25,7 +29,6 @@
     "mermaid": "^11.14.0"
   },
   "dependencies": {
-    "@mermaid-js/mermaid-cli": "^11.12.0",
     "html-to-docx": "^1.8.0",
     "jsdom": "^29.0.2",
     "markdown-it": "^14.1.1",

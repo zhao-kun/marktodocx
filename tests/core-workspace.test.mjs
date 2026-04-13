@@ -153,6 +153,10 @@ test('inlineLocalImages and normalizeTables work with a jsdom runtime adapter', 
   assert.equal(normalized.includes(String(layout.contentWidthPx)), true);
   assert.equal(normalized.includes('background-color:'), true);
   assert.equal(normalized.includes('word-break: break-word'), true);
+  assert.equal(normalized.includes('border-left: 4px solid'), true);
+  assert.equal(normalized.includes('border-top: none'), true);
+  assert.equal(normalized.includes('border-right: none'), true);
+  assert.equal(normalized.includes('border-bottom: none'), true);
 });
 
 test('html normalization stays stable across supported DOM adapter implementations', () => {

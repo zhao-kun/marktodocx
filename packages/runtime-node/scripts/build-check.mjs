@@ -1,13 +1,17 @@
 import assert from 'node:assert/strict';
 
 import {
+  applyMarginPreset,
   buildImageMapFromHtml,
   convertMarkdownFileInNode,
   convertMarkdownInNode,
   createJsdomDomAdapter,
   createNodeRuntime,
   normalizeBaseDirForCore,
+  parseStyleAssignments,
+  parseStyleJsonInput,
   renderMermaidFragmentsForNode,
+  resolveNodeStyleOptions,
 } from '../src/index.js';
 
 async function main() {
@@ -15,6 +19,10 @@ async function main() {
   assert.equal(typeof createNodeRuntime, 'function');
   assert.equal(typeof buildImageMapFromHtml, 'function');
   assert.equal(typeof normalizeBaseDirForCore, 'function');
+  assert.equal(typeof applyMarginPreset, 'function');
+  assert.equal(typeof parseStyleAssignments, 'function');
+  assert.equal(typeof parseStyleJsonInput, 'function');
+  assert.equal(typeof resolveNodeStyleOptions, 'function');
   assert.equal(typeof renderMermaidFragmentsForNode, 'function');
   assert.equal(typeof convertMarkdownInNode, 'function');
   assert.equal(typeof convertMarkdownFileInNode, 'function');

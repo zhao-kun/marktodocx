@@ -509,14 +509,16 @@ Current implementation note:
 
 - `@markdocx/runtime-node` now exists and composes core through an explicit Node runtime package rather than core fallbacks.
 - The first landed DOM adapter is `jsdom`-backed, which keeps the boundary explicit while Epic 4 is in progress.
-- The current runtime-node conversion entry supports non-Mermaid documents and fails fast on Mermaid until an explicit Node Mermaid adapter is provided.
-- The thin CLI replacement and dedicated `@markdocx/runtime-node-mermaid` package remain pending.
+- `@markdocx/runtime-node-mermaid` now exists as the narrow Puppeteer-based Mermaid helper for the Node runtime family.
+- The root CLI entry is now a thin wrapper over `@markdocx/runtime-node` and resolves shared `styleOptions` from args and environment variables instead of owning a monolithic conversion path.
+- Runtime-node still fails fast if Mermaid content is present and the dedicated helper is unavailable.
+- The CLI parity runner now passes on the full verified fixture set, so Epic 4's host-level parity gate is satisfied.
 
-Known drift to resolve before Node-side fixture parity lands:
+Resolved Epic 4 parity note:
 
-- Investigation during the first parity attempt found a normalized `word/document.xml` drift around blockquote table-cell border emission on the Node path.
-- The most likely root cause is upstream HTML serialization or DOM-adapter construction drift before `html-to-docx`, not nondeterminism inside `html-to-docx` itself.
-- Reopening Node-side fixture parity should start by extending the cross-adapter HTML normalization coverage with blockquote-bearing inputs, then comparing the live extension output against the historical goldens before deciding whether the fix belongs in core normalization, runtime-node adapter construction, or golden regeneration.
+- The first Node-side parity attempt exposed a real normalized `word/document.xml` drift around blockquote table-cell border emission.
+- The root cause was adapter-sensitive CSSOM serialization during blockquote table-cell style construction before `html-to-docx`, not nondeterminism inside `html-to-docx` itself.
+- Epic 4 resolved this by switching blockquote table-cell styling to an explicit raw `style` attribute string in core normalization, which removed the hidden DOM-adapter coupling and restored CLI parity on the verified fixture corpus.
 
 For Mermaid, Node runtime should use this rule:
 
@@ -812,6 +814,8 @@ Proposed root workspace commands:
 - `npm run dev:vscode-extension`
 - `npm run dev:cli`
 - `npm run test:parity`
+- `npm run test:parity:cli`
+- `npm run test:parity:all`
 - `npm run smoke:all`
 
 Proposed package names:
@@ -971,9 +975,9 @@ Implementation note after Epic 4 start:
 
 - `packages/runtime-node/` now exists and is part of the workspace.
 - The first explicit Node runtime slice includes a `jsdom`-backed DOM adapter, filesystem image loading, and a shared-core composition entry for Node hosts.
-- Mermaid is currently fail-fast unless an explicit Node Mermaid renderer is provided, which preserves the no-fallback boundary rule.
-- The dedicated Node Mermaid helper package and the CLI migration are still pending work.
-- A first attempt at Node-side non-Mermaid fixture parity exposed a real blockquote-border XML drift, so fixture parity for the Node family remains intentionally deferred until that divergence is resolved.
+- `packages/runtime-node-mermaid/` now provides the Puppeteer-based Mermaid renderer used by Node-family hosts.
+- The root `md-to-docx.mjs` entry is now a thin CLI wrapper over `@markdocx/runtime-node` with style args and env parsing.
+- The first Node-side fixture parity attempt surfaced a real blockquote-border XML drift, and Epic 4 resolved it by removing adapter-sensitive CSSOM serialization from blockquote table-cell normalization.
 
 Work:
 
@@ -1220,11 +1224,11 @@ This section turns the design into a next-session work breakdown.
 - [x] Add filesystem image resolver.
 - [x] Add lightweight DOM adapter.
 - [x] Add Node runtime composition entry.
-- [ ] Create `packages/runtime-node-mermaid/` for Puppeteer-based Mermaid rendering only.
-- [ ] Replace CLI monolith with a thin wrapper.
-- [ ] Add CLI style args and env parsing.
-- [ ] Add an explicit fail-fast test for the "Mermaid helper missing" path.
-- [ ] Validate CLI parity against golden outputs.
+- [x] Create `packages/runtime-node-mermaid/` for Puppeteer-based Mermaid rendering only.
+- [x] Replace CLI monolith with a thin wrapper.
+- [x] Add CLI style args and env parsing.
+- [x] Add an explicit fail-fast test for the "Mermaid helper missing" path.
+- [x] Validate CLI parity against golden outputs.
 
 ### Epic 5 - VSCode Extension
 

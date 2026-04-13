@@ -14,6 +14,12 @@ import {
 import { createJsdomDomAdapter, createNodeRuntime } from './dom-jsdom.js';
 import { buildImageMapFromHtml, normalizeBaseDirForCore } from './image-fs.js';
 import { renderMermaidFragmentsForNode } from './mermaid-adapter.js';
+import {
+  applyMarginPreset,
+  parseStyleAssignments,
+  parseStyleJsonInput,
+  resolveNodeStyleOptions,
+} from './style-options.js';
 
 function reportProgress(onProgress, message) {
   if (typeof onProgress === 'function') {
@@ -97,9 +103,13 @@ export async function convertMarkdownFileInNode({
 }
 
 export {
+  applyMarginPreset,
   buildImageMapFromHtml,
   createJsdomDomAdapter,
   createNodeRuntime,
   normalizeBaseDirForCore,
+  parseStyleAssignments,
+  parseStyleJsonInput,
   renderMermaidFragmentsForNode,
+  resolveNodeStyleOptions,
 };

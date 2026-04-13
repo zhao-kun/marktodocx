@@ -98,13 +98,20 @@ function transformBlockquoteToTable(blockquote, doc, resolvedStyle, nodeCtor) {
 
   const row = doc.createElement('tr');
   const cell = doc.createElement('td');
-  cell.style.border = 'none';
-  cell.style.borderLeft = `4px solid ${resolvedStyle.blockquote.borderColor}`;
-  cell.style.backgroundColor = resolvedStyle.blockquote.backgroundColor;
-  cell.style.color = resolvedStyle.blockquote.textColor;
-  cell.style.fontStyle = resolvedStyle.blockquote.italic ? 'italic' : 'normal';
-  cell.style.padding = '6pt 0 6pt 12pt';
-  cell.style.verticalAlign = 'top';
+  cell.setAttribute(
+    'style',
+    [
+      'border-top: none',
+      'border-right: none',
+      'border-bottom: none',
+      `border-left: 4px solid ${resolvedStyle.blockquote.borderColor}`,
+      `background-color: ${resolvedStyle.blockquote.backgroundColor}`,
+      `color: ${resolvedStyle.blockquote.textColor}`,
+      `font-style: ${resolvedStyle.blockquote.italic ? 'italic' : 'normal'}`,
+      'padding: 6pt 0 6pt 12pt',
+      'vertical-align: top',
+    ].join('; ')
+  );
 
   const childNodes = [...blockquote.childNodes].filter((node) => {
     return !(node.nodeType === nodeCtor.TEXT_NODE && !node.nodeValue.trim());
