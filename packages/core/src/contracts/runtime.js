@@ -1,4 +1,4 @@
-export const RUNTIME_CONTRACT_VERSION = '1.0.0';
+export const RUNTIME_CONTRACT_VERSION = '1.1.0';
 
 /**
  * @typedef {object} MarkdocxDomAdapter
@@ -8,35 +8,37 @@ export const RUNTIME_CONTRACT_VERSION = '1.0.0';
  */
 
 /**
- * @typedef {object} MarkdocxImageResolver
- * @property {(html: string, context: { imageMap?: Record<string, string>, mdRelativeDir?: string }) => string | Promise<string>} inlineImages
- * Inline host-resolved local images into rendered HTML.
- */
-
-/**
- * @typedef {object} MarkdocxMermaidRenderer
- * @property {(code: string, index: number, layoutMetrics: object) => Promise<{ svg?: string, pngDataUri: string, displayWidth: number, displayHeight: number }> } render
- * Render Mermaid source into a rasterized artifact suitable for DOCX embedding.
- */
-
-/**
  * @typedef {object} MarkdocxRuntimeContracts
+ * Current shared-core runtime contracts are intentionally narrow.
+ * The extracted core consumes a DOM adapter directly for HTML normalization.
+ * Image inlining and Mermaid rendering are currently host-orchestration inputs,
+ * not runtime hooks consumed through this contract surface yet.
  * @property {MarkdocxDomAdapter} [dom]
- * @property {MarkdocxImageResolver} [images]
- * @property {MarkdocxMermaidRenderer} [mermaid]
  */
 
 export function assertRuntimeContracts(runtime = {}) {
+  if (!runtime || typeof runtime !== 'object' || Array.isArray(runtime)) {
+    throw new TypeError('runtime must be an object');
+  }
+
+  if (runtime.dom !== undefined && (!runtime.dom || typeof runtime.dom !== 'object')) {
+    throw new TypeError('runtime.dom must be an object');
+  }
+
   if (runtime.dom && typeof runtime.dom.parseHtml !== 'function') {
     throw new TypeError('runtime.dom.parseHtml must be a function');
   }
 
-  if (runtime.images && typeof runtime.images.inlineImages !== 'function') {
-    throw new TypeError('runtime.images.inlineImages must be a function');
+  if (runtime.dom?.Node !== undefined && typeof runtime.dom.Node !== 'function') {
+    throw new TypeError('runtime.dom.Node must be a constructor when provided');
   }
 
-  if (runtime.mermaid && typeof runtime.mermaid.render !== 'function') {
-    throw new TypeError('runtime.mermaid.render must be a function');
+  if (
+    runtime.dom?.NodeFilter !== undefined
+    && typeof runtime.dom.NodeFilter !== 'function'
+    && typeof runtime.dom.NodeFilter !== 'object'
+  ) {
+    throw new TypeError('runtime.dom.NodeFilter must be a constructor or NodeFilter-like object when provided');
   }
 
   return runtime;

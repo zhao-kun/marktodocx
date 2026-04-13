@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { execFile as execFileCallback } from 'node:child_process';
 import fs from 'node:fs/promises';
+import { promisify } from 'node:util';
 
 import { JSDOM } from 'jsdom';
 
@@ -12,6 +14,7 @@ import {
   DOCUMENT_STYLE_PRESET_ORDER,
   MERMAID_DOCX_DESCRIPTION_PREFIX,
   STYLE_SYNTAX_THEME_OPTIONS,
+  assertCanonicalRenderedMermaidFragment,
   assertRuntimeContracts,
   assertValidStyleOptions,
   buildHtmlDocument,
@@ -29,6 +32,8 @@ import {
 import { generateDocx as generateDocxForExtension } from '../markdocx-extension/src/lib/docx-generator.js';
 import { resolveDocumentStyle as resolveDocumentStyleFromShim } from '../markdocx-extension/src/lib/document-style.js';
 
+const execFile = promisify(execFileCallback);
+
 function createJsdomRuntime() {
   const baseDom = new JSDOM('<!DOCTYPE html><html><body></body></html>');
   return {
@@ -40,6 +45,33 @@ function createJsdomRuntime() {
       NodeFilter: baseDom.window.NodeFilter,
     },
   };
+}
+
+function createDomParserRuntime() {
+  const baseDom = new JSDOM('<!DOCTYPE html><html><body></body></html>');
+  return {
+    dom: {
+      parseHtml(html) {
+        return new baseDom.window.DOMParser().parseFromString(html, 'text/html');
+      },
+      Node: baseDom.window.Node,
+      NodeFilter: baseDom.window.NodeFilter,
+    },
+  };
+}
+
+async function runNodeEval(script) {
+  try {
+    const result = await execFile(process.execPath, ['--input-type=module', '--eval', script]);
+    return { ok: true, ...result };
+  } catch (error) {
+    return {
+      ok: false,
+      stdout: error.stdout,
+      stderr: error.stderr,
+      message: error.message,
+    };
+  }
 }
 
 test('core package exports resolve style presets and layout presets consistently', () => {
@@ -87,14 +119,16 @@ test('runtime contract assertions accept valid adapters and reject invalid ones'
   assert.doesNotThrow(() => {
     assertRuntimeContracts({
       dom: { parseHtml: () => ({}), Node: class {}, NodeFilter: {} },
-      images: { inlineImages: (html) => html },
-      mermaid: { render: async () => ({ pngDataUri: 'data:image/png;base64,AA==', displayWidth: 1, displayHeight: 1 }) },
     });
   });
 
   assert.throws(() => {
     assertRuntimeContracts({ dom: { parseHtml: 'nope' } });
   }, /runtime\.dom\.parseHtml must be a function/);
+
+  assert.throws(() => {
+    assertRuntimeContracts({ dom: { parseHtml: () => ({}), Node: 'nope' } });
+  }, /runtime\.dom\.Node must be a constructor/);
 });
 
 test('inlineLocalImages and normalizeTables work with a jsdom runtime adapter', () => {
@@ -113,17 +147,37 @@ test('inlineLocalImages and normalizeTables work with a jsdom runtime adapter', 
   assert.equal(normalized.includes('word-break: break-word'), true);
 });
 
-test('markdown renderer utilities highlight code and extract Mermaid blocks', () => {
+test('html normalization stays stable across supported DOM adapter implementations', () => {
+  const runtimes = [createJsdomRuntime(), createDomParserRuntime()];
+  const resolvedStyle = resolveDocumentStyle({ preset: 'minimal', overrides: {} });
+  const layout = resolveDocumentLayout(resolvedStyle.page.marginPreset);
+  const html = '<p><img src="../images/diagram.png" /></p><blockquote><p>line 1\nline 2</p></blockquote><table><tr><th>A</th><td>B</td></tr></table>';
+
+  const outputs = runtimes.map((runtime) => {
+    const inlined = inlineLocalImages(html, { 'docs/images/diagram.png': 'data:image/png;base64,AA==' }, 'docs/guides', runtime);
+    return normalizeTables(inlined, resolvedStyle, layout, runtime);
+  });
+
+  assert.equal(outputs[0], outputs[1]);
+});
+
+test('markdown renderer utilities highlight code, extract Mermaid blocks, and enforce canonical Mermaid fragments', () => {
   const renderer = createMarkdownRenderer(resolveDocumentStyle(DEFAULT_STYLE_OPTIONS));
   const markdown = ['```mermaid', 'graph TD', '  A-->B', '```', '', '```js', 'const answer = 42;', '```'].join('\n');
   const highlighted = highlightCode('const answer = 42;\n', 'javascript');
   const mermaidBlocks = extractMermaidBlocks(markdown, renderer);
-  const rendered = renderer.render(markdown, { renderedMermaid: ['<div class="mermaid-diagram"></div>'] });
+  const canonicalFragment = '<div class="mermaid-diagram">\n  <img src="data:image/png;base64,AA==" alt="Mermaid diagram 1" width="1" height="1" style="width: 1px; height: 1px;" />\n</div>';
+  const rendered = renderer.render(markdown, { renderedMermaid: [canonicalFragment] });
 
   assert.equal(Array.isArray(highlighted), true);
   assert.equal(highlighted[0].includes('color:'), true);
   assert.deepEqual(mermaidBlocks, ['graph TD\n  A-->B\n']);
   assert.equal(rendered.includes('mermaid-diagram'), true);
+  assert.equal(assertCanonicalRenderedMermaidFragment(canonicalFragment, 0), canonicalFragment);
+
+  assert.throws(() => {
+    renderer.render(markdown, { renderedMermaid: ['<img src="data:image/png;base64,AA==" alt="Mermaid diagram 1" />'] });
+  }, /canonical <div class="mermaid-diagram"> wrapper/);
 });
 
 test('buildHtmlDocument and generateDocx return runtime-neutral bytes while the extension shim still returns base64', async () => {
@@ -150,8 +204,33 @@ test('shared styleOptions schema stays aligned with the exported code enums', as
   const schemaPath = new URL('../packages/core/src/style/style-options.schema.json', import.meta.url);
   const schema = JSON.parse(await fs.readFile(schemaPath, 'utf8'));
 
+  assert.deepEqual(schema.required ?? [], []);
   assert.deepEqual(schema.properties.preset.enum, DOCUMENT_STYLE_PRESET_ORDER);
-  assert.deepEqual(schema.$defs.bodyFontFamily.enum, [...new Set([...BODY_FONT_FAMILY_OPTIONS, ...CODE_FONT_FAMILY_OPTIONS])]);
+  assert.deepEqual(schema.$defs.textFontFamily.enum, [...new Set([...BODY_FONT_FAMILY_OPTIONS, ...CODE_FONT_FAMILY_OPTIONS])]);
   assert.deepEqual(schema.$defs.codeFontFamily.enum, CODE_FONT_FAMILY_OPTIONS);
   assert.deepEqual(schema.$defs.codeStyle.properties.syntaxTheme.enum, STYLE_SYNTAX_THEME_OPTIONS);
+  assert.equal(schema.properties.overrides.type, 'object');
+});
+
+test('docx generator requires Buffer on the DOCX execution path in browser-like environments', async () => {
+  const moduleHref = new URL('../packages/core/src/docx/docx-generator.js', import.meta.url).href;
+  const html = '<!DOCTYPE html><html><body><p>x</p></body></html>';
+
+  const missingBuffer = await runNodeEval(`
+    delete globalThis.Buffer;
+    const mod = await import(${JSON.stringify(moduleHref)});
+    await mod.generateDocx(${JSON.stringify(html)});
+  `);
+  assert.equal(missingBuffer.ok, false);
+  assert.match(`${missingBuffer.stderr || ''}${missingBuffer.message || ''}`, /Buffer|html-to-docx|loaded zip file/i);
+
+  const restoredBuffer = await runNodeEval(`
+    delete globalThis.Buffer;
+    globalThis.Buffer = (await import('node:buffer')).Buffer;
+    const mod = await import(${JSON.stringify(moduleHref)});
+    await mod.generateDocx(${JSON.stringify(html)});
+    process.stdout.write('ok');
+  `);
+  assert.equal(restoredBuffer.ok, true);
+  assert.equal(restoredBuffer.stdout, 'ok');
 });

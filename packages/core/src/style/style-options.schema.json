@@ -4,10 +4,6 @@
   "title": "Markdocx Style Options",
   "type": "object",
   "additionalProperties": false,
-  "required": [
-    "preset",
-    "overrides"
-  ],
   "properties": {
     "preset": {
       "type": "string",
@@ -47,7 +43,7 @@
       "type": "string",
       "pattern": "^#[0-9a-fA-F]{6}$"
     },
-    "bodyFontFamily": {
+    "textFontFamily": {
       "type": "string",
       "enum": [
         "Calibri",
@@ -75,7 +71,7 @@
       "additionalProperties": false,
       "properties": {
         "fontFamily": {
-          "$ref": "#/$defs/bodyFontFamily"
+          "$ref": "#/$defs/textFontFamily"
         },
         "fontSizePt": {
           "type": "number",
@@ -97,7 +93,7 @@
       "additionalProperties": false,
       "properties": {
         "fontFamily": {
-          "$ref": "#/$defs/bodyFontFamily"
+          "$ref": "#/$defs/textFontFamily"
         },
         "color": {
           "$ref": "#/$defs/hexColor"

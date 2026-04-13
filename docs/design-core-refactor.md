@@ -1,8 +1,38 @@
 # Design Document: Shared Core + Two Runtime Families
 
-**Status:** Proposed
+**Status:** In Progress
 **Predecessor:** `docs/design-chrome-extension.md` (Chrome extension Phases 0-7 implemented)
 **Target hosts:** Chrome extension, VSCode extension, CLI, Agent skill
+
+## 0. Current Implementation Snapshot
+
+This document started as a forward-looking design. Parts of it are now implemented, but the full repository shape described below is still not complete. The most important update after the recent review-driven changes is that the repository now has a real shared-core surface and a real parity corpus, even though the final app and package layout is still transitional.
+
+### 0.1 Landed Since The Original Draft
+
+The following pieces now exist in code rather than only in design:
+
+- `@markdocx/core` exposes shared style, layout, markdown, HTML, DOCX, and runtime-contract utilities.
+- Style options are normalized and validated centrally rather than being treated as host-local loose objects.
+- The extension still provides thin compatibility shims, but those shims now resolve to the extracted core surface.
+- Golden fixture parity is driven by `test-markdown/__golden__/manifest.json` and the parity scripts rather than by ad hoc fixture comparison.
+- Mermaid parity is checked structurally through shared metadata conventions and visual baselines, with explicit handling for expected raster drift versus unacceptable semantic drift.
+- Regression coverage now includes targeted fixtures for blockquote rendering, style propagation, and page overflow behavior.
+
+### 0.2 Not Fully Landed Yet
+
+The following parts of the design remain planned rather than fully implemented:
+
+- The final `apps/` host split described in this document is not yet the literal repository layout.
+- A distinct VSCode extension host and agent-skill host are still design targets.
+- A finalized standalone Node runtime package family is still an architectural direction, not a completed extraction.
+
+### 0.3 Practical Reading Rule
+
+Read this document in two layers:
+
+- Sections marked as architecture remain the intended end state.
+- The current implementation snapshot above is the source of truth for what is already present in the repository today.
 
 ---
 
@@ -14,6 +44,8 @@ markdocx currently has two conversion surfaces with different implementation mat
 
 1. **CLI** - `md-to-docx.mjs`, a Node.js monolith with its own Markdown-to-DOCX pipeline.
 2. **Chrome extension** - `markdocx-extension/`, the newer modular implementation with shared renderer modules, style/layout support, and the latest behavior fixes.
+
+In addition, review-driven extraction work has now created a real shared package surface in `packages/core/`, and the tests already exercise that surface directly.
 
 As of Chrome extension Phase 7 completion, the Chrome extension is the most complete implementation and already supports:
 
@@ -143,6 +175,26 @@ Why we are accepting it:
 3. It keeps host-specific code explicit and easier to reason about.
 4. It matches the actual environment split instead of hiding it behind a forced abstraction.
 
+### 2.2 What The Review Changed In Practice
+
+The recent review did not change the architectural direction, but it did force the design to become more concrete in a few places.
+
+#### Shared contracts are now explicit
+
+The core package now owns validation and normalization for style options, plus runtime adapter assertions. That means parity is no longer just a statement about output files. It is also a statement about which host inputs and adapters are considered valid.
+
+#### Parity is now fixture-manifest driven
+
+The project now has an explicit golden manifest and verified fixture categories. This matters because the design previously described parity at a strategy level, but the implementation now has a concrete source of truth for which fixtures are canonical and which regressions they protect.
+
+#### Regression fixtures are more targeted
+
+Parity coverage is no longer only a broad all-features sample. It now includes narrow regression fixtures for page overflow, style propagation, and blockquote behavior. That is a better match for the design goal of catching drift early and locally.
+
+#### Extension code is now thinner by contract
+
+The extension still exposes host-local files, but some of those are now deliberately compatibility shims into the shared core instead of independent logic copies. That is the first concrete step toward the thin-host rule described in this document.
+
 ---
 
 ## 3. Architectural Principles
@@ -207,6 +259,8 @@ Important: the Node family does **not** run the whole document conversion inside
 
 ### 4.2 Monorepo Layout
 
+This section describes the target layout, not the exact present-day directory tree.
+
 ```text
 markdocx/
 ├── package.json
@@ -259,6 +313,15 @@ markdocx/
 └── test-markdown/
 ```
 
+Current repository reality is closer to this transitional state:
+
+- `packages/core/` exists and is already consumed directly by tests.
+- `markdocx-extension/` still exists as the active browser host implementation.
+- `md-to-docx.mjs` still exists as the legacy CLI surface.
+- `test-markdown/__golden__/manifest.json` is the active parity corpus index.
+
+That mismatch is intentional during the refactor. The repository does not need to reach the final directory layout before shared-core extraction and parity hardening start delivering value.
+
 Rationale:
 
 - `packages/core` owns behavior.
@@ -302,43 +365,44 @@ Rationale:
 
 The core should depend on contracts, not host globals.
 
-Minimum runtime contract:
+Current implemented contract:
 
 ```js
 /**
- * @typedef {Object} ParsedHtml
- * @property {Document} document
- * @property {Element} body
+ * @typedef {Object} MarkdocxDomAdapter
+ * @property {(html: string) => Document} parseHtml
+ * @property {typeof Node=} Node
+ * @property {typeof NodeFilter=} NodeFilter
  *
- * @typedef {Object} ResolveImageRequest
- * @property {string} src
- * @property {string} baseDir
- * @property {object=} context
- *
- * @typedef {Object} ResolveImageResult
- * @property {string} dataUri
- *
- * @typedef {Object} MermaidRenderResult
- * @property {string} htmlFragment
- *
- * @typedef {Object} LayoutMetrics
- * @property {number} contentWidthPx
- * @property {number} contentHeightPx
- *
- * @typedef {Object} MarkdocxRuntime
- * @property {(request: ResolveImageRequest) => Promise<ResolveImageResult | null>} resolveImage
- * @property {(html: string) => ParsedHtml} parseHtml
- * @property {(code: string, index: number, layoutMetrics: LayoutMetrics) => Promise<MermaidRenderResult>} renderMermaid
+ * @typedef {Object} MarkdocxRuntimeContracts
+ * @property {MarkdocxDomAdapter=} dom
  */
 ```
 
-`ParsedHtml` is intentionally a narrow contract. Core is allowed to rely only on this DOM subset:
+This is intentionally narrower than the target end-state runtime-family contract described elsewhere in this document. At the current extraction stage, the shared core directly consumes only a DOM adapter contract for HTML normalization. Image inlining and Mermaid rendering are still passed into the pipeline as host-orchestration inputs rather than runtime callback hooks.
+
+Current image inlining contract:
+
+- `inlineLocalImages(html, imageMap, mdRelativeDir, runtime)`
+
+Current Mermaid injection contract:
+
+- Mermaid blocks are extracted before Markdown rendering.
+- Hosts provide `env.renderedMermaid` as a queue of canonical HTML fragments.
+- Each injected fragment must use the canonical wrapper shape:
+
+```html
+<div class="mermaid-diagram"><img src="data:image/png;base64,..." alt="Mermaid diagram N"></div>
+```
+
+Core is allowed to rely on this DOM subset:
 
 Document methods:
 
 - `createElement`
 - `createTextNode`
 - `createDocumentFragment`
+- `createTreeWalker`
 
 Element methods and properties:
 
@@ -349,6 +413,9 @@ Element methods and properties:
 - `removeAttribute`
 - `innerHTML`
 - `children`
+- `classList`
+- `tagName`
+- `style`
 
 Node methods and properties:
 
@@ -358,35 +425,39 @@ Node methods and properties:
 - `textContent`
 - `childNodes`
 - `parentNode`
+- `nodeType`
+- `nodeName`
+- `nodeValue`
 
 If core needs anything beyond this subset, the design contract must be expanded explicitly and tested against both browser and Node adapters.
 
-If core uses `innerHTML` for serialization, not just mutation, the parity fixture set must include an adapter-serialization test that diffs serialized output for identical input between native DOM and linkedom.
+Because core uses `innerHTML` for serialization, not just mutation, the shared-core test suite must include adapter-serialization coverage that diffs normalized output across adapter implementations. The current implementation now includes this coverage for the supported test adapters, and Node-runtime work must extend it to the future `linkedom` adapter before Epic 4 closes.
 
 Core only uses `cloneNode(true)` on HTML elements. It does not use cloning on SVG trees.
 
 The same HTML normalization fixture set must be executed against both adapters so adapter compatibility is verified by tests, not assumed.
 
-`resolveImage` uses a request object because browser and Node hosts do not interpret path context the same way. Browser hosts can ignore `baseDir` and rely on `context.imageMap`; Node hosts can use `src` plus `baseDir` directly.
+Target end-state note:
 
-`renderMermaid` must return one canonical HTML fragment shape:
+- The future runtime-family packages may still expose higher-level image and Mermaid hooks.
+- Until those packages land, the contract of record is the narrower implemented contract above.
+- Any future higher-level hook must preserve the same canonical Mermaid fragment shape and the same DOM-adapter behavior.
 
-```html
-<div class="mermaid-diagram"><img src="data:image/png;base64,..." alt="Mermaid diagram N"></div>
-```
+Buffer handling is intentionally outside the runtime contract. `@markdocx/core` stays import-clean; browser Buffer polyfills are the responsibility of the browser runtime/app bundling layer, and Node uses native Buffer. Consumers of `@markdocx/core` in a browser environment must have Buffer available before the DOCX generation path executes.
 
-That fragment shape is part of the contract. Hosts must not return a bare data URI or a structurally different wrapper.
+Current implementation note:
 
-Buffer handling is intentionally outside the runtime contract. `@markdocx/core` stays import-clean; browser Buffer polyfills are the responsibility of the browser runtime/app bundling layer, and Node uses native Buffer. Consumers of `@markdocx/core` in a browser environment must have Buffer polyfilled at module-load time, not only at call time, because `html-to-docx` touches Buffer during module initialization.
+- The shared-core test suite now includes a browser-like regression test that verifies DOCX generation fails without `Buffer` and succeeds once `Buffer` is provided.
+- Under the current dependency set, this is verified on the execution path rather than asserted as a guaranteed import-time failure.
 
 The shared pipeline stays the same across hosts:
 
 1. Resolve style options.
 2. Resolve layout metrics.
 3. Extract Mermaid blocks.
-4. Ask the runtime to render Mermaid.
+4. Ask the host path to render Mermaid into canonical HTML fragments.
 5. Render Markdown into HTML.
-6. Resolve local images through the runtime and inline them through shared core logic.
+6. Resolve local images through host-provided image maps or future runtime adapters and inline them through shared core logic.
 7. Normalize tables and blockquotes through the runtime DOM adapter.
 8. Build the full HTML document.
 9. Convert HTML to DOCX.
@@ -557,6 +628,8 @@ If later drift introduces additional non-semantic metadata fields, the design mu
 
 For Mermaid content, parity is defined at the SVG layer plus declared display extents, not at the final PNG raster layer. The comparison tooling should compare canonical Mermaid SVG output hashes and the width/height extents declared for the final embedded image. It may decode embedded PNGs to inspect dimensions, but Mermaid PNG pixels are not a CI-gating parity signal.
 
+That rule has one implementation consequence for Epic 4: any Node-family Mermaid helper must use the same render scale and extent derivation rules as the browser family. If two hosts produce the same SVG but compute different declared DOCX extents, parity must still fail.
+
 To make that rule executable at the DOCX layer, the DOCX comparison should canonicalize Mermaid-generated raster media references by diagram order rather than by PNG bytes. Document XML still gates on the declared embedded image extents and placement, while Mermaid SVG hashes gate diagram semantics and layout.
 
 This is intentional. Under the two-runtime-family design, Chrome extension, VSCode extension, and Node-family helpers do not necessarily rasterize through the same Chromium build, so pixel-identical PNG output is not a stable contract. If Mermaid layout, styling, or semantics change, the SVG changes and parity still fails loudly.
@@ -671,7 +744,13 @@ all need one validation source to avoid drift.
 
 The schema artifact should land no later than the shared-core extraction phase.
 
-CLI argument parsing and skill parameter parsing must validate against this schema before Phase D and Phase F close, so the schema is the actual validation source rather than documentation.
+Current implementation note:
+
+- The schema now describes the external `styleOptions` input surface, not the fully normalized object.
+- Fields may be omitted and filled by `normalizeStyleOptions`.
+- Until CLI and skill switch to schema-driven runtime validation, core tests must keep the schema and the hand-coded normalization or validation logic in lockstep.
+
+CLI argument parsing and skill parameter parsing must validate against this schema before Phase D and Phase F close, so the schema becomes the actual validation source rather than only a synchronized artifact.
 
 ---
 
@@ -768,6 +847,7 @@ Implementation note after Epic 2:
 
 - The shared core now consumes injected DOM adapters for HTML normalization and image inlining, while still providing browser defaults for the Chrome extension.
 - DOCX generation in the shared core returns bytes; browser-hosted wrappers remain responsible for host-specific base64/message transport.
+- The implemented runtime contract is currently narrower than the final target runtime-family contract and is centered on DOM adaptation plus canonical Mermaid fragment injection.
 
 Concrete package and file work:
 
@@ -1067,6 +1147,10 @@ This section turns the design into a next-session work breakdown.
 - [x] Add runtime contracts.
 - [x] Add the shared JSON schema for `styleOptions`.
 - [x] Build Chrome extension against the extracted core.
+- [x] Add adapter-serialization regression coverage for HTML normalization.
+- [x] Add lockstep tests between schema defaults and code normalization assumptions.
+- [x] Add canonical Mermaid fragment validation in the shared renderer path.
+- [x] Add a browser-like Buffer regression test for the core DOCX execution path.
 
 ### Epic 3 - Browser Runtime Family
 
