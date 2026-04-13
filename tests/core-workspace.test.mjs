@@ -31,19 +31,13 @@ import {
 
 import { generateDocx as generateDocxForExtension } from '../markdocx-extension/src/lib/docx-generator.js';
 import { resolveDocumentStyle as resolveDocumentStyleFromShim } from '../markdocx-extension/src/lib/document-style.js';
+import { createJsdomDomAdapter as createRuntimeNodeJsdomDomAdapter } from '@markdocx/runtime-node';
 
 const execFile = promisify(execFileCallback);
 
 function createJsdomRuntime() {
-  const baseDom = new JSDOM('<!DOCTYPE html><html><body></body></html>');
   return {
-    dom: {
-      parseHtml(html) {
-        return new JSDOM(html).window.document;
-      },
-      Node: baseDom.window.Node,
-      NodeFilter: baseDom.window.NodeFilter,
-    },
+    dom: createRuntimeNodeJsdomDomAdapter(),
   };
 }
 

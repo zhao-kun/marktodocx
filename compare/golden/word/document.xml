@@ -1,0 +1,6406 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:cdr="http://schemas.openxmlformats.org/drawingml/2006/chartDrawing" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:ve="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml">
+  <w:body>
+    <w:sectPr>
+      <w:pgSz w:w="11906" w:h="16838" w:orient="portrait"/>
+      <w:pgMar w:top="1080" w:right="900" w:bottom="1080" w:left="900" w:header="undefined" w:footer="undefined" w:gutter="undefined"/>
+    </w:sectPr>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve"/>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Heading1"/>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">LLM 基础设施容量报告</w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Heading3"/>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Qwen3-32B on vLLM | 并发用户容量规划 + 峰值吞吐量规划</w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Heading2"/>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">第一部分 — 模型切换：Qwen3-32B 重新计算</w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Heading3"/>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">1.1 模型架构参考</w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Qwen3-32B 是一个 64 层 transformer，拥有 328 亿参数，使用分组查询注意力（GQA），64 个查询头和 8 个键值头，原生上下文长度为 32,768 tokens。头维度为 128，已由 Hugging Face 配置确认。</w:t>
+      </w:r>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblBorders>
+          <w:top w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:bottom w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:left w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:right w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideV w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideH w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+        </w:tblBorders>
+        <w:tblCellSpacing w:w="0" w:type="dxa"/>
+        <w:tblW w:type="dxa" w:w="10095"/>
+        <w:tblCellMar>
+          <w:top w:type="dxa" w:w="80"/>
+          <w:bottom w:type="dxa" w:w="80"/>
+          <w:left w:type="dxa" w:w="160"/>
+          <w:right w:type="dxa" w:w="160"/>
+        </w:tblCellMar>
+        <w:jc w:val="center"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="3368.6666666666665"/>
+        <w:gridCol w:w="3368.6666666666665"/>
+        <w:gridCol w:w="3368.6666666666665"/>
+      </w:tblGrid>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:shd w:val="clear" w:fill="595959"/>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="ffffff"/>
+              </w:rPr>
+              <w:t xml:space="preserve">参数</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:shd w:val="clear" w:fill="595959"/>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="ffffff"/>
+              </w:rPr>
+              <w:t xml:space="preserve">DeepSeek-R1-Distill-70B（之前）</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:shd w:val="clear" w:fill="595959"/>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="ffffff"/>
+                <w:b/>
+              </w:rPr>
+              <w:t xml:space="preserve">Qwen3-32B（新）</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tblGrid>
+        <w:gridCol w:w="3368.6666666666665"/>
+        <w:gridCol w:w="3368.6666666666665"/>
+        <w:gridCol w:w="3368.6666666666665"/>
+      </w:tblGrid>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">总参数量</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">70B</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+              <w:t xml:space="preserve">32.8B</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">层数（</w:t>
+            </w:r>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:i/>
+                <w:color w:val="24292f"/>
+                <w:shd w:val="clear" w:fill="efefef"/>
+              </w:rPr>
+              <w:t xml:space="preserve">L</w:t>
+            </w:r>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">）</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">80</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+              <w:t xml:space="preserve">64</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">KV 头数（</w:t>
+            </w:r>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:i/>
+                <w:color w:val="24292f"/>
+                <w:shd w:val="clear" w:fill="efefef"/>
+              </w:rPr>
+              <w:t xml:space="preserve">H_kv</w:t>
+            </w:r>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">）</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">8</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+              <w:t xml:space="preserve">8</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">头维度（</w:t>
+            </w:r>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:i/>
+                <w:color w:val="24292f"/>
+                <w:shd w:val="clear" w:fill="efefef"/>
+              </w:rPr>
+              <w:t xml:space="preserve">D</w:t>
+            </w:r>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">）</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">128</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+              <w:t xml:space="preserve">128</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">注意力类型</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">GQA</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+              <w:t xml:space="preserve">GQA</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">原生上下文</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">32,768</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+              <w:t xml:space="preserve">32,768</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">数据类型（默认）</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">bf16</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+              <w:t xml:space="preserve">bf16</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Heading3"/>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">1.2 公式 1 — 模型权重显存</w:t>
+      </w:r>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblBorders>
+          <w:top w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:bottom w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:left w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:right w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideV w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideH w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+        </w:tblBorders>
+        <w:tblCellSpacing w:w="0" w:type="dxa"/>
+        <w:tblW w:type="dxa" w:w="10106"/>
+        <w:tblCellMar>
+          <w:top w:type="dxa" w:w="80"/>
+          <w:bottom w:type="dxa" w:w="80"/>
+          <w:left w:type="dxa" w:w="160"/>
+          <w:right w:type="dxa" w:w="160"/>
+        </w:tblCellMar>
+        <w:jc w:val="center"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="10106"/>
+      </w:tblGrid>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:shd w:val="clear" w:fill="f0f0f0"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="8" w:space="0" w:color="D1D5DB"/>
+              <w:left w:val="single" w:sz="8" w:space="0" w:color="D1D5DB"/>
+              <w:bottom w:val="single" w:sz="8" w:space="0" w:color="D1D5DB"/>
+              <w:right w:val="single" w:sz="8" w:space="0" w:color="D1D5DB"/>
+            </w:tcBorders>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="24292f"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Model_Memory = num_params × bytes_per_dtype</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+      </w:r>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblBorders>
+          <w:top w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:bottom w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:left w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:right w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideV w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideH w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+        </w:tblBorders>
+        <w:tblCellSpacing w:w="0" w:type="dxa"/>
+        <w:tblW w:type="dxa" w:w="10095"/>
+        <w:tblCellMar>
+          <w:top w:type="dxa" w:w="80"/>
+          <w:bottom w:type="dxa" w:w="80"/>
+          <w:left w:type="dxa" w:w="160"/>
+          <w:right w:type="dxa" w:w="160"/>
+        </w:tblCellMar>
+        <w:jc w:val="center"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="3368.6666666666665"/>
+        <w:gridCol w:w="3368.6666666666665"/>
+        <w:gridCol w:w="3368.6666666666665"/>
+      </w:tblGrid>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:shd w:val="clear" w:fill="595959"/>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="ffffff"/>
+              </w:rPr>
+              <w:t xml:space="preserve">精度</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:shd w:val="clear" w:fill="595959"/>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="ffffff"/>
+              </w:rPr>
+              <w:t xml:space="preserve">计算</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:shd w:val="clear" w:fill="595959"/>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="ffffff"/>
+              </w:rPr>
+              <w:t xml:space="preserve">结果</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tblGrid>
+        <w:gridCol w:w="3368.6666666666665"/>
+        <w:gridCol w:w="3368.6666666666665"/>
+        <w:gridCol w:w="3368.6666666666665"/>
+      </w:tblGrid>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">bf16</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">32.8B × 2 字节</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+              <w:t xml:space="preserve">65.6 GB</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">fp8</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">32.8B × 1 字节</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">32.8 GB</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">int4</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">32.8B × 0.5 字节</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">16.4 GB</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+      </w:r>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblBorders>
+          <w:top w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:bottom w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:left w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:right w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideV w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideH w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+        </w:tblBorders>
+        <w:tblCellSpacing w:w="0" w:type="dxa"/>
+        <w:tblW w:type="dxa" w:w="10106"/>
+        <w:tblCellMar>
+          <w:top w:type="dxa" w:w="80"/>
+          <w:bottom w:type="dxa" w:w="80"/>
+          <w:left w:type="dxa" w:w="160"/>
+          <w:right w:type="dxa" w:w="160"/>
+        </w:tblCellMar>
+        <w:jc w:val="center"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="10106"/>
+      </w:tblGrid>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:shd w:val="clear" w:fill="efefef"/>
+            <w:vAlign w:val="top"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="none" w:space="0" w:color="000000"/>
+              <w:left w:val="single" w:sz="24" w:space="0" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="none" w:space="0" w:color="000000"/>
+              <w:right w:val="single" w:sz="none" w:space="0" w:color="000000"/>
+            </w:tcBorders>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="334155"/>
+                <w:b/>
+              </w:rPr>
+              <w:t xml:space="preserve">基准（bf16）：每台机器 65.6 GB</w:t>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="334155"/>
+              </w:rPr>
+              <w:t xml:space="preserve"> — 不到 DeepSeek-70B 的 140 GB 的一半。</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Heading3"/>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">1.3 公式 2 — 每 Token 的 KV Cache</w:t>
+      </w:r>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblBorders>
+          <w:top w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:bottom w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:left w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:right w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideV w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideH w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+        </w:tblBorders>
+        <w:tblCellSpacing w:w="0" w:type="dxa"/>
+        <w:tblW w:type="dxa" w:w="10106"/>
+        <w:tblCellMar>
+          <w:top w:type="dxa" w:w="80"/>
+          <w:bottom w:type="dxa" w:w="80"/>
+          <w:left w:type="dxa" w:w="160"/>
+          <w:right w:type="dxa" w:w="160"/>
+        </w:tblCellMar>
+        <w:jc w:val="center"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="10106"/>
+      </w:tblGrid>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:shd w:val="clear" w:fill="f0f0f0"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="8" w:space="0" w:color="D1D5DB"/>
+              <w:left w:val="single" w:sz="8" w:space="0" w:color="D1D5DB"/>
+              <w:bottom w:val="single" w:sz="8" w:space="0" w:color="D1D5DB"/>
+              <w:right w:val="single" w:sz="8" w:space="0" w:color="D1D5DB"/>
+            </w:tcBorders>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="24292f"/>
+              </w:rPr>
+              <w:t xml:space="preserve">KV_per_token = 2 × H_kv × D × L × bytes_per_dtype</w:t>
+            </w:r>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="24292f"/>
+              </w:rPr>
+              <w:t xml:space="preserve">             = 2 × 8 × 128 × 64 × 2</w:t>
+            </w:r>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="24292f"/>
+              </w:rPr>
+              <w:t xml:space="preserve">             = 262,144 字节 ≈ 256 KB/token</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+      </w:r>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblBorders>
+          <w:top w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:bottom w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:left w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:right w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideV w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideH w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+        </w:tblBorders>
+        <w:tblCellSpacing w:w="0" w:type="dxa"/>
+        <w:tblW w:type="dxa" w:w="10106"/>
+        <w:tblCellMar>
+          <w:top w:type="dxa" w:w="80"/>
+          <w:bottom w:type="dxa" w:w="80"/>
+          <w:left w:type="dxa" w:w="160"/>
+          <w:right w:type="dxa" w:w="160"/>
+        </w:tblCellMar>
+        <w:jc w:val="center"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="10106"/>
+      </w:tblGrid>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:shd w:val="clear" w:fill="efefef"/>
+            <w:vAlign w:val="top"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="none" w:space="0" w:color="000000"/>
+              <w:left w:val="single" w:sz="24" w:space="0" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="none" w:space="0" w:color="000000"/>
+              <w:right w:val="single" w:sz="none" w:space="0" w:color="000000"/>
+            </w:tcBorders>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="334155"/>
+              </w:rPr>
+              <w:t xml:space="preserve">与 DeepSeek-70B 的 320 KB/token 相比，Qwen3-32B 由于层数更少（64 vs 80），</w:t>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="334155"/>
+                <w:b/>
+              </w:rPr>
+              <w:t xml:space="preserve">KV 效率高 20%</w:t>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="334155"/>
+              </w:rPr>
+              <w:t xml:space="preserve">。</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Heading3"/>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">1.4 公式 3 — 每并发用户的 KV Cache（32k 上下文）</w:t>
+      </w:r>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblBorders>
+          <w:top w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:bottom w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:left w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:right w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideV w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideH w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+        </w:tblBorders>
+        <w:tblCellSpacing w:w="0" w:type="dxa"/>
+        <w:tblW w:type="dxa" w:w="10106"/>
+        <w:tblCellMar>
+          <w:top w:type="dxa" w:w="80"/>
+          <w:bottom w:type="dxa" w:w="80"/>
+          <w:left w:type="dxa" w:w="160"/>
+          <w:right w:type="dxa" w:w="160"/>
+        </w:tblCellMar>
+        <w:jc w:val="center"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="10106"/>
+      </w:tblGrid>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:shd w:val="clear" w:fill="f0f0f0"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="8" w:space="0" w:color="D1D5DB"/>
+              <w:left w:val="single" w:sz="8" w:space="0" w:color="D1D5DB"/>
+              <w:bottom w:val="single" w:sz="8" w:space="0" w:color="D1D5DB"/>
+              <w:right w:val="single" w:sz="8" w:space="0" w:color="D1D5DB"/>
+            </w:tcBorders>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="24292f"/>
+              </w:rPr>
+              <w:t xml:space="preserve">KV_per_user = KV_per_token × context_length</w:t>
+            </w:r>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="24292f"/>
+              </w:rPr>
+              <w:t xml:space="preserve">            = 256 KB × 32,768</w:t>
+            </w:r>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="24292f"/>
+              </w:rPr>
+              <w:t xml:space="preserve">            ≈ 8 GB/用户（最坏情况，所有 32k slot 填满）</w:t>
+            </w:r>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="24292f"/>
+              </w:rPr>
+              <w:t xml:space="preserve">            ≈ 5.2 GB/用户（现实情况，~65% 平均 page 填充，通过 PagedAttention）</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Heading3"/>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">1.5 公式 4 — 每台机器可用的 KV Cache 显存</w:t>
+      </w:r>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblBorders>
+          <w:top w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:bottom w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:left w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:right w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideV w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideH w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+        </w:tblBorders>
+        <w:tblCellSpacing w:w="0" w:type="dxa"/>
+        <w:tblW w:type="dxa" w:w="10106"/>
+        <w:tblCellMar>
+          <w:top w:type="dxa" w:w="80"/>
+          <w:bottom w:type="dxa" w:w="80"/>
+          <w:left w:type="dxa" w:w="160"/>
+          <w:right w:type="dxa" w:w="160"/>
+        </w:tblCellMar>
+        <w:jc w:val="center"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="10106"/>
+      </w:tblGrid>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:shd w:val="clear" w:fill="f0f0f0"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="8" w:space="0" w:color="D1D5DB"/>
+              <w:left w:val="single" w:sz="8" w:space="0" w:color="D1D5DB"/>
+              <w:bottom w:val="single" w:sz="8" w:space="0" w:color="D1D5DB"/>
+              <w:right w:val="single" w:sz="8" w:space="0" w:color="D1D5DB"/>
+            </w:tcBorders>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="24292f"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Available_KV = Total_GPU_Memory − Model_Memory − System_Overhead</w:t>
+            </w:r>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="24292f"/>
+              </w:rPr>
+              <w:t xml:space="preserve"> </w:t>
+            </w:r>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="24292f"/>
+              </w:rPr>
+              <w:t xml:space="preserve">System_Overhead ≈ 25–30 GB（CUDA 内核、激活值、vLLM 运行时）</w:t>
+            </w:r>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="24292f"/>
+              </w:rPr>
+              <w:t xml:space="preserve"> </w:t>
+            </w:r>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="24292f"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Available_KV = 512 − 65.6 − 28 = 418 GB</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+      </w:r>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblBorders>
+          <w:top w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:bottom w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:left w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:right w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideV w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideH w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+        </w:tblBorders>
+        <w:tblCellSpacing w:w="0" w:type="dxa"/>
+        <w:tblW w:type="dxa" w:w="10106"/>
+        <w:tblCellMar>
+          <w:top w:type="dxa" w:w="80"/>
+          <w:bottom w:type="dxa" w:w="80"/>
+          <w:left w:type="dxa" w:w="160"/>
+          <w:right w:type="dxa" w:w="160"/>
+        </w:tblCellMar>
+        <w:jc w:val="center"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="10106"/>
+      </w:tblGrid>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:shd w:val="clear" w:fill="efefef"/>
+            <w:vAlign w:val="top"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="none" w:space="0" w:color="000000"/>
+              <w:left w:val="single" w:sz="24" w:space="0" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="none" w:space="0" w:color="000000"/>
+              <w:right w:val="single" w:sz="none" w:space="0" w:color="000000"/>
+            </w:tcBorders>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="334155"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Qwen3-32B 每台机器为 KV cache 释放</w:t>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="334155"/>
+                <w:b/>
+              </w:rPr>
+              <w:t xml:space="preserve">约 76 GB 更多空间</w:t>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="334155"/>
+              </w:rPr>
+              <w:t xml:space="preserve">（对比 DeepSeek-70B：342 GB → 418 GB）。</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Heading3"/>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">1.6 公式 5 — 每台机器最大并发用户数（显存受限）</w:t>
+      </w:r>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblBorders>
+          <w:top w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:bottom w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:left w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:right w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideV w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideH w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+        </w:tblBorders>
+        <w:tblCellSpacing w:w="0" w:type="dxa"/>
+        <w:tblW w:type="dxa" w:w="10106"/>
+        <w:tblCellMar>
+          <w:top w:type="dxa" w:w="80"/>
+          <w:bottom w:type="dxa" w:w="80"/>
+          <w:left w:type="dxa" w:w="160"/>
+          <w:right w:type="dxa" w:w="160"/>
+        </w:tblCellMar>
+        <w:jc w:val="center"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="10106"/>
+      </w:tblGrid>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:shd w:val="clear" w:fill="f0f0f0"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="8" w:space="0" w:color="D1D5DB"/>
+              <w:left w:val="single" w:sz="8" w:space="0" w:color="D1D5DB"/>
+              <w:bottom w:val="single" w:sz="8" w:space="0" w:color="D1D5DB"/>
+              <w:right w:val="single" w:sz="8" w:space="0" w:color="D1D5DB"/>
+            </w:tcBorders>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="24292f"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Max_Users_memory = Available_KV / KV_per_user</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+      </w:r>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblBorders>
+          <w:top w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:bottom w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:left w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:right w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideV w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideH w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+        </w:tblBorders>
+        <w:tblCellSpacing w:w="0" w:type="dxa"/>
+        <w:tblW w:type="dxa" w:w="10095"/>
+        <w:tblCellMar>
+          <w:top w:type="dxa" w:w="80"/>
+          <w:bottom w:type="dxa" w:w="80"/>
+          <w:left w:type="dxa" w:w="160"/>
+          <w:right w:type="dxa" w:w="160"/>
+        </w:tblCellMar>
+        <w:jc w:val="center"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="3368.6666666666665"/>
+        <w:gridCol w:w="3368.6666666666665"/>
+        <w:gridCol w:w="3368.6666666666665"/>
+      </w:tblGrid>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:shd w:val="clear" w:fill="595959"/>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="ffffff"/>
+              </w:rPr>
+              <w:t xml:space="preserve">场景</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:shd w:val="clear" w:fill="595959"/>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="ffffff"/>
+              </w:rPr>
+              <w:t xml:space="preserve">KV/用户</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:shd w:val="clear" w:fill="595959"/>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="ffffff"/>
+              </w:rPr>
+              <w:t xml:space="preserve">最大用户数/机器</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tblGrid>
+        <w:gridCol w:w="3368.6666666666665"/>
+        <w:gridCol w:w="3368.6666666666665"/>
+        <w:gridCol w:w="3368.6666666666665"/>
+      </w:tblGrid>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">最坏情况（100% 32k 填满）</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">8.0 GB</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+              <w:t xml:space="preserve">~52 用户</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">现实情况（65% 平均填充）</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">5.2 GB</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+              <w:t xml:space="preserve">~80 用户</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Heading3"/>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">1.7 公式 6 — 解码吞吐量检查（计算受限）</w:t>
+      </w:r>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblBorders>
+          <w:top w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:bottom w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:left w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:right w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideV w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideH w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+        </w:tblBorders>
+        <w:tblCellSpacing w:w="0" w:type="dxa"/>
+        <w:tblW w:type="dxa" w:w="10106"/>
+        <w:tblCellMar>
+          <w:top w:type="dxa" w:w="80"/>
+          <w:bottom w:type="dxa" w:w="80"/>
+          <w:left w:type="dxa" w:w="160"/>
+          <w:right w:type="dxa" w:w="160"/>
+        </w:tblCellMar>
+        <w:jc w:val="center"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="10106"/>
+      </w:tblGrid>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:shd w:val="clear" w:fill="f0f0f0"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="8" w:space="0" w:color="D1D5DB"/>
+              <w:left w:val="single" w:sz="8" w:space="0" w:color="D1D5DB"/>
+              <w:bottom w:val="single" w:sz="8" w:space="0" w:color="D1D5DB"/>
+              <w:right w:val="single" w:sz="8" w:space="0" w:color="D1D5DB"/>
+            </w:tcBorders>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="24292f"/>
+              </w:rPr>
+              <w:t xml:space="preserve">理论 TPS = FLOPS / (2 × num_params)</w:t>
+            </w:r>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="24292f"/>
+              </w:rPr>
+              <w:t xml:space="preserve">        = 2.2×10¹⁵ / (2 × 32.8×10⁹)</w:t>
+            </w:r>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="24292f"/>
+              </w:rPr>
+              <w:t xml:space="preserve">        ≈ 33,500 tokens/sec（理论峰值）</w:t>
+            </w:r>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="24292f"/>
+              </w:rPr>
+              <w:t xml:space="preserve"> </w:t>
+            </w:r>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="24292f"/>
+              </w:rPr>
+              <w:t xml:space="preserve">实际 TPS   = 理论 TPS × MFU</w:t>
+            </w:r>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="24292f"/>
+              </w:rPr>
+              <w:t xml:space="preserve">        ≈ 33,500 × 0.35</w:t>
+            </w:r>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="24292f"/>
+              </w:rPr>
+              <w:t xml:space="preserve">        ≈ 11,700 tokens/sec/机器</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">在 </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:b/>
+        </w:rPr>
+        <w:t xml:space="preserve">20 tokens/sec/用户</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve"> 平均输出速率下：</w:t>
+      </w:r>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblBorders>
+          <w:top w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:bottom w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:left w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:right w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideV w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideH w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+        </w:tblBorders>
+        <w:tblCellSpacing w:w="0" w:type="dxa"/>
+        <w:tblW w:type="dxa" w:w="10106"/>
+        <w:tblCellMar>
+          <w:top w:type="dxa" w:w="80"/>
+          <w:bottom w:type="dxa" w:w="80"/>
+          <w:left w:type="dxa" w:w="160"/>
+          <w:right w:type="dxa" w:w="160"/>
+        </w:tblCellMar>
+        <w:jc w:val="center"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="10106"/>
+      </w:tblGrid>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:shd w:val="clear" w:fill="f0f0f0"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="8" w:space="0" w:color="D1D5DB"/>
+              <w:left w:val="single" w:sz="8" w:space="0" w:color="D1D5DB"/>
+              <w:bottom w:val="single" w:sz="8" w:space="0" w:color="D1D5DB"/>
+              <w:right w:val="single" w:sz="8" w:space="0" w:color="D1D5DB"/>
+            </w:tcBorders>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="24292f"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Max_Users_compute = 11,700 / 20 = ~585 并发用户/机器</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+      </w:r>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblBorders>
+          <w:top w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:bottom w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:left w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:right w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideV w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideH w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+        </w:tblBorders>
+        <w:tblCellSpacing w:w="0" w:type="dxa"/>
+        <w:tblW w:type="dxa" w:w="10106"/>
+        <w:tblCellMar>
+          <w:top w:type="dxa" w:w="80"/>
+          <w:bottom w:type="dxa" w:w="80"/>
+          <w:left w:type="dxa" w:w="160"/>
+          <w:right w:type="dxa" w:w="160"/>
+        </w:tblCellMar>
+        <w:jc w:val="center"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="10106"/>
+      </w:tblGrid>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:shd w:val="clear" w:fill="efefef"/>
+            <w:vAlign w:val="top"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="none" w:space="0" w:color="000000"/>
+              <w:left w:val="single" w:sz="24" w:space="0" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="none" w:space="0" w:color="000000"/>
+              <w:right w:val="single" w:sz="none" w:space="0" w:color="000000"/>
+            </w:tcBorders>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="334155"/>
+              </w:rPr>
+              <w:t xml:space="preserve">⚠️ 计算仍然</w:t>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="334155"/>
+                <w:b/>
+              </w:rPr>
+              <w:t xml:space="preserve">不是瓶颈</w:t>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="334155"/>
+              </w:rPr>
+              <w:t xml:space="preserve">。显存容量（80 用户/机器）是约束条件。</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Heading3"/>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">1.8 公式 7 — 所需机器数量</w:t>
+      </w:r>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblBorders>
+          <w:top w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:bottom w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:left w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:right w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideV w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideH w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+        </w:tblBorders>
+        <w:tblCellSpacing w:w="0" w:type="dxa"/>
+        <w:tblW w:type="dxa" w:w="10106"/>
+        <w:tblCellMar>
+          <w:top w:type="dxa" w:w="80"/>
+          <w:bottom w:type="dxa" w:w="80"/>
+          <w:left w:type="dxa" w:w="160"/>
+          <w:right w:type="dxa" w:w="160"/>
+        </w:tblCellMar>
+        <w:jc w:val="center"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="10106"/>
+      </w:tblGrid>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:shd w:val="clear" w:fill="f0f0f0"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="8" w:space="0" w:color="D1D5DB"/>
+              <w:left w:val="single" w:sz="8" w:space="0" w:color="D1D5DB"/>
+              <w:bottom w:val="single" w:sz="8" w:space="0" w:color="D1D5DB"/>
+              <w:right w:val="single" w:sz="8" w:space="0" w:color="D1D5DB"/>
+            </w:tcBorders>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="24292f"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Num_Machines = ceil(Target_Concurrent / Max_Users_memory)</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+      </w:r>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblBorders>
+          <w:top w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:bottom w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:left w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:right w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideV w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideH w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+        </w:tblBorders>
+        <w:tblCellSpacing w:w="0" w:type="dxa"/>
+        <w:tblW w:type="dxa" w:w="10095"/>
+        <w:tblCellMar>
+          <w:top w:type="dxa" w:w="80"/>
+          <w:bottom w:type="dxa" w:w="80"/>
+          <w:left w:type="dxa" w:w="160"/>
+          <w:right w:type="dxa" w:w="160"/>
+        </w:tblCellMar>
+        <w:jc w:val="center"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="3368.6666666666665"/>
+        <w:gridCol w:w="3368.6666666666665"/>
+        <w:gridCol w:w="3368.6666666666665"/>
+      </w:tblGrid>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:shd w:val="clear" w:fill="595959"/>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="ffffff"/>
+              </w:rPr>
+              <w:t xml:space="preserve">目标</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:shd w:val="clear" w:fill="595959"/>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="ffffff"/>
+              </w:rPr>
+              <w:t xml:space="preserve">现实情况（80 用户/机器）</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:shd w:val="clear" w:fill="595959"/>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="ffffff"/>
+              </w:rPr>
+              <w:t xml:space="preserve">最坏情况（52 用户/机器）</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tblGrid>
+        <w:gridCol w:w="3368.6666666666665"/>
+        <w:gridCol w:w="3368.6666666666665"/>
+        <w:gridCol w:w="3368.6666666666665"/>
+      </w:tblGrid>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">300 用户</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+              <w:t xml:space="preserve">ceil(300/80) = 4 台机器</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">ceil(300/52) = 6 台机器</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">500 用户</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+              <w:t xml:space="preserve">ceil(500/80) = 7 台机器</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">ceil(500/52) = 10 台机器</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Heading3"/>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">1.9 模型对比总结</w:t>
+      </w:r>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblBorders>
+          <w:top w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:bottom w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:left w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:right w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideV w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideH w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+        </w:tblBorders>
+        <w:tblCellSpacing w:w="0" w:type="dxa"/>
+        <w:tblW w:type="dxa" w:w="10095"/>
+        <w:tblCellMar>
+          <w:top w:type="dxa" w:w="80"/>
+          <w:bottom w:type="dxa" w:w="80"/>
+          <w:left w:type="dxa" w:w="160"/>
+          <w:right w:type="dxa" w:w="160"/>
+        </w:tblCellMar>
+        <w:jc w:val="center"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="2526.5"/>
+        <w:gridCol w:w="2526.5"/>
+        <w:gridCol w:w="2526.5"/>
+        <w:gridCol w:w="2526.5"/>
+      </w:tblGrid>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:shd w:val="clear" w:fill="595959"/>
+            <w:tcW w:w="2520" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="ffffff"/>
+              </w:rPr>
+              <w:t xml:space="preserve">指标</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:shd w:val="clear" w:fill="595959"/>
+            <w:tcW w:w="2520" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="ffffff"/>
+              </w:rPr>
+              <w:t xml:space="preserve">DeepSeek-70B</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:shd w:val="clear" w:fill="595959"/>
+            <w:tcW w:w="2520" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="ffffff"/>
+                <w:b/>
+              </w:rPr>
+              <w:t xml:space="preserve">Qwen3-32B</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:shd w:val="clear" w:fill="595959"/>
+            <w:tcW w:w="2520" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="ffffff"/>
+              </w:rPr>
+              <w:t xml:space="preserve">变化</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tblGrid>
+        <w:gridCol w:w="2526.5"/>
+        <w:gridCol w:w="2526.5"/>
+        <w:gridCol w:w="2526.5"/>
+        <w:gridCol w:w="2526.5"/>
+      </w:tblGrid>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2520" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">模型权重（bf16）</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2520" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">140 GB</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2520" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+              <w:t xml:space="preserve">65.6 GB</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2520" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">−74 GB ✅</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2520" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">KV/token</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2520" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">320 KB</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2520" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+              <w:t xml:space="preserve">256 KB</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2520" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">−20% ✅</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2520" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">KV/用户 @ 32k（现实）</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2520" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">6.5 GB</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2520" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+              <w:t xml:space="preserve">5.2 GB</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2520" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">−20% ✅</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2520" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">可用 KV/机器</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2520" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">342 GB</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2520" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+              <w:t xml:space="preserve">418 GB</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2520" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">+76 GB ✅</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2520" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">用户/机器（现实）</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2520" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">~52</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2520" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+              <w:t xml:space="preserve">~80</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2520" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">+54% ✅</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2520" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">500 用户所需机器</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2520" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">10</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2520" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+              <w:t xml:space="preserve">7</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2520" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">−30% ✅</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:b/>
+        </w:rPr>
+        <w:t xml:space="preserve">建议：500 并发用户需 7–8 台机器，300 并发用户需 4–5 台机器。</w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Heading2"/>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">第二部分 — 峰值吞吐量容量规划：11,000 tokens/sec</w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">本节回答："</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">我需要多少台机器来维持 11,000 tokens/sec 的系统级峰值输出？</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">"</w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">峰值吞吐量容量规划是</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:b/>
+        </w:rPr>
+        <w:t xml:space="preserve">计算 + 显存带宽受限</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">，不仅仅是 KV 容量受限。必须同时评估两个约束条件。</w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Heading3"/>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">2.1 公式 8 — 每台机器的实际吞吐量</w:t>
+      </w:r>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblBorders>
+          <w:top w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:bottom w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:left w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:right w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideV w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideH w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+        </w:tblBorders>
+        <w:tblCellSpacing w:w="0" w:type="dxa"/>
+        <w:tblW w:type="dxa" w:w="10106"/>
+        <w:tblCellMar>
+          <w:top w:type="dxa" w:w="80"/>
+          <w:bottom w:type="dxa" w:w="80"/>
+          <w:left w:type="dxa" w:w="160"/>
+          <w:right w:type="dxa" w:w="160"/>
+        </w:tblCellMar>
+        <w:jc w:val="center"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="10106"/>
+      </w:tblGrid>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:shd w:val="clear" w:fill="f0f0f0"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="8" w:space="0" w:color="D1D5DB"/>
+              <w:left w:val="single" w:sz="8" w:space="0" w:color="D1D5DB"/>
+              <w:bottom w:val="single" w:sz="8" w:space="0" w:color="D1D5DB"/>
+              <w:right w:val="single" w:sz="8" w:space="0" w:color="D1D5DB"/>
+            </w:tcBorders>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="24292f"/>
+              </w:rPr>
+              <w:t xml:space="preserve">理论 TPS_per_machine = FLOPS / (2 × num_params)</w:t>
+            </w:r>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="24292f"/>
+              </w:rPr>
+              <w:t xml:space="preserve">                     = 2.2×10¹⁵ / (2 × 32.8×10⁹)</w:t>
+            </w:r>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="24292f"/>
+              </w:rPr>
+              <w:t xml:space="preserve">                     ≈ 33,500 tokens/sec</w:t>
+            </w:r>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="24292f"/>
+              </w:rPr>
+              <w:t xml:space="preserve"> </w:t>
+            </w:r>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="24292f"/>
+              </w:rPr>
+              <w:t xml:space="preserve">实际 TPS_per_machine = 理论 TPS × MFU</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+      </w:r>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblBorders>
+          <w:top w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:bottom w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:left w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:right w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideV w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideH w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+        </w:tblBorders>
+        <w:tblCellSpacing w:w="0" w:type="dxa"/>
+        <w:tblW w:type="dxa" w:w="10095"/>
+        <w:tblCellMar>
+          <w:top w:type="dxa" w:w="80"/>
+          <w:bottom w:type="dxa" w:w="80"/>
+          <w:left w:type="dxa" w:w="160"/>
+          <w:right w:type="dxa" w:w="160"/>
+        </w:tblCellMar>
+        <w:jc w:val="center"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="5053"/>
+        <w:gridCol w:w="5053"/>
+      </w:tblGrid>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:shd w:val="clear" w:fill="595959"/>
+            <w:tcW w:w="5040" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="ffffff"/>
+              </w:rPr>
+              <w:t xml:space="preserve">MFU 假设</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:shd w:val="clear" w:fill="595959"/>
+            <w:tcW w:w="5040" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="ffffff"/>
+              </w:rPr>
+              <w:t xml:space="preserve">实际 TPS/机器</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tblGrid>
+        <w:gridCol w:w="5053"/>
+        <w:gridCol w:w="5053"/>
+      </w:tblGrid>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="5040" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">35%（解码为主，显存带宽受限）</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="5040" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+              <w:t xml:space="preserve">~11,700 TPS</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="5040" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">45%（prefill+decode 混合，分块）</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="5040" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+              <w:t xml:space="preserve">~15,100 TPS</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="5040" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">55%（prefill 为主 batch）</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="5040" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+              <w:t xml:space="preserve">~18,400 TPS</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+      </w:r>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblBorders>
+          <w:top w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:bottom w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:left w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:right w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideV w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideH w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+        </w:tblBorders>
+        <w:tblCellSpacing w:w="0" w:type="dxa"/>
+        <w:tblW w:type="dxa" w:w="10106"/>
+        <w:tblCellMar>
+          <w:top w:type="dxa" w:w="80"/>
+          <w:bottom w:type="dxa" w:w="80"/>
+          <w:left w:type="dxa" w:w="160"/>
+          <w:right w:type="dxa" w:w="160"/>
+        </w:tblCellMar>
+        <w:jc w:val="center"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="10106"/>
+      </w:tblGrid>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:shd w:val="clear" w:fill="efefef"/>
+            <w:vAlign w:val="top"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="none" w:space="0" w:color="000000"/>
+              <w:left w:val="single" w:sz="24" w:space="0" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="none" w:space="0" w:color="000000"/>
+              <w:right w:val="single" w:sz="none" w:space="0" w:color="000000"/>
+            </w:tcBorders>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="334155"/>
+              </w:rPr>
+              <w:t xml:space="preserve">对于</w:t>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="334155"/>
+                <w:b/>
+              </w:rPr>
+              <w:t xml:space="preserve">持续的混合流量负载</w:t>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="334155"/>
+              </w:rPr>
+              <w:t xml:space="preserve">，使用 </w:t>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="334155"/>
+                <w:b/>
+              </w:rPr>
+              <w:t xml:space="preserve">35–45% MFU</w:t>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="334155"/>
+              </w:rPr>
+              <w:t xml:space="preserve"> 作为现实范围。</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Heading3"/>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">2.2 公式 9 — 目标吞吐量所需机器数</w:t>
+      </w:r>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblBorders>
+          <w:top w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:bottom w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:left w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:right w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideV w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideH w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+        </w:tblBorders>
+        <w:tblCellSpacing w:w="0" w:type="dxa"/>
+        <w:tblW w:type="dxa" w:w="10106"/>
+        <w:tblCellMar>
+          <w:top w:type="dxa" w:w="80"/>
+          <w:bottom w:type="dxa" w:w="80"/>
+          <w:left w:type="dxa" w:w="160"/>
+          <w:right w:type="dxa" w:w="160"/>
+        </w:tblCellMar>
+        <w:jc w:val="center"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="10106"/>
+      </w:tblGrid>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:shd w:val="clear" w:fill="f0f0f0"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="8" w:space="0" w:color="D1D5DB"/>
+              <w:left w:val="single" w:sz="8" w:space="0" w:color="D1D5DB"/>
+              <w:bottom w:val="single" w:sz="8" w:space="0" w:color="D1D5DB"/>
+              <w:right w:val="single" w:sz="8" w:space="0" w:color="D1D5DB"/>
+            </w:tcBorders>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="24292f"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Num_Machines_compute = ceil(Target_TPS / Practical_TPS_per_machine)</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:b/>
+        </w:rPr>
+        <w:t xml:space="preserve">示例 — 目标：11,000 tokens/sec</w:t>
+      </w:r>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblBorders>
+          <w:top w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:bottom w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:left w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:right w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideV w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideH w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+        </w:tblBorders>
+        <w:tblCellSpacing w:w="0" w:type="dxa"/>
+        <w:tblW w:type="dxa" w:w="10106"/>
+        <w:tblCellMar>
+          <w:top w:type="dxa" w:w="80"/>
+          <w:bottom w:type="dxa" w:w="80"/>
+          <w:left w:type="dxa" w:w="160"/>
+          <w:right w:type="dxa" w:w="160"/>
+        </w:tblCellMar>
+        <w:jc w:val="center"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="10106"/>
+      </w:tblGrid>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:shd w:val="clear" w:fill="f0f0f0"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="8" w:space="0" w:color="D1D5DB"/>
+              <w:left w:val="single" w:sz="8" w:space="0" w:color="D1D5DB"/>
+              <w:bottom w:val="single" w:sz="8" w:space="0" w:color="D1D5DB"/>
+              <w:right w:val="single" w:sz="8" w:space="0" w:color="D1D5DB"/>
+            </w:tcBorders>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="24292f"/>
+              </w:rPr>
+              <w:t xml:space="preserve">35% MFU：ceil(11,000 / 11,700) = ceil(0.94) = 1 台机器</w:t>
+            </w:r>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="24292f"/>
+              </w:rPr>
+              <w:t xml:space="preserve">45% MFU：ceil(11,000 / 15,100) = ceil(0.73) = 1 台机器</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+      </w:r>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblBorders>
+          <w:top w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:bottom w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:left w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:right w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideV w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideH w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+        </w:tblBorders>
+        <w:tblCellSpacing w:w="0" w:type="dxa"/>
+        <w:tblW w:type="dxa" w:w="10106"/>
+        <w:tblCellMar>
+          <w:top w:type="dxa" w:w="80"/>
+          <w:bottom w:type="dxa" w:w="80"/>
+          <w:left w:type="dxa" w:w="160"/>
+          <w:right w:type="dxa" w:w="160"/>
+        </w:tblCellMar>
+        <w:jc w:val="center"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="10106"/>
+      </w:tblGrid>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:shd w:val="clear" w:fill="efefef"/>
+            <w:vAlign w:val="top"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="none" w:space="0" w:color="000000"/>
+              <w:left w:val="single" w:sz="24" w:space="0" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="none" w:space="0" w:color="000000"/>
+              <w:right w:val="single" w:sz="none" w:space="0" w:color="000000"/>
+            </w:tcBorders>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="334155"/>
+              </w:rPr>
+              <w:t xml:space="preserve">从计算角度，</w:t>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="334155"/>
+                <w:b/>
+              </w:rPr>
+              <w:t xml:space="preserve">1 台机器</w:t>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="334155"/>
+              </w:rPr>
+              <w:t xml:space="preserve">使用 Qwen3-32B 即可维持 11,000 TPS。但还必须检查显存容量。</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Heading3"/>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">2.3 公式 10 — 吞吐量目标隐含的并发用户数</w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">要维持 11,000 TPS，需要知道有多少并发用户产生该负载：</w:t>
+      </w:r>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblBorders>
+          <w:top w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:bottom w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:left w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:right w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideV w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideH w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+        </w:tblBorders>
+        <w:tblCellSpacing w:w="0" w:type="dxa"/>
+        <w:tblW w:type="dxa" w:w="10106"/>
+        <w:tblCellMar>
+          <w:top w:type="dxa" w:w="80"/>
+          <w:bottom w:type="dxa" w:w="80"/>
+          <w:left w:type="dxa" w:w="160"/>
+          <w:right w:type="dxa" w:w="160"/>
+        </w:tblCellMar>
+        <w:jc w:val="center"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="10106"/>
+      </w:tblGrid>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:shd w:val="clear" w:fill="f0f0f0"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="8" w:space="0" w:color="D1D5DB"/>
+              <w:left w:val="single" w:sz="8" w:space="0" w:color="D1D5DB"/>
+              <w:bottom w:val="single" w:sz="8" w:space="0" w:color="D1D5DB"/>
+              <w:right w:val="single" w:sz="8" w:space="0" w:color="D1D5DB"/>
+            </w:tcBorders>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="24292f"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Implied_Concurrent_Users = Target_TPS / avg_tokens_per_sec_per_user</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+      </w:r>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblBorders>
+          <w:top w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:bottom w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:left w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:right w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideV w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideH w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+        </w:tblBorders>
+        <w:tblCellSpacing w:w="0" w:type="dxa"/>
+        <w:tblW w:type="dxa" w:w="10095"/>
+        <w:tblCellMar>
+          <w:top w:type="dxa" w:w="80"/>
+          <w:bottom w:type="dxa" w:w="80"/>
+          <w:left w:type="dxa" w:w="160"/>
+          <w:right w:type="dxa" w:w="160"/>
+        </w:tblCellMar>
+        <w:jc w:val="center"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="5053"/>
+        <w:gridCol w:w="5053"/>
+      </w:tblGrid>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:shd w:val="clear" w:fill="595959"/>
+            <w:tcW w:w="5040" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="ffffff"/>
+              </w:rPr>
+              <w:t xml:space="preserve">平均输出速率/用户</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:shd w:val="clear" w:fill="595959"/>
+            <w:tcW w:w="5040" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="ffffff"/>
+              </w:rPr>
+              <w:t xml:space="preserve">隐含并发用户数</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tblGrid>
+        <w:gridCol w:w="5053"/>
+        <w:gridCol w:w="5053"/>
+      </w:tblGrid>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="5040" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">10 tok/s（慢速生成）</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="5040" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">1,100 用户</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="5040" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">20 tok/s（标准）</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="5040" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">550 用户</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="5040" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">40 tok/s（快速/短输出）</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="5040" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">275 用户</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+      </w:r>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblBorders>
+          <w:top w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:bottom w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:left w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:right w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideV w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideH w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+        </w:tblBorders>
+        <w:tblCellSpacing w:w="0" w:type="dxa"/>
+        <w:tblW w:type="dxa" w:w="10106"/>
+        <w:tblCellMar>
+          <w:top w:type="dxa" w:w="80"/>
+          <w:bottom w:type="dxa" w:w="80"/>
+          <w:left w:type="dxa" w:w="160"/>
+          <w:right w:type="dxa" w:w="160"/>
+        </w:tblCellMar>
+        <w:jc w:val="center"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="10106"/>
+      </w:tblGrid>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:shd w:val="clear" w:fill="efefef"/>
+            <w:vAlign w:val="top"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="none" w:space="0" w:color="000000"/>
+              <w:left w:val="single" w:sz="24" w:space="0" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="none" w:space="0" w:color="000000"/>
+              <w:right w:val="single" w:sz="none" w:space="0" w:color="000000"/>
+            </w:tcBorders>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="334155"/>
+              </w:rPr>
+              <w:t xml:space="preserve">隐含的并发数决定了</w:t>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="334155"/>
+                <w:b/>
+              </w:rPr>
+              <w:t xml:space="preserve">显存还是计算</w:t>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="334155"/>
+              </w:rPr>
+              <w:t xml:space="preserve">成为真正的约束条件。</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Heading3"/>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">2.4 公式 11 — 组合约束检查</w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">计算吞吐量和显存容量必须同时满足：</w:t>
+      </w:r>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblBorders>
+          <w:top w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:bottom w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:left w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:right w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideV w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideH w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+        </w:tblBorders>
+        <w:tblCellSpacing w:w="0" w:type="dxa"/>
+        <w:tblW w:type="dxa" w:w="10106"/>
+        <w:tblCellMar>
+          <w:top w:type="dxa" w:w="80"/>
+          <w:bottom w:type="dxa" w:w="80"/>
+          <w:left w:type="dxa" w:w="160"/>
+          <w:right w:type="dxa" w:w="160"/>
+        </w:tblCellMar>
+        <w:jc w:val="center"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="10106"/>
+      </w:tblGrid>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:shd w:val="clear" w:fill="f0f0f0"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="8" w:space="0" w:color="D1D5DB"/>
+              <w:left w:val="single" w:sz="8" w:space="0" w:color="D1D5DB"/>
+              <w:bottom w:val="single" w:sz="8" w:space="0" w:color="D1D5DB"/>
+              <w:right w:val="single" w:sz="8" w:space="0" w:color="D1D5DB"/>
+            </w:tcBorders>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="24292f"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Machines_compute = ceil(Target_TPS / Practical_TPS_per_machine)</w:t>
+            </w:r>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="24292f"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Machines_memory  = ceil(Implied_Users / Max_Users_per_machine)</w:t>
+            </w:r>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="24292f"/>
+              </w:rPr>
+              <w:t xml:space="preserve"> </w:t>
+            </w:r>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="24292f"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Num_Machines = max(Machines_compute, Machines_memory)</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:b/>
+        </w:rPr>
+        <w:t xml:space="preserve">完整示例 — 11,000 TPS @ 20 tok/s/用户（标准）</w:t>
+      </w:r>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblBorders>
+          <w:top w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:bottom w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:left w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:right w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideV w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideH w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+        </w:tblBorders>
+        <w:tblCellSpacing w:w="0" w:type="dxa"/>
+        <w:tblW w:type="dxa" w:w="10106"/>
+        <w:tblCellMar>
+          <w:top w:type="dxa" w:w="80"/>
+          <w:bottom w:type="dxa" w:w="80"/>
+          <w:left w:type="dxa" w:w="160"/>
+          <w:right w:type="dxa" w:w="160"/>
+        </w:tblCellMar>
+        <w:jc w:val="center"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="10106"/>
+      </w:tblGrid>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:shd w:val="clear" w:fill="f0f0f0"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="8" w:space="0" w:color="D1D5DB"/>
+              <w:left w:val="single" w:sz="8" w:space="0" w:color="D1D5DB"/>
+              <w:bottom w:val="single" w:sz="8" w:space="0" w:color="D1D5DB"/>
+              <w:right w:val="single" w:sz="8" w:space="0" w:color="D1D5DB"/>
+            </w:tcBorders>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="24292f"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Implied_Users        = 11,000 / 20 = 550 并发用户</w:t>
+            </w:r>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="24292f"/>
+              </w:rPr>
+              <w:t xml:space="preserve"> </w:t>
+            </w:r>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="24292f"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Machines_compute     = ceil(11,000 / 11,700) = 1 台机器</w:t>
+            </w:r>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="24292f"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Machines_memory      = ceil(550 / 80)        = 7 台机器</w:t>
+            </w:r>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="24292f"/>
+              </w:rPr>
+              <w:t xml:space="preserve"> </w:t>
+            </w:r>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="24292f"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Num_Machines         = max(1, 7) = 7 台机器</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:b/>
+        </w:rPr>
+        <w:t xml:space="preserve">完整示例 — 11,000 TPS @ 40 tok/s/用户（快速/突发）</w:t>
+      </w:r>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblBorders>
+          <w:top w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:bottom w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:left w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:right w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideV w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideH w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+        </w:tblBorders>
+        <w:tblCellSpacing w:w="0" w:type="dxa"/>
+        <w:tblW w:type="dxa" w:w="10106"/>
+        <w:tblCellMar>
+          <w:top w:type="dxa" w:w="80"/>
+          <w:bottom w:type="dxa" w:w="80"/>
+          <w:left w:type="dxa" w:w="160"/>
+          <w:right w:type="dxa" w:w="160"/>
+        </w:tblCellMar>
+        <w:jc w:val="center"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="10106"/>
+      </w:tblGrid>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:shd w:val="clear" w:fill="f0f0f0"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="8" w:space="0" w:color="D1D5DB"/>
+              <w:left w:val="single" w:sz="8" w:space="0" w:color="D1D5DB"/>
+              <w:bottom w:val="single" w:sz="8" w:space="0" w:color="D1D5DB"/>
+              <w:right w:val="single" w:sz="8" w:space="0" w:color="D1D5DB"/>
+            </w:tcBorders>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="24292f"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Implied_Users        = 11,000 / 40 = 275 并发用户</w:t>
+            </w:r>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="24292f"/>
+              </w:rPr>
+              <w:t xml:space="preserve"> </w:t>
+            </w:r>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="24292f"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Machines_compute     = ceil(11,000 / 11,700) = 1 台机器</w:t>
+            </w:r>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="24292f"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Machines_memory      = ceil(275 / 80)        = 4 台机器</w:t>
+            </w:r>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="24292f"/>
+              </w:rPr>
+              <w:t xml:space="preserve"> </w:t>
+            </w:r>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="24292f"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Num_Machines         = max(1, 4) = 4 台机器</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Heading3"/>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">2.5 峰值吞吐量结果表</w:t>
+      </w:r>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblBorders>
+          <w:top w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:bottom w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:left w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:right w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideV w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideH w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+        </w:tblBorders>
+        <w:tblCellSpacing w:w="0" w:type="dxa"/>
+        <w:tblW w:type="dxa" w:w="10095"/>
+        <w:tblCellMar>
+          <w:top w:type="dxa" w:w="80"/>
+          <w:bottom w:type="dxa" w:w="80"/>
+          <w:left w:type="dxa" w:w="160"/>
+          <w:right w:type="dxa" w:w="160"/>
+        </w:tblCellMar>
+        <w:jc w:val="center"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="2021.2"/>
+        <w:gridCol w:w="2021.2"/>
+        <w:gridCol w:w="2021.2"/>
+        <w:gridCol w:w="2021.2"/>
+        <w:gridCol w:w="2021.2"/>
+      </w:tblGrid>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:shd w:val="clear" w:fill="595959"/>
+            <w:tcW w:w="2010" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="ffffff"/>
+              </w:rPr>
+              <w:t xml:space="preserve">平均输出速率</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:shd w:val="clear" w:fill="595959"/>
+            <w:tcW w:w="2010" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="ffffff"/>
+              </w:rPr>
+              <w:t xml:space="preserve">隐含用户数</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:shd w:val="clear" w:fill="595959"/>
+            <w:tcW w:w="2010" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="ffffff"/>
+              </w:rPr>
+              <w:t xml:space="preserve">计算机器数</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:shd w:val="clear" w:fill="595959"/>
+            <w:tcW w:w="2010" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="ffffff"/>
+              </w:rPr>
+              <w:t xml:space="preserve">显存机器数</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:shd w:val="clear" w:fill="595959"/>
+            <w:tcW w:w="2010" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="ffffff"/>
+                <w:b/>
+              </w:rPr>
+              <w:t xml:space="preserve">所需</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tblGrid>
+        <w:gridCol w:w="2021.2"/>
+        <w:gridCol w:w="2021.2"/>
+        <w:gridCol w:w="2021.2"/>
+        <w:gridCol w:w="2021.2"/>
+        <w:gridCol w:w="2021.2"/>
+      </w:tblGrid>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2010" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">10 tok/s</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2010" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">1,100</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2010" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">1</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2010" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">14</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2010" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+              <w:t xml:space="preserve">14 台机器</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2010" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">20 tok/s</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2010" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">550</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2010" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">1</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2010" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">7</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2010" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+              <w:t xml:space="preserve">7 台机器</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2010" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">40 tok/s</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2010" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">275</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2010" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">1</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2010" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">4</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2010" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+              <w:t xml:space="preserve">4 台机器</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+      </w:r>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblBorders>
+          <w:top w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:bottom w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:left w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:right w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideV w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideH w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+        </w:tblBorders>
+        <w:tblCellSpacing w:w="0" w:type="dxa"/>
+        <w:tblW w:type="dxa" w:w="10106"/>
+        <w:tblCellMar>
+          <w:top w:type="dxa" w:w="80"/>
+          <w:bottom w:type="dxa" w:w="80"/>
+          <w:left w:type="dxa" w:w="160"/>
+          <w:right w:type="dxa" w:w="160"/>
+        </w:tblCellMar>
+        <w:jc w:val="center"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="10106"/>
+      </w:tblGrid>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:shd w:val="clear" w:fill="efefef"/>
+            <w:vAlign w:val="top"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="none" w:space="0" w:color="000000"/>
+              <w:left w:val="single" w:sz="24" w:space="0" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="none" w:space="0" w:color="000000"/>
+              <w:right w:val="single" w:sz="none" w:space="0" w:color="000000"/>
+            </w:tcBorders>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="334155"/>
+                <w:b/>
+              </w:rPr>
+              <w:t xml:space="preserve">关键洞察：</w:t>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="334155"/>
+              </w:rPr>
+              <w:t xml:space="preserve"> 对于 Qwen3-32B 的 11,000 TPS，系统几乎总是</w:t>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="334155"/>
+                <w:b/>
+              </w:rPr>
+              <w:t xml:space="preserve">显存容量受限</w:t>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="334155"/>
+              </w:rPr>
+              <w:t xml:space="preserve">，而非计算受限。所需机器数随隐含并发数增长，而非原始 FLOP 需求。</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Heading3"/>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">2.6 添加峰值突发缓冲</w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">生产系统应包含</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:b/>
+        </w:rPr>
+        <w:t xml:space="preserve">20–30% 余量</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">缓冲，用于：</w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="1"/>
+        </w:numPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">流量峰值吸收</w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="1"/>
+        </w:numPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">滚动重启/维护窗口</w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="1"/>
+        </w:numPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">高负载下的 prefill 延迟尖峰</w:t>
+      </w:r>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblBorders>
+          <w:top w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:bottom w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:left w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:right w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideV w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideH w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+        </w:tblBorders>
+        <w:tblCellSpacing w:w="0" w:type="dxa"/>
+        <w:tblW w:type="dxa" w:w="10106"/>
+        <w:tblCellMar>
+          <w:top w:type="dxa" w:w="80"/>
+          <w:bottom w:type="dxa" w:w="80"/>
+          <w:left w:type="dxa" w:w="160"/>
+          <w:right w:type="dxa" w:w="160"/>
+        </w:tblCellMar>
+        <w:jc w:val="center"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="10106"/>
+      </w:tblGrid>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:shd w:val="clear" w:fill="f0f0f0"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="8" w:space="0" w:color="D1D5DB"/>
+              <w:left w:val="single" w:sz="8" w:space="0" w:color="D1D5DB"/>
+              <w:bottom w:val="single" w:sz="8" w:space="0" w:color="D1D5DB"/>
+              <w:right w:val="single" w:sz="8" w:space="0" w:color="D1D5DB"/>
+            </w:tcBorders>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="24292f"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Machines_with_buffer = ceil(Num_Machines × 1.25)</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+      </w:r>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblBorders>
+          <w:top w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:bottom w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:left w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:right w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideV w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideH w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+        </w:tblBorders>
+        <w:tblCellSpacing w:w="0" w:type="dxa"/>
+        <w:tblW w:type="dxa" w:w="10095"/>
+        <w:tblCellMar>
+          <w:top w:type="dxa" w:w="80"/>
+          <w:bottom w:type="dxa" w:w="80"/>
+          <w:left w:type="dxa" w:w="160"/>
+          <w:right w:type="dxa" w:w="160"/>
+        </w:tblCellMar>
+        <w:jc w:val="center"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="3368.6666666666665"/>
+        <w:gridCol w:w="3368.6666666666665"/>
+        <w:gridCol w:w="3368.6666666666665"/>
+      </w:tblGrid>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:shd w:val="clear" w:fill="595959"/>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="ffffff"/>
+              </w:rPr>
+              <w:t xml:space="preserve">场景</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:shd w:val="clear" w:fill="595959"/>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="ffffff"/>
+              </w:rPr>
+              <w:t xml:space="preserve">基础机器数</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:shd w:val="clear" w:fill="595959"/>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="ffffff"/>
+              </w:rPr>
+              <w:t xml:space="preserve">25% 缓冲后</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tblGrid>
+        <w:gridCol w:w="3368.6666666666665"/>
+        <w:gridCol w:w="3368.6666666666665"/>
+        <w:gridCol w:w="3368.6666666666665"/>
+      </w:tblGrid>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">11,000 TPS @ 20 tok/s</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">7</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+              <w:t xml:space="preserve">9 台机器</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">11,000 TPS @ 40 tok/s</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">4</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+              <w:t xml:space="preserve">5 台机器</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Heading2"/>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">第三部分 — 优化手段（两种场景）</w:t>
+      </w:r>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblBorders>
+          <w:top w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:bottom w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:left w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:right w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideV w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideH w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+        </w:tblBorders>
+        <w:tblCellSpacing w:w="0" w:type="dxa"/>
+        <w:tblW w:type="dxa" w:w="10095"/>
+        <w:tblCellMar>
+          <w:top w:type="dxa" w:w="80"/>
+          <w:bottom w:type="dxa" w:w="80"/>
+          <w:left w:type="dxa" w:w="160"/>
+          <w:right w:type="dxa" w:w="160"/>
+        </w:tblCellMar>
+        <w:jc w:val="center"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="3368.6666666666665"/>
+        <w:gridCol w:w="3368.6666666666665"/>
+        <w:gridCol w:w="3368.6666666666665"/>
+      </w:tblGrid>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:shd w:val="clear" w:fill="595959"/>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="ffffff"/>
+              </w:rPr>
+              <w:t xml:space="preserve">优化项</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:shd w:val="clear" w:fill="595959"/>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="ffffff"/>
+              </w:rPr>
+              <w:t xml:space="preserve">机制</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:shd w:val="clear" w:fill="595959"/>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="ffffff"/>
+              </w:rPr>
+              <w:t xml:space="preserve">收益</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tblGrid>
+        <w:gridCol w:w="3368.6666666666665"/>
+        <w:gridCol w:w="3368.6666666666665"/>
+        <w:gridCol w:w="3368.6666666666665"/>
+      </w:tblGrid>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+              <w:t xml:space="preserve">fp8 量化</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">模型：65.6 GB → 32.8 GB</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">+~32 GB KV 余量；每台机器多 ~10–15% 用户</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+              <w:t xml:space="preserve">Prefix Caching</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">共享 system prompt pages 复用</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">减少 chatbot 负载的有效 KV/用户</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+              <w:t xml:space="preserve">限制 </w:t>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:b/>
+                <w:i/>
+                <w:color w:val="24292f"/>
+                <w:shd w:val="clear" w:fill="efefef"/>
+              </w:rPr>
+              <w:t xml:space="preserve">max_model_len</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">例如 16,384 而非 32,768</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">减半最坏情况 KV/用户；翻倍显存受限容量</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+              <w:t xml:space="preserve">Chunked Prefill</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">prefill 与 decode batch 交错</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">MFU 从 ~35% 提升至 ~45–50%；提高 TPS</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+              <w:t xml:space="preserve">Continuous Batching</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">vLLM 默认；最大化 GPU 利用率</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">减少请求间空闲时间</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+              <w:t xml:space="preserve">张量并行</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">节点内跨 GPU 分片模型</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">支持更大的每台机器 batch size</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Heading3"/>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">优化场景（fp8 + prefix caching + 16k 上限）</w:t>
+      </w:r>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblBorders>
+          <w:top w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:bottom w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:left w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:right w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideV w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideH w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+        </w:tblBorders>
+        <w:tblCellSpacing w:w="0" w:type="dxa"/>
+        <w:tblW w:type="dxa" w:w="10106"/>
+        <w:tblCellMar>
+          <w:top w:type="dxa" w:w="80"/>
+          <w:bottom w:type="dxa" w:w="80"/>
+          <w:left w:type="dxa" w:w="160"/>
+          <w:right w:type="dxa" w:w="160"/>
+        </w:tblCellMar>
+        <w:jc w:val="center"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="10106"/>
+      </w:tblGrid>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:shd w:val="clear" w:fill="f0f0f0"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="8" w:space="0" w:color="D1D5DB"/>
+              <w:left w:val="single" w:sz="8" w:space="0" w:color="D1D5DB"/>
+              <w:bottom w:val="single" w:sz="8" w:space="0" w:color="D1D5DB"/>
+              <w:right w:val="single" w:sz="8" w:space="0" w:color="D1D5DB"/>
+            </w:tcBorders>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="24292f"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Model_Memory     = 32.8 GB（fp8）</w:t>
+            </w:r>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="24292f"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Available_KV     = 512 − 32.8 − 28 = 451 GB</w:t>
+            </w:r>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="24292f"/>
+              </w:rPr>
+              <w:t xml:space="preserve">KV_per_user      ≈ 2.6 GB（fp8 KV, 16k 上下文，65% 填充）</w:t>
+            </w:r>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="24292f"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Max_Users/machine = 451 / 2.6 ≈ 173 用户</w:t>
+            </w:r>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="24292f"/>
+              </w:rPr>
+              <w:t xml:space="preserve"> </w:t>
+            </w:r>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="24292f"/>
+              </w:rPr>
+              <w:t xml:space="preserve">500 用户：ceil(500 / 173) = 3 台机器</w:t>
+            </w:r>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="24292f"/>
+              </w:rPr>
+              <w:t xml:space="preserve">11,000 TPS @ 20 tok/s（550 用户）：ceil(550 / 173) = 4 台机器</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Heading2"/>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">第四部分 — 完整总结</w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Heading3"/>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">机器数量参考表（Qwen3-32B, 512 GB, 2.2 PFLOPS, bf16）</w:t>
+      </w:r>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblBorders>
+          <w:top w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:bottom w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:left w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:right w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideV w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideH w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+        </w:tblBorders>
+        <w:tblCellSpacing w:w="0" w:type="dxa"/>
+        <w:tblW w:type="dxa" w:w="10095"/>
+        <w:tblCellMar>
+          <w:top w:type="dxa" w:w="80"/>
+          <w:bottom w:type="dxa" w:w="80"/>
+          <w:left w:type="dxa" w:w="160"/>
+          <w:right w:type="dxa" w:w="160"/>
+        </w:tblCellMar>
+        <w:jc w:val="center"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="2526.5"/>
+        <w:gridCol w:w="2526.5"/>
+        <w:gridCol w:w="2526.5"/>
+        <w:gridCol w:w="2526.5"/>
+      </w:tblGrid>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:shd w:val="clear" w:fill="595959"/>
+            <w:tcW w:w="2520" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="ffffff"/>
+              </w:rPr>
+              <w:t xml:space="preserve">用例</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:shd w:val="clear" w:fill="595959"/>
+            <w:tcW w:w="2520" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="ffffff"/>
+              </w:rPr>
+              <w:t xml:space="preserve">场景</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:shd w:val="clear" w:fill="595959"/>
+            <w:tcW w:w="2520" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="ffffff"/>
+              </w:rPr>
+              <w:t xml:space="preserve">所需机器数</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:shd w:val="clear" w:fill="595959"/>
+            <w:tcW w:w="2520" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="ffffff"/>
+              </w:rPr>
+              <w:t xml:space="preserve">25% 缓冲后</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tblGrid>
+        <w:gridCol w:w="2526.5"/>
+        <w:gridCol w:w="2526.5"/>
+        <w:gridCol w:w="2526.5"/>
+        <w:gridCol w:w="2526.5"/>
+      </w:tblGrid>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2520" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+              <w:t xml:space="preserve">并发用户</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2520" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">300 用户，现实</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2520" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">4</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2520" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">5</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2520" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+              <w:t xml:space="preserve">并发用户</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2520" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">300 用户，最坏</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2520" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">6</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2520" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">8</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2520" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+              <w:t xml:space="preserve">并发用户</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2520" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">500 用户，现实</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2520" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">7</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2520" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">9</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2520" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+              <w:t xml:space="preserve">并发用户</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2520" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">500 用户，最坏</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2520" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">10</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2520" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">13</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2520" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+              <w:t xml:space="preserve">峰值吞吐量</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2520" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">11,000 TPS @ 20 tok/s</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2520" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">7</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2520" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">9</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2520" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+              <w:t xml:space="preserve">峰值吞吐量</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2520" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">11,000 TPS @ 40 tok/s</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2520" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">4</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2520" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">5</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2520" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+              <w:t xml:space="preserve">优化</w:t>
+            </w:r>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">（fp8 + 16k 上限）</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2520" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">500 用户</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2520" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">3</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2520" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">4</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Heading3"/>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">关键变量参考</w:t>
+      </w:r>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblBorders>
+          <w:top w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:bottom w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:left w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:right w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideV w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideH w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+        </w:tblBorders>
+        <w:tblCellSpacing w:w="0" w:type="dxa"/>
+        <w:tblW w:type="dxa" w:w="10095"/>
+        <w:tblCellMar>
+          <w:top w:type="dxa" w:w="80"/>
+          <w:bottom w:type="dxa" w:w="80"/>
+          <w:left w:type="dxa" w:w="160"/>
+          <w:right w:type="dxa" w:w="160"/>
+        </w:tblCellMar>
+        <w:jc w:val="center"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="3368.6666666666665"/>
+        <w:gridCol w:w="3368.6666666666665"/>
+        <w:gridCol w:w="3368.6666666666665"/>
+      </w:tblGrid>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:shd w:val="clear" w:fill="595959"/>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="ffffff"/>
+              </w:rPr>
+              <w:t xml:space="preserve">符号</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:shd w:val="clear" w:fill="595959"/>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="ffffff"/>
+              </w:rPr>
+              <w:t xml:space="preserve">含义</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:shd w:val="clear" w:fill="595959"/>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="ffffff"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Qwen3-32B 值</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tblGrid>
+        <w:gridCol w:w="3368.6666666666665"/>
+        <w:gridCol w:w="3368.6666666666665"/>
+        <w:gridCol w:w="3368.6666666666665"/>
+      </w:tblGrid>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:i/>
+                <w:color w:val="24292f"/>
+                <w:shd w:val="clear" w:fill="efefef"/>
+              </w:rPr>
+              <w:t xml:space="preserve">P</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">总参数量</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">32.8B</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:i/>
+                <w:color w:val="24292f"/>
+                <w:shd w:val="clear" w:fill="efefef"/>
+              </w:rPr>
+              <w:t xml:space="preserve">L</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">层数</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">64</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:i/>
+                <w:color w:val="24292f"/>
+                <w:shd w:val="clear" w:fill="efefef"/>
+              </w:rPr>
+              <w:t xml:space="preserve">H_kv</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">KV 头数（GQA）</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">8</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:i/>
+                <w:color w:val="24292f"/>
+                <w:shd w:val="clear" w:fill="efefef"/>
+              </w:rPr>
+              <w:t xml:space="preserve">D</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">头维度</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">128</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:i/>
+                <w:color w:val="24292f"/>
+                <w:shd w:val="clear" w:fill="efefef"/>
+              </w:rPr>
+              <w:t xml:space="preserve">B</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">每数据类型字节数（bf16）</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">2</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:i/>
+                <w:color w:val="24292f"/>
+                <w:shd w:val="clear" w:fill="efefef"/>
+              </w:rPr>
+              <w:t xml:space="preserve">C</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">上下文长度</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">32,768</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:i/>
+                <w:color w:val="24292f"/>
+                <w:shd w:val="clear" w:fill="efefef"/>
+              </w:rPr>
+              <w:t xml:space="preserve">FLOPS</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">机器计算能力</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">2.2×10¹⁵</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:i/>
+                <w:color w:val="24292f"/>
+                <w:shd w:val="clear" w:fill="efefef"/>
+              </w:rPr>
+              <w:t xml:space="preserve">MFU</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">模型 FLOP 利用率</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">0.35（解码）</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:i/>
+                <w:color w:val="24292f"/>
+                <w:shd w:val="clear" w:fill="efefef"/>
+              </w:rPr>
+              <w:t xml:space="preserve">OH</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">系统开销</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">~28 GB</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:i/>
+                <w:color w:val="24292f"/>
+                <w:shd w:val="clear" w:fill="efefef"/>
+              </w:rPr>
+              <w:t xml:space="preserve">GPU_MEM</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">总 GPU 显存</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3360" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">512 GB</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">报告基于 Hugging Face 确认的 Qwen3-32B 架构规格（Qwen/Qwen3-32B）。所有估算假设使用带 PagedAttention 的 vLLM 和同质 GPU 节点。</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">报告中没有考虑多卡并行带宽影响。但是可以通过横向扩展来弥补</w:t>
+      </w:r>
+    </w:p>
+  </w:body>
+</w:document>

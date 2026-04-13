@@ -14,6 +14,7 @@ The following pieces now exist in code rather than only in design:
 
 - `@markdocx/core` exposes shared style, layout, markdown, HTML, DOCX, and runtime-contract utilities.
 - `@markdocx/runtime-browser` now exists as a real workspace package with a native DOM adapter, image-map helper, browser Mermaid renderer, and browser conversion composition entry point.
+- `@markdocx/runtime-node` now exists as an initial workspace package with an explicit Node DOM adapter, filesystem image handling, and a Node conversion composition entry point.
 - Style options are normalized and validated centrally rather than being treated as host-local loose objects.
 - The extension now routes live browser-host conversion through `@markdocx/runtime-browser`, while compatibility shims remain for the still-thin host surface.
 - Golden fixture parity is driven by `test-markdown/__golden__/manifest.json` and the parity scripts rather than by ad hoc fixture comparison.
@@ -26,7 +27,7 @@ The following parts of the design remain planned rather than fully implemented:
 
 - The final `apps/` host split described in this document is not yet the literal repository layout.
 - A distinct VSCode extension host and agent-skill host are still design targets.
-- A finalized standalone Node runtime package family is still an architectural direction, not a completed extraction.
+- The Node runtime family has started, but the dedicated Mermaid helper package and thin CLI replacement are still incomplete.
 
 ### 0.3 Practical Reading Rule
 
@@ -48,6 +49,7 @@ markdocx currently has two conversion surfaces with different implementation mat
 
 In addition, review-driven extraction work has now created a real shared package surface in `packages/core/`, and the tests already exercise that surface directly.
 Browser-runtime extraction work has also now created a real `packages/runtime-browser/` workspace that the Chrome extension uses for browser-only conversion concerns.
+Node-runtime extraction work has now started with a real `packages/runtime-node/` workspace for explicit Node-side composition.
 
 As of Chrome extension Phase 7 completion, the Chrome extension is the most complete implementation and already supports:
 
@@ -319,6 +321,7 @@ Current repository reality is closer to this transitional state:
 
 - `packages/core/` exists and is already consumed directly by tests.
 - `packages/runtime-browser/` exists and now owns the browser-only DOM, image-map, Mermaid, and browser conversion composition helpers.
+- `packages/runtime-node/` exists and now owns the initial explicit Node DOM adapter, filesystem image handling, and Node composition entry.
 - `markdocx-extension/` still exists as the active browser host implementation.
 - `md-to-docx.mjs` still exists as the legacy CLI surface.
 - `test-markdown/__golden__/manifest.json` is the active parity corpus index.
@@ -501,6 +504,19 @@ Current implementation note:
 - `parseHtml` via a lightweight DOM adapter such as `linkedom`
 - native Node `html-to-docx` path
 - the same shared style and layout schema used everywhere else
+
+Current implementation note:
+
+- `@markdocx/runtime-node` now exists and composes core through an explicit Node runtime package rather than core fallbacks.
+- The first landed DOM adapter is `jsdom`-backed, which keeps the boundary explicit while Epic 4 is in progress.
+- The current runtime-node conversion entry supports non-Mermaid documents and fails fast on Mermaid until an explicit Node Mermaid adapter is provided.
+- The thin CLI replacement and dedicated `@markdocx/runtime-node-mermaid` package remain pending.
+
+Known drift to resolve before Node-side fixture parity lands:
+
+- Investigation during the first parity attempt found a normalized `word/document.xml` drift around blockquote table-cell border emission on the Node path.
+- The most likely root cause is upstream HTML serialization or DOM-adapter construction drift before `html-to-docx`, not nondeterminism inside `html-to-docx` itself.
+- Reopening Node-side fixture parity should start by extending the cross-adapter HTML normalization coverage with blockquote-bearing inputs, then comparing the live extension output against the historical goldens before deciding whether the fix belongs in core normalization, runtime-node adapter construction, or golden regeneration.
 
 For Mermaid, Node runtime should use this rule:
 
@@ -951,6 +967,14 @@ Goal:
 
 - Replace the old CLI monolith with a shared Node runtime.
 
+Implementation note after Epic 4 start:
+
+- `packages/runtime-node/` now exists and is part of the workspace.
+- The first explicit Node runtime slice includes a `jsdom`-backed DOM adapter, filesystem image loading, and a shared-core composition entry for Node hosts.
+- Mermaid is currently fail-fast unless an explicit Node Mermaid renderer is provided, which preserves the no-fallback boundary rule.
+- The dedicated Node Mermaid helper package and the CLI migration are still pending work.
+- A first attempt at Node-side non-Mermaid fixture parity exposed a real blockquote-border XML drift, so fixture parity for the Node family remains intentionally deferred until that divergence is resolved.
+
 Work:
 
 1. Add filesystem image resolver.
@@ -1192,10 +1216,10 @@ This section turns the design into a next-session work breakdown.
 
 ### Epic 4 - Node Runtime Family
 
-- [ ] Create `packages/runtime-node/package.json`.
-- [ ] Add filesystem image resolver.
-- [ ] Add lightweight DOM adapter.
-- [ ] Add Node runtime composition entry.
+- [x] Create `packages/runtime-node/package.json`.
+- [x] Add filesystem image resolver.
+- [x] Add lightweight DOM adapter.
+- [x] Add Node runtime composition entry.
 - [ ] Create `packages/runtime-node-mermaid/` for Puppeteer-based Mermaid rendering only.
 - [ ] Replace CLI monolith with a thin wrapper.
 - [ ] Add CLI style args and env parsing.

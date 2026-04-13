@@ -10,6 +10,7 @@
     "convert": "node md-to-docx.mjs",
     "build:core": "npm run build -w @markdocx/core",
     "build:runtime-browser": "npm run build -w @markdocx/runtime-browser",
+    "build:runtime-node": "npm run build -w @markdocx/runtime-node",
     "build:chrome-extension": "npm run build -w markdocx-extension",
     "build:extension": "npm run build:chrome-extension",
     "generate:goldens": "npm run build:chrome-extension && node scripts/generate-extension-goldens.mjs",
