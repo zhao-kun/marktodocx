@@ -1,3 +1,5 @@
+import { getDomAdapter } from '../contracts/runtime.js';
+
 function resolvePath(baseDir, relativePath) {
   const parts = baseDir ? baseDir.split('/') : [];
   for (const segment of relativePath.split('/')) {
@@ -11,13 +13,13 @@ function resolvePath(baseDir, relativePath) {
   return parts.join('/');
 }
 
-export function inlineLocalImages(html, imageMap, mdRelativeDir) {
+export function inlineLocalImages(html, imageMap, mdRelativeDir, runtime = {}) {
   if (!imageMap || Object.keys(imageMap).length === 0) {
     return html;
   }
 
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(`<!DOCTYPE html><html><body>${html}</body></html>`, 'text/html');
+  const dom = getDomAdapter(runtime);
+  const doc = dom.parseHtml(`<!DOCTYPE html><html><body>${html}</body></html>`);
   const images = [...doc.querySelectorAll('img')];
 
   for (const image of images) {

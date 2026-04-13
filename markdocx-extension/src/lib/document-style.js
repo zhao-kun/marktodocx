@@ -1,4 +1,5 @@
 export {
+  assertValidStyleOptions,
   BODY_FONT_FAMILY_OPTIONS,
   CODE_FONT_FAMILY_OPTIONS,
   DEFAULT_STYLE_OPTIONS,
@@ -8,5 +9,6 @@ export {
   STYLE_SYNTAX_THEME_OPTIONS,
   getPresetResolvedStyle,
   getPresetStyleOptions,
+  normalizeStyleOptions,
   resolveDocumentStyle,
 } from '@markdocx/core';

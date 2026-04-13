@@ -8,6 +8,7 @@ import {
   summarizeFixtureSourceSha,
   summarizeFixtureSourceTreeState,
   verifyPinnedMermaidVersion,
+  verifySharedDependencyVersions,
 } from '../scripts/lib/extension-parity.mjs';
 
 test('normalizeStyleOptions canonicalizes missing overrides and nested key order', () => {
@@ -85,4 +86,12 @@ test('verifyPinnedMermaidVersion confirms root and extension package pins match'
 
   assert.equal(versions.repoVersion, versions.extensionVersion);
   assert.equal(typeof versions.repoVersion, 'string');
+});
+
+test('verifySharedDependencyVersions confirms shared package pins do not drift across manifests', async () => {
+  const versions = await verifySharedDependencyVersions();
+
+  assert.equal(versions['html-to-docx'].root, versions['html-to-docx'].core);
+  assert.equal(versions['markdown-it'].root, versions['markdown-it'].core);
+  assert.equal(versions.mermaid.root, versions.mermaid.extension);
 });

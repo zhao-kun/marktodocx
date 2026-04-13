@@ -764,6 +764,11 @@ Work:
 4. Introduce runtime contracts for image resolution, DOM parsing, and Mermaid rendering.
 5. Add the shared JSON schema for `styleOptions`.
 
+Implementation note after Epic 2:
+
+- The shared core now consumes injected DOM adapters for HTML normalization and image inlining, while still providing browser defaults for the Chrome extension.
+- DOCX generation in the shared core returns bytes; browser-hosted wrappers remain responsible for host-specific base64/message transport.
+
 Concrete package and file work:
 
 - Create `packages/core/package.json`.

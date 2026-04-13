@@ -1,3 +1,4 @@
+import { getDomAdapter, getDomNodeTypes } from '../contracts/runtime.js';
 import { resolveDocumentLayout } from '../style/document-layout.js';
 import { resolveDocumentStyle } from '../style/document-style.js';
 
@@ -14,12 +15,12 @@ function getTableColumnCount(table) {
   );
 }
 
-function preserveBlockquoteLineBreaks(blockquote, doc) {
+function preserveBlockquoteLineBreaks(blockquote, doc, nodeFilterCtor) {
   const paragraphs = [...blockquote.querySelectorAll('p')];
 
   for (const paragraph of paragraphs) {
     const textNodes = [];
-    const walker = doc.createTreeWalker(paragraph, NodeFilter.SHOW_TEXT);
+    const walker = doc.createTreeWalker(paragraph, nodeFilterCtor.SHOW_TEXT);
     let currentNode = walker.nextNode();
 
     while (currentNode) {
@@ -85,7 +86,7 @@ function splitBlockquoteParagraphsOnBreaks(blockquote, doc) {
   }
 }
 
-function transformBlockquoteToTable(blockquote, doc, resolvedStyle) {
+function transformBlockquoteToTable(blockquote, doc, resolvedStyle, nodeCtor) {
   const table = doc.createElement('table');
   table.className = 'blockquote-table';
   table.setAttribute('role', 'presentation');
@@ -106,7 +107,7 @@ function transformBlockquoteToTable(blockquote, doc, resolvedStyle) {
   cell.style.verticalAlign = 'top';
 
   const childNodes = [...blockquote.childNodes].filter((node) => {
-    return !(node.nodeType === Node.TEXT_NODE && !node.nodeValue.trim());
+    return !(node.nodeType === nodeCtor.TEXT_NODE && !node.nodeValue.trim());
   });
 
   if (childNodes.length === 0) {
@@ -116,7 +117,7 @@ function transformBlockquoteToTable(blockquote, doc, resolvedStyle) {
     cell.appendChild(paragraph);
   } else {
     for (const childNode of childNodes) {
-      if (childNode.nodeType === Node.ELEMENT_NODE && childNode.tagName === 'P') {
+      if (childNode.nodeType === nodeCtor.ELEMENT_NODE && childNode.tagName === 'P') {
         const paragraph = doc.createElement('p');
         paragraph.style.margin = '0';
         const paragraphChildren = [...childNode.childNodes];
@@ -146,10 +147,12 @@ function transformBlockquoteToTable(blockquote, doc, resolvedStyle) {
 export function normalizeTables(
   html,
   resolvedStyle = resolveDocumentStyle(),
-  layoutMetrics = resolveDocumentLayout(resolvedStyle.page.marginPreset)
+  layoutMetrics = resolveDocumentLayout(resolvedStyle.page.marginPreset),
+  runtime = {}
 ) {
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(`<!DOCTYPE html><html><body>${html}</body></html>`, 'text/html');
+  const dom = getDomAdapter(runtime);
+  const doc = dom.parseHtml(`<!DOCTYPE html><html><body>${html}</body></html>`);
+  const { Node, NodeFilter } = getDomNodeTypes(runtime, doc);
 
   const tables = [...doc.querySelectorAll('table')]
     .filter((table) => !table.classList.contains('code-block-table'));
@@ -187,9 +190,9 @@ export function normalizeTables(
 
   const blockquotes = [...doc.querySelectorAll('blockquote')];
   for (const blockquote of blockquotes) {
-    preserveBlockquoteLineBreaks(blockquote, doc);
+    preserveBlockquoteLineBreaks(blockquote, doc, NodeFilter);
     splitBlockquoteParagraphsOnBreaks(blockquote, doc);
-    transformBlockquoteToTable(blockquote, doc, resolvedStyle);
+    transformBlockquoteToTable(blockquote, doc, resolvedStyle, Node);
   }
 
   return doc.body.innerHTML;

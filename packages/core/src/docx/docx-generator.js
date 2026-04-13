@@ -3,6 +3,7 @@ import htmlToDocx from 'html-to-docx';
 
 import {
   DOCX_PAGE_SIZE,
+  MERMAID_DOCX_DESCRIPTION_PREFIX,
   MERMAID_RENDER_SCALE,
 } from '../constants.js';
 import { resolveDocumentStyle } from '../style/document-style.js';
@@ -133,7 +134,7 @@ async function patchMermaidImageExtents(docxData, layoutMetrics) {
   const drawingBlocks = [...documentXml.matchAll(/<w:drawing>[\s\S]*?<\/w:drawing>/g)].map((match) => match[0]);
 
   for (const drawingBlock of drawingBlocks) {
-    if (!drawingBlock.includes('descr="Mermaid diagram ')) {
+    if (!drawingBlock.includes(`descr="${MERMAID_DOCX_DESCRIPTION_PREFIX}`)) {
       continue;
     }
 
@@ -188,9 +189,5 @@ export async function generateDocx(
     throw new Error(`html-to-docx returned empty output (type: ${docxBuffer?.constructor?.name})`);
   }
 
-  let binary = '';
-  for (let index = 0; index < uint8.length; index += 1) {
-    binary += String.fromCharCode(uint8[index]);
-  }
-  return btoa(binary);
+  return uint8;
 }

@@ -2,8 +2,16 @@
 CLAUDE.md
 node_modules/
 *.docx
-test-markdown/
+!test-markdown/__golden__/**/*.docx
+!test-markdown/__golden__/**/*.png
+!test-markdown/__golden__/manifest.json
+!test-markdown/**/*.md
+!test-markdown/images/**
 markdocx-extension/node_modules/
 dist/
 comparison/
+current-output.docx
+llm_capacity.docx
+temp_*.docx
+temp_*.mjs
 

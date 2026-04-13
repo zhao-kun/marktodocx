@@ -5,6 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 
 import JSZip from 'jszip';
+import { MERMAID_DOCX_DESCRIPTION_PREFIX } from '@markdocx/core';
 
 import {
   buildRelationshipMap,
@@ -177,12 +178,21 @@ test('loadDocxEntriesFromBuffer ignores Mermaid raster PNG byte drift while pres
 });
 
 test('extractMermaidMediaEntries finds Mermaid media targets from current DOCX drawing shape', () => {
-  const documentXml = '<w:document><w:drawing><wp:inline><a:graphic><a:graphicData><pic:pic><pic:nvPicPr><pic:cNvPr id="1" name="img" descr="Mermaid diagram 1"/></pic:nvPicPr><pic:blipFill><a:blip r:embed="rId7"/></pic:blipFill></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing><w:drawing><wp:inline><a:graphic><a:graphicData><pic:pic><pic:nvPicPr><pic:cNvPr id="2" name="img" descr="Regular image"/></pic:nvPicPr><pic:blipFill><a:blip r:embed="rId8"/></pic:blipFill></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:document>';
+  const documentXml = `<w:document><w:drawing><wp:inline><a:graphic><a:graphicData><pic:pic><pic:nvPicPr><pic:cNvPr id="1" name="img" descr="${MERMAID_DOCX_DESCRIPTION_PREFIX}1"/></pic:nvPicPr><pic:blipFill><a:blip r:embed="rId7"/></pic:blipFill></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing><w:drawing><wp:inline><a:graphic><a:graphicData><pic:pic><pic:nvPicPr><pic:cNvPr id="2" name="img" descr="Regular image"/></pic:nvPicPr><pic:blipFill><a:blip r:embed="rId8"/></pic:blipFill></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:document>`;
   const relationshipXml = '<Relationships><Relationship Id="rId7" Type="image" Target="media/mermaid-a.png"/><Relationship Id="rId8" Type="image" Target="media/regular.png"/></Relationships>';
 
   const result = extractMermaidMediaEntries(documentXml, relationshipXml);
 
   assert.deepEqual([...result.entries()], [['word/media/mermaid-a.png', { index: 1 }]]);
+});
+
+test('extractMermaidMediaEntries ignores non-matching description prefixes', () => {
+  const documentXml = '<w:document><w:drawing><wp:inline><a:graphic><a:graphicData><pic:pic><pic:nvPicPr><pic:cNvPr id="1" name="img" descr="Diagram 1"/></pic:nvPicPr><pic:blipFill><a:blip r:embed="rId7"/></pic:blipFill></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:document>';
+  const relationshipXml = '<Relationships><Relationship Id="rId7" Type="image" Target="media/mermaid-a.png"/></Relationships>';
+
+  const result = extractMermaidMediaEntries(documentXml, relationshipXml);
+
+  assert.deepEqual([...result.entries()], []);
 });
 
 test('buildRelationshipMap keeps stable occurrence ordering for repeated canonical targets', () => {

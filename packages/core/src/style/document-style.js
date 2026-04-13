@@ -149,12 +149,65 @@ export const DEFAULT_STYLE_OPTIONS = Object.freeze({
   overrides: {},
 });
 
+const STYLE_OVERRIDE_FIELDS = {
+  body: {
+    fontFamily: { type: 'choice', allowed: ALL_FONT_OPTIONS },
+    fontSizePt: { type: 'number', min: 9, max: 14 },
+    lineHeight: { type: 'number', min: 1.2, max: 1.8 },
+    color: { type: 'hex' },
+  },
+  headings: {
+    fontFamily: { type: 'choice', allowed: ALL_FONT_OPTIONS },
+    color: { type: 'hex' },
+  },
+  tables: {
+    borderColor: { type: 'hex' },
+    headerBackgroundColor: { type: 'hex' },
+    headerTextColor: { type: 'hex' },
+  },
+  code: {
+    fontFamily: { type: 'choice', allowed: CODE_FONT_OPTIONS },
+    fontSizePt: { type: 'number', min: 8, max: 13 },
+    syntaxTheme: { type: 'choice', allowed: SYNTAX_THEME_OPTIONS },
+    inlineBackgroundColor: { type: 'hex' },
+    inlineItalic: { type: 'boolean' },
+    blockBackgroundColor: { type: 'hex' },
+    blockBorderColor: { type: 'hex' },
+    languageBadgeColor: { type: 'hex' },
+  },
+  blockquote: {
+    backgroundColor: { type: 'hex' },
+    textColor: { type: 'hex' },
+    borderColor: { type: 'hex' },
+    italic: { type: 'boolean' },
+  },
+  page: {
+    marginPreset: { type: 'choice', allowed: ['default', 'compact', 'wide'] },
+  },
+};
+
 function clone(value) {
   return JSON.parse(JSON.stringify(value));
 }
 
 function isPlainObject(value) {
   return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+}
+
+function sortKeysDeep(value) {
+  if (Array.isArray(value)) {
+    return value.map((item) => sortKeysDeep(item));
+  }
+
+  if (!isPlainObject(value)) {
+    return value;
+  }
+
+  return Object.fromEntries(
+    Object.keys(value)
+      .sort((left, right) => left.localeCompare(right))
+      .map((key) => [key, sortKeysDeep(value[key])])
+  );
 }
 
 function mergeDeep(base, override) {
@@ -201,6 +254,96 @@ function normalizeBoolean(value, fallback) {
 
 function normalizeChoice(value, allowed, fallback) {
   return typeof value === 'string' && allowed.includes(value) ? value : fallback;
+}
+
+function assertValidOverrideValue(sectionKey, fieldKey, value, descriptor) {
+  if (descriptor.type === 'choice') {
+    if (typeof value !== 'string' || !descriptor.allowed.includes(value)) {
+      throw new TypeError(`styleOptions.overrides.${sectionKey}.${fieldKey} must be one of: ${descriptor.allowed.join(', ')}`);
+    }
+    return;
+  }
+
+  if (descriptor.type === 'number') {
+    if (typeof value !== 'number' || !Number.isFinite(value) || value < descriptor.min || value > descriptor.max) {
+      throw new TypeError(`styleOptions.overrides.${sectionKey}.${fieldKey} must be a finite number between ${descriptor.min} and ${descriptor.max}`);
+    }
+    return;
+  }
+
+  if (descriptor.type === 'boolean') {
+    if (typeof value !== 'boolean') {
+      throw new TypeError(`styleOptions.overrides.${sectionKey}.${fieldKey} must be a boolean`);
+    }
+    return;
+  }
+
+  if (descriptor.type === 'hex') {
+    if (typeof value !== 'string' || !/^#[0-9a-fA-F]{6}$/.test(value.trim())) {
+      throw new TypeError(`styleOptions.overrides.${sectionKey}.${fieldKey} must be a 6-digit hex color`);
+    }
+  }
+}
+
+export function assertValidStyleOptions(styleOptions = DEFAULT_STYLE_OPTIONS) {
+  if (!isPlainObject(styleOptions)) {
+    throw new TypeError('styleOptions must be an object');
+  }
+  
+  for (const topLevelKey of Object.keys(styleOptions)) {
+    if (!['preset', 'overrides'].includes(topLevelKey)) {
+      throw new TypeError(`styleOptions.${topLevelKey} is not a supported field`);
+    }
+  }
+
+  if (styleOptions.preset !== undefined && !DOCUMENT_STYLE_PRESET_ORDER.includes(styleOptions.preset)) {
+    throw new TypeError(`styleOptions.preset must be one of: ${DOCUMENT_STYLE_PRESET_ORDER.join(', ')}`);
+  }
+
+  if (styleOptions.overrides !== undefined && !isPlainObject(styleOptions.overrides)) {
+    throw new TypeError('styleOptions.overrides must be an object');
+  }
+
+  const overrides = styleOptions.overrides || {};
+  for (const sectionKey of Object.keys(overrides)) {
+    if (!Object.hasOwn(STYLE_OVERRIDE_FIELDS, sectionKey)) {
+      throw new TypeError(`styleOptions.overrides.${sectionKey} is not a supported section`);
+    }
+
+    const sectionValue = overrides[sectionKey];
+    if (!isPlainObject(sectionValue)) {
+      throw new TypeError(`styleOptions.overrides.${sectionKey} must be an object`);
+    }
+
+    const descriptors = STYLE_OVERRIDE_FIELDS[sectionKey];
+    for (const fieldKey of Object.keys(sectionValue)) {
+      const descriptor = descriptors[fieldKey];
+      if (!descriptor) {
+        throw new TypeError(`styleOptions.overrides.${sectionKey}.${fieldKey} is not a supported field`);
+      }
+      assertValidOverrideValue(sectionKey, fieldKey, sectionValue[fieldKey], descriptor);
+    }
+  }
+
+  return true;
+}
+
+export function normalizeStyleOptions(styleOptions = DEFAULT_STYLE_OPTIONS) {
+  const normalized = isPlainObject(styleOptions)
+    ? clone(styleOptions)
+    : clone(DEFAULT_STYLE_OPTIONS);
+
+  if (normalized.preset !== undefined && normalized.preset !== null && normalized.preset !== '') {
+    if (!DOCUMENT_STYLE_PRESET_ORDER.includes(normalized.preset)) {
+      normalized.preset = DEFAULT_STYLE_OPTIONS.preset;
+    }
+  } else {
+    normalized.preset = DEFAULT_STYLE_OPTIONS.preset;
+  }
+
+  normalized.overrides = isPlainObject(normalized.overrides) ? normalized.overrides : {};
+  assertValidStyleOptions(normalized);
+  return sortKeysDeep(normalized);
 }
 
 function normalizeResolvedStyle(style, preset) {
@@ -270,8 +413,9 @@ export function getPresetResolvedStyle(preset = 'default') {
 }
 
 export function resolveDocumentStyle(styleOptions = DEFAULT_STYLE_OPTIONS) {
-  const preset = normalizeChoice(styleOptions?.preset, STYLE_PRESET_ORDER, 'default');
-  const overrides = isPlainObject(styleOptions?.overrides) ? styleOptions.overrides : {};
+  const normalized = normalizeStyleOptions(styleOptions);
+  const preset = normalizeChoice(normalized.preset, STYLE_PRESET_ORDER, 'default');
+  const overrides = isPlainObject(normalized.overrides) ? normalized.overrides : {};
   const merged = mergeDeep(STYLE_PRESETS[preset], overrides);
   return normalizeResolvedStyle(merged, preset);
 }

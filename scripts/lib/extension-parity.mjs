@@ -6,39 +6,20 @@ import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 
 import puppeteer from 'puppeteer';
+import { DEFAULT_STYLE_OPTIONS, normalizeStyleOptions } from '@markdocx/core';
+
+export { normalizeStyleOptions } from '@markdocx/core';
 
 const execFileAsync = promisify(execFile);
-const defaultStyleOptions = {
-  preset: 'default',
-  overrides: {},
-};
+const defaultStyleOptions = DEFAULT_STYLE_OPTIONS;
 const extensionPagePath = 'page/index.html';
 const extensionBuildDir = path.resolve(process.cwd(), 'markdocx-extension', 'dist');
 const repoPackagePath = path.resolve(process.cwd(), 'package.json');
 const extensionPackagePath = path.resolve(process.cwd(), 'markdocx-extension', 'package.json');
+const corePackagePath = path.resolve(process.cwd(), 'packages/core', 'package.json');
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-function isPlainObject(value) {
-  return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
-}
-
-function sortKeysDeep(value) {
-  if (Array.isArray(value)) {
-    return value.map((item) => sortKeysDeep(item));
-  }
-
-  if (!isPlainObject(value)) {
-    return value;
-  }
-
-  return Object.fromEntries(
-    Object.keys(value)
-      .sort((left, right) => left.localeCompare(right))
-      .map((key) => [key, sortKeysDeep(value[key])])
-  );
 }
 
 function summarizeValues(values) {
@@ -86,19 +67,6 @@ export function sha256(value) {
   const hash = crypto.createHash('sha256');
   hash.update(value);
   return hash.digest('hex');
-}
-
-export function normalizeStyleOptions(styleOptions) {
-  const normalized = styleOptions && isPlainObject(styleOptions)
-    ? structuredClone(styleOptions)
-    : structuredClone(defaultStyleOptions);
-
-  if (typeof normalized.preset !== 'string' || normalized.preset.length === 0) {
-    normalized.preset = defaultStyleOptions.preset;
-  }
-  normalized.overrides = isPlainObject(normalized.overrides) ? normalized.overrides : {};
-
-  return sortKeysDeep(normalized);
 }
 
 export function styleOptionsDigest(styleOptions) {
@@ -153,22 +121,55 @@ export async function buildImageMap(rootDir) {
 }
 
 export async function verifyPinnedMermaidVersion() {
-  const [repoPackageJson, extensionPackageJson] = await Promise.all([
-    readJson(repoPackagePath),
-    readJson(extensionPackagePath),
-  ]);
-  const repoVersion = repoPackageJson.dependencies?.mermaid || null;
-  const extensionVersion = extensionPackageJson.dependencies?.mermaid || null;
+  const versions = await verifySharedDependencyVersions();
+  const repoVersion = versions.mermaid?.root || null;
+  const extensionVersion = versions.mermaid?.extension || null;
 
   if (!repoVersion || !extensionVersion) {
     throw new Error('Both the repository root and the extension package must declare a Mermaid dependency.');
   }
 
-  if (repoVersion !== extensionVersion) {
-    throw new Error(`Pinned Mermaid versions diverged: root=${repoVersion}, extension=${extensionVersion}.`);
+  return { repoVersion, extensionVersion };
+}
+
+export async function verifySharedDependencyVersions() {
+  const [repoPackageJson, corePackageJson, extensionPackageJson] = await Promise.all([
+    readJson(repoPackagePath),
+    readJson(corePackagePath),
+    readJson(extensionPackagePath),
+  ]);
+
+  const manifests = {
+    root: repoPackageJson,
+    core: corePackageJson,
+    extension: extensionPackageJson,
+  };
+  const packageNames = ['mermaid', 'html-to-docx', 'markdown-it', 'jszip', 'highlight.js'];
+  const results = {};
+  const mismatches = [];
+
+  for (const packageName of packageNames) {
+    const declaredVersions = Object.fromEntries(
+      Object.entries(manifests)
+        .map(([manifestName, manifest]) => {
+          const version = manifest.dependencies?.[packageName] || manifest.devDependencies?.[packageName] || null;
+          return [manifestName, version];
+        })
+        .filter(([, version]) => version)
+    );
+
+    results[packageName] = declaredVersions;
+    const uniqueVersions = [...new Set(Object.values(declaredVersions))];
+    if (uniqueVersions.length > 1) {
+      mismatches.push(`${packageName}: ${Object.entries(declaredVersions).map(([name, version]) => `${name}=${version}`).join(', ')}`);
+    }
   }
 
-  return { repoVersion, extensionVersion };
+  if (mismatches.length > 0) {
+    throw new Error(`Shared dependency versions diverged: ${mismatches.join('; ')}`);
+  }
+
+  return results;
 }
 
 export function extractMermaidBlocks(markdown) {
@@ -203,7 +204,7 @@ export async function createExtensionSession({ allowNoSandbox = false } = {}) {
     onProgress: (message) => console.warn(message),
   });
   const page = await browser.newPage();
-  await page.goto(`chrome-extension://${extensionId}/${extensionPagePath}`, {
+  await page.goto(`chrome-extension://${extensionId}/${extensionPagePath}?markdocx-parity=1`, {
     waitUntil: 'networkidle0',
   });
   await assertParityHooks(page);
@@ -227,7 +228,7 @@ async function assertParityHooks(page) {
   });
 
   if (!hasHooks) {
-    throw new Error('Extension page is missing Mermaid parity hooks. Rebuild the extension before running parity tooling.');
+    throw new Error('Extension page is missing Mermaid parity hooks. Rebuild the extension and open it in parity mode before running parity tooling.');
   }
 }
 
@@ -346,7 +347,7 @@ export async function renderMermaidSvgMetadata(session, markdown, styleOptions =
 
 async function renderMermaidBaselinePngs(session, markdown, styleOptions = defaultStyleOptions) {
   const artifacts = await renderMermaidArtifactsWithExtension(session, markdown, styleOptions);
-  return artifacts.map((artifact) => artifact.pngBase64);
+  return artifacts.map((artifact) => artifact.pngDataUri.replace(/^data:image\/png;base64,/, ''));
 }
 
 export async function extractVisualBaselines(session, markdown, fixtureId, styleOptions = defaultStyleOptions) {

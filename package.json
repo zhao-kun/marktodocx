@@ -17,13 +17,11 @@
   },
   "dependencies": {
     "@mermaid-js/mermaid-cli": "^11.12.0",
-    "dompurify": "^3.3.3",
     "html-to-docx": "^1.8.0",
     "jsdom": "^29.0.2",
     "markdown-it": "^14.1.1",
     "mermaid": "^11.14.0",
-    "sharp": "^0.34.5",
-    "xmldom": "^0.6.0"
+    "sharp": "^0.34.5"
   },
   "devDependencies": {
     "jszip": "^3.10.1",

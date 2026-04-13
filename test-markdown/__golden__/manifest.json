@@ -1,0 +1,125 @@
+{
+  "sourceSha": "mixed",
+  "sourceTreeState": "dirty",
+  "fixtures": [
+    {
+      "id": "all-features",
+      "status": "verified",
+      "markdownPath": "test-markdown/test.md",
+      "goldenDocxPath": "test-markdown/__golden__/all-features.docx",
+      "category": "integration",
+      "notes": "Primary all-features fixture covering headings, lists, blockquote, tables, local image, code, and Mermaid.",
+      "sourceSha": "6ea953dc0f9f4124c1bb6a456e5848b2ce23124d",
+      "sourceTreeState": "dirty",
+      "markdownSha256": "f886471c3b2893bf04cbd01182ce24c7b6b2f5a51b7212cce44f8ecf87389751",
+      "styleOptions": {
+        "overrides": {},
+        "preset": "default"
+      },
+      "styleOptionsSha256": "373b4d3bcbb80b338f3aaf58bfd5e120830227ecae8aa7049873612e8db16aca",
+      "goldenDocxSha256": "f99935ce283eb7191afb8e1843a0deac34501e33e6fd660908116e6d103c8a79",
+      "mermaid": {
+        "diagramCount": 2,
+        "svgHashes": [
+          "c3436d37cec8aac074d0d51f6788f2910a3f47f38bdcc64c48cb6b44c07bc956",
+          "acb03d7145b5d552eeb6e9f65ef6200f3726c74bed563b0e4584dc5b977f2e5c"
+        ]
+      },
+      "visualBaselineCount": 2
+    },
+    {
+      "id": "long-report-zh",
+      "status": "verified",
+      "markdownPath": "test-markdown/llm_capacity.md",
+      "goldenDocxPath": "test-markdown/__golden__/long-report-zh.docx",
+      "category": "long-document",
+      "notes": "Long-form Chinese report fixture with tables and code blocks for pagination and multilingual coverage.",
+      "sourceSha": "6ea953dc0f9f4124c1bb6a456e5848b2ce23124d",
+      "sourceTreeState": "dirty",
+      "markdownSha256": "29a80c317fc9687f36551a533285d8a0f2514b670f8f702301c7a5f8df41a38e",
+      "styleOptions": {
+        "overrides": {},
+        "preset": "default"
+      },
+      "styleOptionsSha256": "373b4d3bcbb80b338f3aaf58bfd5e120830227ecae8aa7049873612e8db16aca",
+      "goldenDocxSha256": "a05fb545dc0371f5430af99c9e60a53e20c80a797f03fc2990838af4429e505b"
+    },
+    {
+      "id": "incident-mermaid-heavy",
+      "status": "verified",
+      "markdownPath": "test-markdown/zookeeper-issue.md",
+      "goldenDocxPath": "test-markdown/__golden__/incident-mermaid-heavy.docx",
+      "category": "mermaid-heavy",
+      "notes": "Large incident document with Mermaid and mixed content, sourced from the canonical non-backup fixture path.",
+      "sourceSha": "fcabf316467d4c267e5f81aa95793fcfd4c1ea4d",
+      "sourceTreeState": "dirty",
+      "markdownSha256": "0b846c5646f80e08e83d09bc74e9ef0392a1834a0ccececf36047b0f9f223042",
+      "styleOptions": {
+        "overrides": {},
+        "preset": "default"
+      },
+      "styleOptionsSha256": "373b4d3bcbb80b338f3aaf58bfd5e120830227ecae8aa7049873612e8db16aca",
+      "goldenDocxSha256": "d0376ad1921df8da5aeb3183c6b688360c8a5b1c712ea5f0a6e1dc07b92306ff",
+      "mermaid": {
+        "diagramCount": 3,
+        "svgHashes": [
+          "ffbed487ada195d18765fb30a2998eea8ebde86bb07fe47663458afb716254f2",
+          "64eb2a0d89c9bbe949617ad3158f63cd34b29fae5fcaaf2ff0965f35516b8b6d",
+          "f72eb7ceb4da485e96202ab704681fe3b9f4cf8699552a0cede6d9d904e62b24"
+        ]
+      },
+      "visualBaselineCount": 3
+    },
+    {
+      "id": "blockquote-regression",
+      "status": "verified",
+      "markdownPath": "test-markdown/blockquote-regression.md",
+      "goldenDocxPath": "test-markdown/__golden__/blockquote-regression.docx",
+      "category": "regression",
+      "notes": "Targeted fixture for blockquote background and nested formatting behavior.",
+      "sourceSha": "6ea953dc0f9f4124c1bb6a456e5848b2ce23124d",
+      "sourceTreeState": "dirty",
+      "markdownSha256": "e865271111172ecb140acdf071d40ebe8af905f4793639ac6b36b6620a6261c8",
+      "styleOptions": {
+        "overrides": {},
+        "preset": "default"
+      },
+      "styleOptionsSha256": "373b4d3bcbb80b338f3aaf58bfd5e120830227ecae8aa7049873612e8db16aca",
+      "goldenDocxSha256": "f5254c9016abfef166b18bb546c0d845d7d6c3a13368ba9c82e1a88cf4a3c7fd"
+    },
+    {
+      "id": "style-propagation-regression",
+      "status": "verified",
+      "markdownPath": "test-markdown/style-propagation-regression.md",
+      "goldenDocxPath": "test-markdown/__golden__/style-propagation-regression.docx",
+      "category": "style-regression",
+      "styleOptions": {
+        "overrides": {},
+        "preset": "minimal"
+      },
+      "notes": "Fixture for validating non-default style propagation without Mermaid-specific parity concerns mixed in.",
+      "sourceSha": "6ea953dc0f9f4124c1bb6a456e5848b2ce23124d",
+      "sourceTreeState": "dirty",
+      "markdownSha256": "8ce7f0dbd38fb4c6ed7a9a81a1eccfd77452c483ef1f0c05dbb3babafc31190b",
+      "styleOptionsSha256": "937e122b60041e226de7a7fafceccd9beaf26b1f2abb57e75f62f0a22001689b",
+      "goldenDocxSha256": "5e5dc368dc2af51eae3eddf1152803a90697c6df367b62a5e3a8eaea3dbd0bf3"
+    },
+    {
+      "id": "page-overflow-regression",
+      "status": "verified",
+      "markdownPath": "test-markdown/page-overflow-regression.md",
+      "goldenDocxPath": "test-markdown/__golden__/page-overflow-regression.docx",
+      "category": "page-overflow",
+      "notes": "Explicit pagination and page-overflow fixture with repeated body content, a tall code block, and a late table.",
+      "sourceSha": "6ea953dc0f9f4124c1bb6a456e5848b2ce23124d",
+      "sourceTreeState": "dirty",
+      "markdownSha256": "53701497a43a86e45588c2ad9c0511e94d61f5a1c05428b48fb5ee88e802a624",
+      "styleOptions": {
+        "overrides": {},
+        "preset": "default"
+      },
+      "styleOptionsSha256": "373b4d3bcbb80b338f3aaf58bfd5e120830227ecae8aa7049873612e8db16aca",
+      "goldenDocxSha256": "84d81571eeab6327ec05f55c344540a86a0fb77808c8282001208eccc5aa0c3b"
+    }
+  ]
+}

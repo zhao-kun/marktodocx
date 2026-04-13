@@ -8,7 +8,7 @@
     "./style-options.schema.json": "./src/style/style-options.schema.json"
   },
   "scripts": {
-    "build": "node --input-type=module -e \"import('./src/index.js')\""
+    "build": "node ./scripts/build-check.mjs"
   },
   "dependencies": {
     "highlight.js": "^11.11.1",

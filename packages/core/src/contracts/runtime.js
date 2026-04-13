@@ -3,6 +3,8 @@ export const RUNTIME_CONTRACT_VERSION = '1.0.0';
 /**
  * @typedef {object} MarkdocxDomAdapter
  * @property {(html: string) => Document} parseHtml Parse an HTML string into a DOM document.
+ * @property {typeof Node} [Node] DOM Node constructor for non-browser runtimes.
+ * @property {typeof NodeFilter} [NodeFilter] DOM NodeFilter constructor for non-browser runtimes.
  */
 
 /**
@@ -38,4 +40,44 @@ export function assertRuntimeContracts(runtime = {}) {
   }
 
   return runtime;
+}
+
+function createBrowserDomAdapter() {
+  if (typeof DOMParser !== 'function') {
+    return null;
+  }
+
+  return {
+    parseHtml(html) {
+      const parser = new DOMParser();
+      return parser.parseFromString(html, 'text/html');
+    },
+    Node: typeof Node === 'function' ? Node : undefined,
+    NodeFilter: typeof NodeFilter !== 'undefined' ? NodeFilter : undefined,
+  };
+}
+
+export function getDomAdapter(runtime = {}) {
+  const validated = assertRuntimeContracts(runtime);
+  const adapter = validated.dom || createBrowserDomAdapter();
+  if (!adapter?.parseHtml) {
+    throw new Error('A DOM runtime adapter is required. Provide runtime.dom.parseHtml in non-browser hosts.');
+  }
+  return adapter;
+}
+
+export function getDomNodeTypes(runtime = {}, doc = null) {
+  const adapter = runtime.dom || {};
+  const defaultView = doc?.defaultView;
+  const nodeCtor = adapter.Node || defaultView?.Node || globalThis.Node;
+  const nodeFilterCtor = adapter.NodeFilter || defaultView?.NodeFilter || globalThis.NodeFilter;
+
+  if (!nodeCtor || !nodeFilterCtor) {
+    throw new Error('DOM Node and NodeFilter constructors are unavailable. Provide them via runtime.dom for non-browser hosts.');
+  }
+
+  return {
+    Node: nodeCtor,
+    NodeFilter: nodeFilterCtor,
+  };
 }

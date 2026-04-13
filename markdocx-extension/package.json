@@ -9,10 +9,6 @@
   "dependencies": {
     "@markdocx/core": "0.1.0",
     "buffer": "^6.0.3",
-    "highlight.js": "^11.11.1",
-    "html-to-docx": "^1.8.0",
-    "jszip": "^3.10.1",
-    "markdown-it": "^14.1.1",
     "mermaid": "^11.14.0"
   },
   "devDependencies": {

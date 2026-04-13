@@ -11,6 +11,7 @@ export const DOCX_PAGE_SIZE = {
 
 export const TWIPS_PER_PIXEL = 15;
 export const MERMAID_RENDER_SCALE = 2;
+export const MERMAID_DOCX_DESCRIPTION_PREFIX = 'Mermaid diagram ';
 
 export const IMAGE_EXTENSIONS = new Map([
   ['.png', 'image/png'],

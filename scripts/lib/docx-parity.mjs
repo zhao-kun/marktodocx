@@ -3,6 +3,7 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 
 import JSZip from 'jszip';
+import { MERMAID_DOCX_DESCRIPTION_PREFIX } from '@markdocx/core';
 
 const XML_ENTRY_PATTERN = /\.(xml|rels)$/i;
 const RSID_ATTRIBUTE_PATTERN = /\s+w:rsid[^=]*="[^"]*"/g;
@@ -191,7 +192,7 @@ export function extractMermaidMediaEntries(documentXml, relationshipXml) {
   while ((drawingMatch = MERMAID_DRAWING_PATTERN.exec(documentXml)) !== null) {
     const description = drawingMatch[1];
     const relationshipId = drawingMatch[2];
-    if (!/^Mermaid diagram\b/i.test(description)) {
+    if (!new RegExp(`^${MERMAID_DOCX_DESCRIPTION_PREFIX.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i').test(description)) {
       continue;
     }
 

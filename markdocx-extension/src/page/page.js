@@ -1,11 +1,13 @@
 import { IMAGE_EXTENSIONS } from '../lib/constants.js';
 import {
+  assertValidStyleOptions,
   BODY_FONT_FAMILY_OPTIONS,
   CODE_FONT_FAMILY_OPTIONS,
   DEFAULT_STYLE_OPTIONS,
   DOCUMENT_STYLE_PRESET_ORDER,
   STYLE_PRESET_LABELS,
   STYLE_SYNTAX_THEME_OPTIONS,
+  normalizeStyleOptions,
   resolveDocumentStyle,
 } from '../lib/document-style.js';
 import {
@@ -72,14 +74,16 @@ function isPlainObject(value) {
   return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
 }
 
-function normalizeStoredStyleOptions(value) {
-  const normalizedPreset = DOCUMENT_STYLE_PRESET_ORDER.includes(value?.preset)
-    ? value.preset
-    : DEFAULT_STYLE_OPTIONS.preset;
-  return {
-    preset: normalizedPreset,
-    overrides: isPlainObject(value?.overrides) ? clone(value.overrides) : {},
-  };
+function getCanonicalStyleOptions(value) {
+  try {
+    return normalizeStyleOptions(value);
+  } catch {
+    return clone(DEFAULT_STYLE_OPTIONS);
+  }
+}
+
+function isParityMode() {
+  return new URLSearchParams(window.location.search).get('markdocx-parity') === '1';
 }
 
 function getNestedValue(object, path) {
@@ -199,7 +203,7 @@ function renderStyleControls() {
 
 async function persistStyleOptions() {
   try {
-    await chrome.storage.local.set({ [STYLE_STORAGE_KEY]: styleOptions });
+    await chrome.storage.local.set({ [STYLE_STORAGE_KEY]: normalizeStyleOptions(styleOptions) });
   } catch {
     // Storage failure should not block conversion.
   }
@@ -208,7 +212,7 @@ async function persistStyleOptions() {
 async function loadStyleOptions() {
   try {
     const stored = await chrome.storage.local.get(STYLE_STORAGE_KEY);
-    styleOptions = normalizeStoredStyleOptions(stored[STYLE_STORAGE_KEY]);
+    styleOptions = getCanonicalStyleOptions(stored[STYLE_STORAGE_KEY]);
   } catch {
     styleOptions = clone(DEFAULT_STYLE_OPTIONS);
   }
@@ -235,6 +239,7 @@ async function handlePresetChange() {
     preset: nextPreset,
     overrides: {},
   };
+  styleOptions = normalizeStyleOptions(styleOptions);
   await persistStyleOptions();
   renderStyleControls();
 }
@@ -244,6 +249,7 @@ async function handleStyleReset() {
     preset: styleOptions.preset,
     overrides: {},
   };
+  styleOptions = normalizeStyleOptions(styleOptions);
   await persistStyleOptions();
   renderStyleControls();
 }
@@ -272,6 +278,7 @@ async function handleStyleFieldChange(field) {
     preset: styleOptions.preset,
     overrides: nextOverrides,
   };
+  styleOptions = normalizeStyleOptions(styleOptions);
 
   await persistStyleOptions();
   renderStyleControls();
@@ -493,7 +500,9 @@ async function readAllImages() {
 }
 
 async function renderMermaidArtifactsForParity(markdown, runtimeStyleOptions) {
-  const resolvedStyle = resolveDocumentStyle(normalizeStoredStyleOptions(runtimeStyleOptions));
+  const canonicalStyleOptions = getCanonicalStyleOptions(runtimeStyleOptions);
+  assertValidStyleOptions(canonicalStyleOptions);
+  const resolvedStyle = resolveDocumentStyle(canonicalStyleOptions);
   const layoutMetrics = resolveDocumentLayout(resolvedStyle.page.marginPreset);
   const md = createMarkdownRenderer(resolvedStyle);
   const mermaidCodes = extractMermaidBlocks(markdown, md);
@@ -504,7 +513,7 @@ async function renderMermaidArtifactsForParity(markdown, runtimeStyleOptions) {
     results.push({
       index,
       svg: artifact.svg,
-      pngBase64: artifact.pngDataUri.replace(/^data:image\/png;base64,/, ''),
+      pngDataUri: artifact.pngDataUri,
       displayWidth: artifact.displayWidth,
       displayHeight: artifact.displayHeight,
     });
@@ -513,9 +522,11 @@ async function renderMermaidArtifactsForParity(markdown, runtimeStyleOptions) {
   return results;
 }
 
-window.__MARKDOCX_PARITY__ = {
-  renderMermaidArtifactsForParity,
-};
+if (isParityMode()) {
+  window.__MARKDOCX_PARITY__ = {
+    renderMermaidArtifactsForParity,
+  };
+}
 
 setupStyleControls();
 void loadStyleOptions();
