@@ -1,0 +1,16 @@
+{
+  "name": "@markdocx/runtime-browser",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "scripts": {
+    "build": "node ./scripts/build-check.mjs"
+  },
+  "dependencies": {
+    "@markdocx/core": "0.1.0",
+    "mermaid": "^11.14.0"
+  }
+}

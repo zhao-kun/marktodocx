@@ -44,32 +44,22 @@ export function assertRuntimeContracts(runtime = {}) {
   return runtime;
 }
 
-function createBrowserDomAdapter() {
-  if (typeof DOMParser !== 'function') {
-    return null;
-  }
-
-  return {
-    parseHtml(html) {
-      const parser = new DOMParser();
-      return parser.parseFromString(html, 'text/html');
-    },
-    Node: typeof Node === 'function' ? Node : undefined,
-    NodeFilter: typeof NodeFilter !== 'undefined' ? NodeFilter : undefined,
-  };
-}
-
 export function getDomAdapter(runtime = {}) {
   const validated = assertRuntimeContracts(runtime);
-  const adapter = validated.dom || createBrowserDomAdapter();
+  const adapter = validated.dom;
   if (!adapter?.parseHtml) {
-    throw new Error('A DOM runtime adapter is required. Provide runtime.dom.parseHtml in non-browser hosts.');
+    throw new Error('A DOM runtime adapter is required. Provide runtime.dom.parseHtml explicitly via a host runtime package.');
   }
   return adapter;
 }
 
 export function getDomNodeTypes(runtime = {}, doc = null) {
-  const adapter = runtime.dom || {};
+  const validated = assertRuntimeContracts(runtime);
+  const adapter = validated.dom;
+  if (!adapter) {
+    throw new Error('A DOM runtime adapter is required. Provide runtime.dom when calling DOM normalization helpers.');
+  }
+
   const defaultView = doc?.defaultView;
   const nodeCtor = adapter.Node || defaultView?.Node || globalThis.Node;
   const nodeFilterCtor = adapter.NodeFilter || defaultView?.NodeFilter || globalThis.NodeFilter;

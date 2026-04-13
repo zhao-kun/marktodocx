@@ -17,6 +17,7 @@ const extensionBuildDir = path.resolve(process.cwd(), 'markdocx-extension', 'dis
 const repoPackagePath = path.resolve(process.cwd(), 'package.json');
 const extensionPackagePath = path.resolve(process.cwd(), 'markdocx-extension', 'package.json');
 const corePackagePath = path.resolve(process.cwd(), 'packages/core', 'package.json');
+const runtimeBrowserPackagePath = path.resolve(process.cwd(), 'packages/runtime-browser', 'package.json');
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -123,25 +124,32 @@ export async function buildImageMap(rootDir) {
 export async function verifyPinnedMermaidVersion() {
   const versions = await verifySharedDependencyVersions();
   const repoVersion = versions.mermaid?.root || null;
+  const browserRuntimeVersion = versions.mermaid?.runtimeBrowser || null;
   const extensionVersion = versions.mermaid?.extension || null;
 
-  if (!repoVersion || !extensionVersion) {
-    throw new Error('Both the repository root and the extension package must declare a Mermaid dependency.');
+  if (!repoVersion || !browserRuntimeVersion) {
+    throw new Error('Both the repository root and the browser runtime package must declare a Mermaid dependency.');
   }
 
-  return { repoVersion, extensionVersion };
+  if (extensionVersion) {
+    throw new Error('The extension package should not declare Mermaid directly. Depend on @markdocx/runtime-browser instead.');
+  }
+
+  return { repoVersion, browserRuntimeVersion };
 }
 
 export async function verifySharedDependencyVersions() {
-  const [repoPackageJson, corePackageJson, extensionPackageJson] = await Promise.all([
+  const [repoPackageJson, corePackageJson, runtimeBrowserPackageJson, extensionPackageJson] = await Promise.all([
     readJson(repoPackagePath),
     readJson(corePackagePath),
+    readJson(runtimeBrowserPackagePath),
     readJson(extensionPackagePath),
   ]);
 
   const manifests = {
     root: repoPackageJson,
     core: corePackageJson,
+    runtimeBrowser: runtimeBrowserPackageJson,
     extension: extensionPackageJson,
   };
   const packageNames = ['mermaid', 'html-to-docx', 'markdown-it', 'jszip', 'highlight.js'];

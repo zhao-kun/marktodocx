@@ -81,10 +81,10 @@ test('summarize fixture provenance reports mixed values explicitly', () => {
   });
 });
 
-test('verifyPinnedMermaidVersion confirms root and extension package pins match', async () => {
+test('verifyPinnedMermaidVersion confirms root and browser runtime package pins match', async () => {
   const versions = await verifyPinnedMermaidVersion();
 
-  assert.equal(versions.repoVersion, versions.extensionVersion);
+  assert.equal(versions.repoVersion, versions.browserRuntimeVersion);
   assert.equal(typeof versions.repoVersion, 'string');
 });
 
@@ -93,5 +93,6 @@ test('verifySharedDependencyVersions confirms shared package pins do not drift a
 
   assert.equal(versions['html-to-docx'].root, versions['html-to-docx'].core);
   assert.equal(versions['markdown-it'].root, versions['markdown-it'].core);
-  assert.equal(versions.mermaid.root, versions.mermaid.extension);
+  assert.equal(versions.mermaid.root, versions.mermaid.runtimeBrowser);
+  assert.equal(versions.mermaid.extension, undefined);
 });

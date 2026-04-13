@@ -15,8 +15,7 @@ import {
   DOCUMENT_MARGIN_PRESET_ORDER,
   resolveDocumentLayout,
 } from '../lib/document-layout.js';
-import { createMarkdownRenderer, extractMermaidBlocks } from '../lib/md-renderer.js';
-import { renderMermaidArtifacts } from '../lib/mermaid-renderer.js';
+import { renderMermaidArtifactsForMarkdown } from '@markdocx/runtime-browser';
 
 const pickerArea = document.getElementById('picker-area');
 const pickerIcon = document.getElementById('picker-icon');
@@ -502,24 +501,7 @@ async function readAllImages() {
 async function renderMermaidArtifactsForParity(markdown, runtimeStyleOptions) {
   const canonicalStyleOptions = getCanonicalStyleOptions(runtimeStyleOptions);
   assertValidStyleOptions(canonicalStyleOptions);
-  const resolvedStyle = resolveDocumentStyle(canonicalStyleOptions);
-  const layoutMetrics = resolveDocumentLayout(resolvedStyle.page.marginPreset);
-  const md = createMarkdownRenderer(resolvedStyle);
-  const mermaidCodes = extractMermaidBlocks(markdown, md);
-  const results = [];
-
-  for (let index = 0; index < mermaidCodes.length; index += 1) {
-    const artifact = await renderMermaidArtifacts(mermaidCodes[index], index, layoutMetrics);
-    results.push({
-      index,
-      svg: artifact.svg,
-      pngDataUri: artifact.pngDataUri,
-      displayWidth: artifact.displayWidth,
-      displayHeight: artifact.displayHeight,
-    });
-  }
-
-  return results;
+  return renderMermaidArtifactsForMarkdown(markdown, canonicalStyleOptions);
 }
 
 if (isParityMode()) {

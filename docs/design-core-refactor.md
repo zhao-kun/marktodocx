@@ -13,8 +13,9 @@ This document started as a forward-looking design. Parts of it are now implement
 The following pieces now exist in code rather than only in design:
 
 - `@markdocx/core` exposes shared style, layout, markdown, HTML, DOCX, and runtime-contract utilities.
+- `@markdocx/runtime-browser` now exists as a real workspace package with a native DOM adapter, image-map helper, browser Mermaid renderer, and browser conversion composition entry point.
 - Style options are normalized and validated centrally rather than being treated as host-local loose objects.
-- The extension still provides thin compatibility shims, but those shims now resolve to the extracted core surface.
+- The extension now routes live browser-host conversion through `@markdocx/runtime-browser`, while compatibility shims remain for the still-thin host surface.
 - Golden fixture parity is driven by `test-markdown/__golden__/manifest.json` and the parity scripts rather than by ad hoc fixture comparison.
 - Mermaid parity is checked structurally through shared metadata conventions and visual baselines, with explicit handling for expected raster drift versus unacceptable semantic drift.
 - Regression coverage now includes targeted fixtures for blockquote rendering, style propagation, and page overflow behavior.
@@ -46,6 +47,7 @@ markdocx currently has two conversion surfaces with different implementation mat
 2. **Chrome extension** - `markdocx-extension/`, the newer modular implementation with shared renderer modules, style/layout support, and the latest behavior fixes.
 
 In addition, review-driven extraction work has now created a real shared package surface in `packages/core/`, and the tests already exercise that surface directly.
+Browser-runtime extraction work has also now created a real `packages/runtime-browser/` workspace that the Chrome extension uses for browser-only conversion concerns.
 
 As of Chrome extension Phase 7 completion, the Chrome extension is the most complete implementation and already supports:
 
@@ -316,6 +318,7 @@ markdocx/
 Current repository reality is closer to this transitional state:
 
 - `packages/core/` exists and is already consumed directly by tests.
+- `packages/runtime-browser/` exists and now owns the browser-only DOM, image-map, Mermaid, and browser conversion composition helpers.
 - `markdocx-extension/` still exists as the active browser host implementation.
 - `md-to-docx.mjs` still exists as the legacy CLI surface.
 - `test-markdown/__golden__/manifest.json` is the active parity corpus index.
@@ -380,6 +383,12 @@ Current implemented contract:
 ```
 
 This is intentionally narrower than the target end-state runtime-family contract described elsewhere in this document. At the current extraction stage, the shared core directly consumes only a DOM adapter contract for HTML normalization. Image inlining and Mermaid rendering are still passed into the pipeline as host-orchestration inputs rather than runtime callback hooks.
+
+Current boundary rule after Epic 3:
+
+- Core no longer guesses a browser DOM adapter implicitly.
+- Browser callers must provide `runtime.dom` explicitly, typically through `@markdocx/runtime-browser`.
+- This keeps the runtime-family boundary explicit rather than letting core infer host behavior from globals.
 
 Current image inlining contract:
 
@@ -465,17 +474,24 @@ The shared pipeline stays the same across hosts:
 
 ### 4.5 Browser Runtime Responsibilities
 
-`@markdocx/runtime-browser` should provide:
+`@markdocx/runtime-browser` now provides:
 
-- `parseHtml` via native `DOMParser`
-- `resolveImage` via preloaded `imageMap`
-- `renderMermaid` via the current browser Mermaid + Canvas implementation
-- Buffer polyfill integration for browser builds
+- a native DOM adapter via `dom-native.js`
+- image-map based local image resolution helpers via `image-map.js`
+- the browser Mermaid renderer via `mermaid-browser.js`
+- a browser conversion composition entry point that orchestrates shared-core conversion in a browser host
+
+Browser Buffer polyfill integration remains the responsibility of the browser app bundle rather than the runtime package itself.
 
 This runtime family is the natural fit for:
 
 - Chrome extension offscreen document
 - VSCode extension hidden webview
+
+Current implementation note:
+
+- The Chrome extension offscreen conversion path now calls `@markdocx/runtime-browser` directly.
+- The extension parity page now also uses the runtime-browser Mermaid path for parity artifact generation.
 
 ### 4.6 Node Runtime Responsibilities
 
@@ -512,6 +528,12 @@ The root workspace manifest should enforce this with `overrides` so workspaces c
 ### 5.1 Chrome Extension
 
 Status: already implemented and currently the best source of truth.
+
+Current implementation note:
+
+- Shared conversion behavior lives in `@markdocx/core`.
+- Browser-only conversion behavior now lives in `@markdocx/runtime-browser`.
+- The extension app remains responsible for UI, file selection, offscreen document lifecycle, and download transport.
 
 Plan:
 
@@ -885,6 +907,13 @@ Goal:
 
 - Move browser-specific adapters into `@markdocx/runtime-browser`.
 
+Implementation note after Epic 3:
+
+- `packages/runtime-browser/` now exists and is part of the workspace.
+- The browser Mermaid renderer, native DOM adapter, and image-map helper now live there.
+- Chrome extension offscreen conversion and parity Mermaid artifact generation now consume `@markdocx/runtime-browser`.
+- Full parity remained green after the extraction.
+
 Work:
 
 1. Move current Mermaid browser renderer.
@@ -1154,12 +1183,12 @@ This section turns the design into a next-session work breakdown.
 
 ### Epic 3 - Browser Runtime Family
 
-- [ ] Create `packages/runtime-browser/package.json`.
-- [ ] Add native DOM adapter.
-- [ ] Add image map adapter.
-- [ ] Move browser Mermaid renderer into the browser runtime package.
-- [ ] Wire Chrome extension to the browser runtime package.
-- [ ] Validate parity against golden outputs.
+- [x] Create `packages/runtime-browser/package.json`.
+- [x] Add native DOM adapter.
+- [x] Add image map adapter.
+- [x] Move browser Mermaid renderer into the browser runtime package.
+- [x] Wire Chrome extension to the browser runtime package.
+- [x] Validate parity against golden outputs.
 
 ### Epic 4 - Node Runtime Family
 

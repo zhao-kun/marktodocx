@@ -131,6 +131,20 @@ test('runtime contract assertions accept valid adapters and reject invalid ones'
   }, /runtime\.dom\.Node must be a constructor/);
 });
 
+test('dom normalization helpers require an explicit runtime adapter', () => {
+  const html = '<p><img src="../images/diagram.png" /></p>';
+  const resolvedStyle = resolveDocumentStyle({ preset: 'minimal', overrides: {} });
+  const layout = resolveDocumentLayout(resolvedStyle.page.marginPreset);
+
+  assert.throws(() => {
+    inlineLocalImages(html, { 'docs/images/diagram.png': 'data:image/png;base64,AA==' }, 'docs/guides');
+  }, /DOM runtime adapter is required/);
+
+  assert.throws(() => {
+    normalizeTables(html, resolvedStyle, layout);
+  }, /DOM runtime adapter is required/);
+});
+
 test('inlineLocalImages and normalizeTables work with a jsdom runtime adapter', () => {
   const runtime = createJsdomRuntime();
   const resolvedStyle = resolveDocumentStyle({ preset: 'minimal', overrides: {} });

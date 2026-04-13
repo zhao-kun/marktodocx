@@ -8,8 +8,8 @@
   },
   "dependencies": {
     "@markdocx/core": "0.1.0",
-    "buffer": "^6.0.3",
-    "mermaid": "^11.14.0"
+    "@markdocx/runtime-browser": "0.1.0",
+    "buffer": "^6.0.3"
   },
   "devDependencies": {
     "vite": "^8.0.8",
