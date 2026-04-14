@@ -206,6 +206,36 @@ Skill parameters match the design contract:
 
 The skill honors the same environment defaults as the CLI: `MARKDOCX_STYLE_PRESET`, `MARKDOCX_MARGIN_PRESET`, `MARKDOCX_STYLE_JSON`, and `MARKDOCX_STYLE_SET`. Mermaid behavior is also the same: install `@markdocx/runtime-node-mermaid` when the document contains Mermaid blocks.
 
+To produce a standalone deployable skill folder that does not depend on a live repository checkout, run:
+
+```bash
+npm run export:agent-skill
+```
+
+This writes `apps/agent-skill/dist/markdocx-skill/` plus `apps/agent-skill/dist/markdocx-skill.zip`, which can be copied or symlinked into another agent runtime's skills directory.
+
+To produce a Mermaid-enabled export with a vendored Chromium browser, run:
+
+```bash
+npm run export:agent-skill:mermaid
+```
+
+That profile is platform-specific and intended for deployment on the same OS and CPU family that built the export.
+
+For a CI-safe export gate, run:
+
+```bash
+npm run test:export:agent-skill
+```
+
+That command rebuilds the export and verifies the final artifact layout.
+
+For the Mermaid-enabled export gate, run:
+
+```bash
+npm run test:export:agent-skill:mermaid
+```
+
 ## Development
 
 Per-package build scripts:
@@ -216,6 +246,10 @@ npm run build:runtime-browser
 npm run build:runtime-node
 npm run build:runtime-node-mermaid
 npm run build:agent-skill
+npm run export:agent-skill
+npm run export:agent-skill:mermaid
+npm run test:export:agent-skill
+npm run test:export:agent-skill:mermaid
 npm run build:chrome-extension
 npm run build:vscode-extension
 npm run build:cli

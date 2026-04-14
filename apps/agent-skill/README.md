@@ -16,7 +16,13 @@ These names intentionally serve different purposes. The source app directory and
 
 ## Manual Build
 
-This skill is currently source-distributed. There is no separate compiled runtime bundle yet. The current build step validates the skill frontmatter and runs a conversion smoke test.
+This skill now has one source validation path and two standalone export profiles:
+
+- `npm run build:agent-skill`: validate the source skill and run the source-tree smoke test
+- `npm run export:agent-skill`: create the standard standalone export without Mermaid runtime installation
+- `npm run export:agent-skill:mermaid`: create a Mermaid-enabled standalone export with a vendored Chromium browser
+- `npm run test:export:agent-skill`: rebuild the standard export and verify the final artifact layout for CI
+- `npm run test:export:agent-skill:mermaid`: rebuild the Mermaid-enabled export, vendor Chromium, and verify the final artifact layout for CI
 
 From the repository root:
 
@@ -25,31 +31,89 @@ npm install
 npm run build:agent-skill
 ```
 
+Choose one export profile:
+
+```bash
+npm run export:agent-skill
+```
+
+or:
+
+```bash
+npm run export:agent-skill:mermaid
+```
+
 What this does:
 
 - installs the workspace dependencies required by `skill.mjs`
 - validates `SKILL.md`
 - runs a sample Markdown-to-DOCX conversion through `convertWithAgentSkill()`
+- builds a standalone exported skill folder with its own `node_modules/`
+- writes a distributable zip archive at `apps/agent-skill/dist/markdocx-skill.zip`
+- smoke-tests that exported folder from an isolated temporary directory
+- verifies the exported layout in a CI-safe follow-up check when using `npm run test:export:agent-skill`
 
-What this does not do:
+Profile behavior:
 
-- it does not produce a standalone deployable binary
-- it does not bundle `@markdocx/runtime-node` into a self-contained artifact
+- `npm run export:agent-skill` keeps Mermaid optional. The export includes the optional Mermaid tarball in `vendor/`, but does not install `@markdocx/runtime-node-mermaid` into `node_modules/` and does not bundle Chromium.
+- `npm run export:agent-skill:mermaid` installs `@markdocx/runtime-node-mermaid`, vendors a pinned Chromium browser into the export, writes a runtime manifest, and runs a real Mermaid render smoke test before the export succeeds.
+- Mermaid-enabled exports are platform-specific because the vendored browser is built for the host platform that ran the export.
+- A malformed `markdocx-export-manifest.json` is treated as a hard deployment error. The skill fails loudly instead of guessing around a corrupt Mermaid export.
 
-Because of that, the supported manual deployment model today is to deploy from a repository checkout that has already run `npm install`.
+The exported artifact lives at:
+
+```text
+apps/agent-skill/dist/markdocx-skill/
+```
+
+And the archive artifact lives at:
+
+```text
+apps/agent-skill/dist/markdocx-skill.zip
+```
+
+That directory is self-contained for deployment: it includes `SKILL.md`, `skill.mjs`, a generated `package.json`, vendored workspace tarballs, and installed runtime dependencies under `node_modules/`.
+
+It also includes `markdocx-export-manifest.json`, which records whether the export is `standard` or `with-mermaid`. Mermaid-enabled exports also record the vendored browser path there.
 
 ## Manual Deployment
 
-To deploy this skill manually to another agent runtime, keep these files together in a working repository checkout:
+For deployment, use the exported folder instead of the live repository source tree.
 
-- `apps/agent-skill/SKILL.md`
-- `apps/agent-skill/skill.mjs`
-- the repository root `node_modules/` created by `npm install`
-- the local workspace packages under `packages/`
+Build it first:
 
-Copying only `SKILL.md` is not enough, because `skill.mjs` imports the shared runtime from the repository workspace.
+```bash
+npm install
+npm run export:agent-skill
+```
 
-If the target agent runtime supports loading skills from an external directory, the simplest approach is to point it at this repository checkout rather than trying to repack the skill by hand.
+Then deploy this directory:
+
+```text
+apps/agent-skill/dist/markdocx-skill/
+```
+
+Copying only `SKILL.md` is still not enough. Deploy the whole exported folder.
+
+This exported folder no longer depends on a live markdocx repository checkout.
+
+If your target runtime prefers a single-file handoff, deploy the zip archive and extract it into the target skills directory.
+
+Primary deployment recipes:
+
+```bash
+mkdir -p ~/.openclaw/workspace/skills
+cp -R apps/agent-skill/dist/markdocx-skill ~/.openclaw/workspace/skills/markdocx-skill
+```
+
+or:
+
+```bash
+mkdir -p ~/.openclaw/workspace/skills
+unzip -oq apps/agent-skill/dist/markdocx-skill.zip -d ~/.openclaw/workspace/skills
+```
+
+Use a symlink only when you deliberately want a development-time deployment that continues to point at the local export directory.
 
 ## OpenClaw Example
 
@@ -57,9 +121,8 @@ OpenClaw supports workspace skills in `<workspace>/skills`, shared skills in `~/
 
 The most reliable manual deployment path today is:
 
-1. Clone this repository onto the same machine that runs OpenClaw.
-2. Run `npm install` and `npm run build:agent-skill` in the repository root.
-3. Expose the skill to OpenClaw by symlinking the source skill directory into the OpenClaw skills folder.
+1. Build the standalone export from this repository.
+2. Copy or unzip the exported `markdocx-skill` artifact into the OpenClaw skills folder.
 
 Example:
 
@@ -67,27 +130,40 @@ Example:
 git clone <this-repo-url> ~/src/markdocx
 cd ~/src/markdocx
 npm install
-npm run build:agent-skill
+npm run export:agent-skill
 
 mkdir -p ~/.openclaw/workspace/skills
-ln -sfn ~/src/markdocx/apps/agent-skill ~/.openclaw/workspace/skills/markdocx-skill
+cp -R ~/src/markdocx/apps/agent-skill/dist/markdocx-skill ~/.openclaw/workspace/skills/markdocx-skill
 ```
 
-Why the symlink approach is recommended:
+Zip-based deployment works too:
+
+```bash
+mkdir -p ~/.openclaw/workspace/skills
+unzip -oq ~/src/markdocx/apps/agent-skill/dist/markdocx-skill.zip -d ~/.openclaw/workspace/skills
+```
+
+Why copy or unzip is recommended:
 
 - OpenClaw sees the deployed skill at the meaningful public name `markdocx-skill`
-- Node module resolution still works against the original repository checkout
-- updating the repository source updates the deployed skill without a second copy
+- the deployed skill carries its own runtime dependencies
+- deployment no longer depends on the source checkout being present at runtime
+
+If you prefer a symlink for a local development loop:
+
+```bash
+ln -sfn ~/src/markdocx/apps/agent-skill/dist/markdocx-skill ~/.openclaw/workspace/skills/markdocx-skill
+```
 
 Optional OpenClaw allowlist configuration:
 
 ```json
 {
-	"agents": {
-		"defaults": {
-			"skills": ["markdocx-skill"]
-		}
-	}
+  "agents": {
+    "defaults": {
+      "skills": ["markdocx-skill"]
+    }
+  }
 }
 ```
 
@@ -105,17 +181,19 @@ Example:
 
 ```json
 {
-	"skills": {
-		"load": {
-			"extraDirs": [
-				"~/src/markdocx/apps"
-			]
-		}
-	}
+  "skills": {
+    "load": {
+      "extraDirs": [
+        "~/src/markdocx/apps"
+      ]
+    }
+  }
 }
 ```
 
-In that model, OpenClaw scans the extra directory for skill folders and loads this skill from the repository checkout directly.
+In that model, OpenClaw scans the extra directory for skill folders. Prefer pointing it at a deploy-only export tree rather than the live repository checkout.
+
+With the standalone export flow, you can also point `skills.load.extraDirs` at the exported parent directory if you want a deploy-only skills tree separate from the source checkout.
 
 ## Supported Parameters
 
@@ -141,4 +219,10 @@ Explicit skill parameters override environment values by option kind through `re
 
 ## Mermaid
 
-Mermaid conversion stays optional on the Node host path. If the Markdown contains Mermaid blocks, install `@markdocx/runtime-node-mermaid`; otherwise the skill fails fast with the same message as the CLI path.
+Mermaid conversion stays optional on the Node host path.
+
+- Source-tree usage: install `@markdocx/runtime-node-mermaid` if the Markdown contains Mermaid blocks.
+- Standard export: Mermaid stays disabled by default. If the deployed skill sees Mermaid, it fails clearly and tells the operator to re-export with `--with-mermaid` or provision Mermaid support separately.
+- Mermaid-enabled export: use `npm run export:agent-skill:mermaid`. That profile installs `@markdocx/runtime-node-mermaid`, vendors a Chromium browser into the export, writes the browser path into `markdocx-export-manifest.json`, and verifies a real Mermaid render during export.
+
+If you want to override the bundled browser on the target host, set `PUPPETEER_EXECUTABLE_PATH` to a compatible Chromium or Chrome binary.

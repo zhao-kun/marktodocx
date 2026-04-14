@@ -7,6 +7,8 @@ import path from 'node:path';
 import {
   convertWithAgentSkill,
   normalizeSkillStyleSet,
+  readAgentSkillExportManifest,
+  resolveBundledMermaidLaunchOptions,
   resolveAgentSkillStyleOptions,
 } from '../apps/agent-skill/skill.mjs';
 
@@ -68,6 +70,113 @@ test('agent skill wrapper converts markdown and writes the default output beside
     assert.equal(outputStat.size > 0, true);
     assert.equal(result.bytes.byteLength > 0, true);
     assert.equal(result.styleOptions.overrides.body.fontSizePt, 12);
+  } finally {
+    await fs.rm(tempDir, { recursive: true, force: true });
+  }
+});
+
+test('readAgentSkillExportManifest returns null when no export manifest is present', async () => {
+  const manifest = await readAgentSkillExportManifest();
+  assert.equal(manifest, null);
+});
+
+test('resolveBundledMermaidLaunchOptions defers to explicit PUPPETEER_EXECUTABLE_PATH overrides', async () => {
+  const launchOptions = await resolveBundledMermaidLaunchOptions({
+    env: {
+      ...process.env,
+      PUPPETEER_EXECUTABLE_PATH: '/tmp/custom-chromium',
+    },
+  });
+
+  assert.equal(launchOptions, undefined);
+});
+
+test('resolveBundledMermaidLaunchOptions rejects platform mismatch from export manifest', async () => {
+  await assert.rejects(
+    () => resolveBundledMermaidLaunchOptions({
+      manifest: {
+        profile: 'with-mermaid',
+        platform: process.platform === 'linux' ? 'darwin' : 'linux',
+        arch: process.arch,
+        mermaid: {
+          bundledBrowser: {
+            executablePath: 'browser/chrome',
+          },
+        },
+      },
+    }),
+    /targets .* but the current host is.*PUPPETEER_EXECUTABLE_PATH/
+  );
+});
+
+test('resolveBundledMermaidLaunchOptions rejects export manifest without target platform metadata', async () => {
+  await assert.rejects(
+    () => resolveBundledMermaidLaunchOptions({
+      manifest: {
+        profile: 'with-mermaid',
+        mermaid: {
+          bundledBrowser: {
+            executablePath: 'browser/chrome',
+          },
+        },
+      },
+    }),
+    /missing target platform metadata/
+  );
+});
+
+test('resolveBundledMermaidLaunchOptions rejects missing bundled browser executable', async () => {
+  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'markdocx-agent-skill-manifest-'));
+
+  try {
+    await assert.rejects(
+      () => resolveBundledMermaidLaunchOptions({
+        manifest: {
+          profile: 'with-mermaid',
+          platform: process.platform,
+          arch: process.arch,
+          mermaid: {
+            bundledBrowser: {
+              executablePath: 'browser/missing-chrome',
+            },
+          },
+        },
+        skillRootDir: tempDir,
+      }),
+      /PUPPETEER_EXECUTABLE_PATH/
+    );
+  } finally {
+    await fs.rm(tempDir, { recursive: true, force: true });
+  }
+});
+
+
+test('resolveBundledMermaidLaunchOptions resolves bundled browser executable from manifest', async () => {
+  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'markdocx-agent-skill-manifest-'));
+  const browserDir = path.join(tempDir, 'browser');
+  const executablePath = path.join(browserDir, 'chrome');
+
+  try {
+    await fs.mkdir(browserDir, { recursive: true });
+    await fs.writeFile(executablePath, '', 'utf8');
+
+    const launchOptions = await resolveBundledMermaidLaunchOptions({
+      manifest: {
+        profile: 'with-mermaid',
+        platform: process.platform,
+        arch: process.arch,
+        mermaid: {
+          bundledBrowser: {
+            executablePath: 'browser/chrome',
+          },
+        },
+      },
+      skillRootDir: tempDir,
+    });
+
+    assert.deepEqual(launchOptions, {
+      executablePath,
+    });
   } finally {
     await fs.rm(tempDir, { recursive: true, force: true });
   }

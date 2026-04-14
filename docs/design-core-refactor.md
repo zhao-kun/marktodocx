@@ -1069,6 +1069,8 @@ Work:
 1. Add skill wrapper.
 2. Add style parameters and env defaults.
 3. Reuse the same Node runtime as CLI.
+4. Add a standalone export flow so deployment does not require a live repository checkout.
+5. Keep Mermaid optional by default, with a separate platform-specific export mode that vendors a verified browser.
 
 Concrete package and file work:
 
@@ -1076,17 +1078,27 @@ Concrete package and file work:
   - `SKILL.md`
   - `skill.mjs`
   - `README.md`
+- Add `scripts/export-agent-skill.mjs` to emit a standalone `apps/agent-skill/dist/markdocx-skill/` folder with vendored workspace tarballs and installed runtime dependencies.
+- Support two export profiles: standard export without Mermaid installation, and `--with-mermaid` export with vendored Chromium plus a runtime manifest.
 - Reuse `@markdocx/runtime-node`.
 - Do not create a second conversion implementation for the skill.
 
 Build commands:
 
 - `npm run build:agent-skill`
+- `npm run export:agent-skill`
+- `npm run export:agent-skill:mermaid`
+- `npm run test:export:agent-skill`
+- `npm run test:export:agent-skill:mermaid`
 - `npm run test:parity`
 
 Migration checkpoint:
 
 - Agent skill accepts style parameters and env defaults that map to the same schema as CLI.
+- Agent skill can be exported as a standalone skill folder for deployment into external agent runtimes.
+- Agent skill export emits a zip artifact and has a dedicated verification command suitable for CI.
+- Mermaid stays optional in the default export, while the Mermaid-enabled export is explicit and platform-specific.
+- Export verification remains separate from `test:parity:all` by design because packaging validation is orthogonal to conversion parity.
 
 Gate:
 
