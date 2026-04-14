@@ -5,7 +5,7 @@
   "workspaces": [
     "packages/*",
     "markdocx-extension",
-    "apps/vscode-extension"
+    "apps/*"
   ],
   "scripts": {
     "convert": "node md-to-docx.mjs",
@@ -13,6 +13,7 @@
     "build:runtime-browser": "npm run build -w @markdocx/runtime-browser",
     "build:runtime-node": "npm run build -w @markdocx/runtime-node",
     "build:runtime-node-mermaid": "npm run build -w @markdocx/runtime-node-mermaid",
+    "build:agent-skill": "npm run build -w markdocx-agent-skill",
     "build:vscode-extension": "npm run build -w markdocx-vscode-extension",
     "package:vscode-extension": "npm run package -w markdocx-vscode-extension",
     "build:cli": "node scripts/build-cli-check.mjs",
@@ -22,8 +23,9 @@
     "test:unit": "node --test tests/*.test.mjs",
     "test:parity": "npm run build:chrome-extension && npm run test:unit && node scripts/run-fixture-parity.mjs",
     "test:parity:cli": "npm run build:cli && node scripts/run-cli-parity.mjs",
+    "test:parity:skill": "npm run build:agent-skill && node scripts/run-agent-skill-parity.mjs",
     "test:parity:vscode": "npm run build:chrome-extension && npm run build:vscode-extension && node scripts/run-vscode-parity.mjs",
-    "test:parity:all": "npm run test:parity && npm run test:parity:cli && npm run test:parity:vscode"
+    "test:parity:all": "npm run test:parity && npm run test:parity:cli && npm run test:parity:vscode && npm run test:parity:skill"
   },
   "overrides": {
     "highlight.js": "^11.11.1",

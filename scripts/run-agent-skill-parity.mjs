@@ -1,12 +1,11 @@
 #!/usr/bin/env node
 
-import { execFile as execFileCallback } from 'node:child_process';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import process from 'node:process';
-import { promisify } from 'node:util';
 
+import { convertWithAgentSkill } from '../apps/agent-skill/skill.mjs';
 import {
   buildDetailedDiffSummary,
   compareDocxFiles,
@@ -15,31 +14,10 @@ import {
   resolveFromRepoRoot,
 } from './lib/docx-parity.mjs';
 
-const execFile = promisify(execFileCallback);
 const manifestPath = resolveFromRepoRoot('test-markdown', '__golden__', 'manifest.json');
 
 async function readJson(filePath) {
   return JSON.parse(await fs.readFile(filePath, 'utf8'));
-}
-
-async function runCliConversion({ markdownPath, outputPath, styleOptions }) {
-  const tempStylePath = path.join(path.dirname(outputPath), `${path.basename(outputPath, '.docx')}.style.json`);
-
-  try {
-    await fs.writeFile(tempStylePath, `${JSON.stringify(styleOptions, null, 2)}\n`, 'utf8');
-    return await execFile(process.execPath, [
-      resolveFromRepoRoot('md-to-docx.mjs'),
-      markdownPath,
-      outputPath,
-      '--style-json',
-      tempStylePath,
-    ], {
-      cwd: process.cwd(),
-      env: process.env,
-    });
-  } finally {
-    await fs.rm(tempStylePath, { force: true });
-  }
 }
 
 async function main() {
@@ -55,7 +33,7 @@ async function main() {
     throw new Error('Parity manifest has no verified fixtures.');
   }
 
-  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'markdocx-cli-parity-'));
+  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'markdocx-agent-skill-parity-'));
   const failures = [];
   const passes = [];
 
@@ -81,21 +59,17 @@ async function main() {
         continue;
       }
 
-      let cliStdout = '';
       try {
-        const result = await runCliConversion({
-          markdownPath,
+        await convertWithAgentSkill({
+          inputPath: markdownPath,
           outputPath: currentDocxPath,
-          styleOptions: fixture.styleOptions || { preset: 'default', overrides: {} },
+          styleJson: fixture.styleOptions || { preset: 'default', overrides: {} },
+          env: process.env,
         });
-        cliStdout = result.stdout;
       } catch (error) {
         failures.push({
           id: fixture.id,
-          message: [
-            `CLI execution failed for ${fixture.id}.`,
-            error.stderr?.trim() || error.stdout?.trim() || error.message,
-          ].filter(Boolean).join('\n'),
+          message: `Agent skill execution failed for ${fixture.id}.\n${error instanceof Error ? error.message : String(error)}`,
         });
         continue;
       }
@@ -120,19 +94,16 @@ async function main() {
         continue;
       }
 
-      passes.push({
-        id: fixture.id,
-        stdout: cliStdout.trim(),
-      });
+      passes.push(fixture.id);
     }
   } finally {
     await fs.rm(tempDir, { recursive: true, force: true });
   }
 
   if (failures.length > 0) {
-    console.error(`CLI parity failures: ${failures.length}/${verifiedFixtures.length}`);
+    console.error(`Agent skill parity failures: ${failures.length}/${verifiedFixtures.length}`);
     if (passes.length > 0) {
-      console.error(`Passing fixtures: ${passes.map((pass) => pass.id).join(', ')}`);
+      console.error(`Passing fixtures: ${passes.join(', ')}`);
     }
     for (const failure of failures) {
       console.error(`\n[${failure.id}]`);
@@ -141,7 +112,7 @@ async function main() {
     process.exit(1);
   }
 
-  console.log(`CLI parity passed for ${passes.length} verified fixture(s).`);
+  console.log(`Agent skill parity passed for ${passes.length} verified fixture(s).`);
 }
 
 main().catch((error) => {

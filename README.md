@@ -9,15 +9,15 @@ markdocx converts Markdown to Word (`.docx`) while preserving headings, paragrap
 | Chrome extension    | Implemented   | `markdocx-extension/`                          |
 | CLI                 | Implemented   | `md-to-docx.mjs`                               |
 | VSCode extension    | Implemented   | `apps/vscode-extension/`                       |
-| Agent skill         | Planned       | —                                              |
+| Agent skill         | Implemented   | `apps/agent-skill/`                            |
 
 ## Architecture
 
 The repository follows a **Shared Core + Two Runtime Families** layout:
 
 - A shared conversion core owns the canonical Markdown → HTML → DOCX rules, the style and layout schemas, DOCX normalization, and the parity fixtures.
-- A **browser runtime family** (`@markdocx/runtime-browser`) hosts the Chrome extension (and the planned VSCode extension) on top of native `DOMParser` and in-page Mermaid rendering.
-- A **Node runtime family** (`@markdocx/runtime-node`, plus the optional `@markdocx/runtime-node-mermaid`) hosts the CLI (and the planned agent skill) on top of a jsdom DOM adapter and an optional Puppeteer-based Mermaid renderer.
+- A **browser runtime family** (`@markdocx/runtime-browser`) hosts the Chrome extension and VSCode extension on top of native `DOMParser` and in-page Mermaid rendering.
+- A **Node runtime family** (`@markdocx/runtime-node`, plus the optional `@markdocx/runtime-node-mermaid`) hosts the CLI and agent skill on top of a jsdom DOM adapter and an optional Puppeteer-based Mermaid renderer.
 
 Output parity across hosts is enforced by fixture-driven gates in `scripts/run-parity.mjs` and `scripts/run-cli-parity.mjs`. See `docs/design-core-refactor.md` for the full design, contracts, and rationale.
 
@@ -33,6 +33,7 @@ markdocx/
 │   └── runtime-node-mermaid/       # @markdocx/runtime-node-mermaid — optional Puppeteer Mermaid renderer
 ├── markdocx-extension/             # Chrome extension host
 ├── apps/
+│   ├── agent-skill/                # Agent skill host (Node runtime family)
 │   └── vscode-extension/           # VSCode extension host (hidden webview + browser runtime)
 ├── test-markdown/__golden__/       # Parity fixtures and golden DOCX artifacts
 └── docs/design-core-refactor.md    # Authoritative design document
@@ -178,6 +179,33 @@ code --install-extension apps/vscode-extension/dist/markdocx-vscode-extension.vs
 
 The packaged `.vsix` ships the bundled `dist/extension.cjs`, the webview asset bundle, and the manifest. Workspace `@markdocx/*` packages are inlined at build time, so the extension does not require `node_modules` at install time and `vsce package` is invoked with `--no-dependencies`.
 
+## Agent Skill
+
+The agent skill source lives under `apps/agent-skill/` and exports `convertWithAgentSkill()` from `apps/agent-skill/skill.mjs`. It is intentionally thin: it resolves file or inline Markdown input, maps skill parameters and environment defaults into the shared `styleOptions` schema through `@markdocx/runtime-node`, and writes a DOCX when an output path is available.
+
+Naming rule:
+
+- Internal source app path: `apps/agent-skill/`
+- Internal workspace package: `markdocx-agent-skill`
+- Public Claude skill name: `markdocx-skill`
+
+The source folder name does not need to match the public Claude skill name. The public skill identity is defined by the `name` field in `apps/agent-skill/SKILL.md`.
+
+Skill parameters match the design contract:
+
+| Parameter       | Purpose                                                                 |
+| --------------- | ----------------------------------------------------------------------- |
+| `inputPath`     | Path to a local Markdown file                                           |
+| `markdown`      | Inline Markdown string                                                  |
+| `baseDir`       | Base directory for resolving local images with inline Markdown          |
+| `outputPath`    | Optional DOCX path; defaults beside `inputPath` when file input is used |
+| `stylePreset`   | Base shared style preset                                                |
+| `marginPreset`  | Optional shared margin preset override                                  |
+| `styleJson`     | Shared style JSON string, plain object, or JSON file path               |
+| `styleSet`      | Shared dotted-path overrides such as `body.fontSizePt=12`               |
+
+The skill honors the same environment defaults as the CLI: `MARKDOCX_STYLE_PRESET`, `MARKDOCX_MARGIN_PRESET`, `MARKDOCX_STYLE_JSON`, and `MARKDOCX_STYLE_SET`. Mermaid behavior is also the same: install `@markdocx/runtime-node-mermaid` when the document contains Mermaid blocks.
+
 ## Development
 
 Per-package build scripts:
@@ -187,6 +215,7 @@ npm run build:core
 npm run build:runtime-browser
 npm run build:runtime-node
 npm run build:runtime-node-mermaid
+npm run build:agent-skill
 npm run build:chrome-extension
 npm run build:vscode-extension
 npm run build:cli
@@ -198,8 +227,9 @@ Unit and parity gates:
 npm run test:unit           # Unit tests across packages
 npm run test:parity         # Extension-path parity gate
 npm run test:parity:cli     # CLI-path parity gate
+npm run test:parity:skill   # Agent-skill parity gate
 npm run test:parity:vscode  # VSCode-path parity gate
-npm run test:parity:all     # Full pre-ship parity gate (extension + CLI + VSCode)
+npm run test:parity:all     # Full pre-ship parity gate (extension + CLI + VSCode + agent skill)
 ```
 
 The full parity gate is `npm run test:parity:all`. Run it before shipping any change that touches the conversion core or any runtime family.

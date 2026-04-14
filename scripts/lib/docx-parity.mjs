@@ -356,6 +356,52 @@ export async function compareDocxFiles(leftPath, rightPath) {
   return compareDocxEntryMaps(leftEntries, rightEntries);
 }
 
+function firstDifferenceIndex(left, right) {
+  const limit = Math.min(left.length, right.length);
+  for (let index = 0; index < limit; index += 1) {
+    if (left[index] !== right[index]) {
+      return index;
+    }
+  }
+
+  return left.length === right.length ? -1 : limit;
+}
+
+function summarizeXmlDifference(leftXml, rightXml, contextSize = 160) {
+  const diffIndex = firstDifferenceIndex(leftXml, rightXml);
+  if (diffIndex < 0) {
+    return null;
+  }
+
+  const start = Math.max(0, diffIndex - contextSize);
+  const end = diffIndex + contextSize;
+  return {
+    diffIndex,
+    leftSnippet: leftXml.slice(start, end),
+    rightSnippet: rightXml.slice(start, end),
+  };
+}
+
+export async function buildDetailedDiffSummary(currentDocxPath, goldenDocxPath, differences) {
+  const documentXmlDiff = differences.find((difference) => difference.entryPath === 'word/document.xml' && difference.reason === 'xml-diff');
+  if (!documentXmlDiff) {
+    return null;
+  }
+
+  const [currentEntries, goldenEntries] = await Promise.all([
+    loadDocxEntriesFromFile(currentDocxPath),
+    loadDocxEntriesFromFile(goldenDocxPath),
+  ]);
+
+  const currentDocument = currentEntries.get('word/document.xml');
+  const goldenDocument = goldenEntries.get('word/document.xml');
+  if (!currentDocument?.value || !goldenDocument?.value) {
+    return null;
+  }
+
+  return summarizeXmlDifference(currentDocument.value, goldenDocument.value);
+}
+
 export function formatDifferences(differences, leftLabel, rightLabel) {
   if (differences.length === 0) {
     return `${leftLabel} matches ${rightLabel} after normalization.`;

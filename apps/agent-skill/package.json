@@ -1,0 +1,13 @@
+{
+  "name": "markdocx-agent-skill",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./skill.mjs",
+  "scripts": {
+    "build": "node ../../scripts/build-agent-skill-check.mjs"
+  },
+  "dependencies": {
+    "@markdocx/runtime-node": "0.1.0"
+  }
+}

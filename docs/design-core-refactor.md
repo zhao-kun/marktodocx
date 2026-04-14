@@ -27,7 +27,7 @@ The following pieces now exist in code rather than only in design:
 The following parts of the design remain planned rather than fully implemented:
 
 - The final `apps/` host split described in this document is not yet the literal repository layout: the Chrome extension still lives under `markdocx-extension/` rather than `apps/chrome-extension/`.
-- The agent-skill host is still a design target.
+- The agent-skill host now exists, but its host-specific packaging is still intentionally thin and transitional.
 
 ### 0.3 Practical Reading Rule
 
@@ -58,7 +58,7 @@ As of Chrome extension Phase 7 completion, the Chrome extension is the most comp
 - Layout presets and margin-aware rendering.
 - The current output behavior we want to preserve and generalize.
 
-The VSCode extension and agent skill do not exist yet.
+The VSCode extension is now implemented and the agent skill now exists as a thin Node wrapper over the shared runtime family.
 
 ### 1.2 Product Goal
 
@@ -324,6 +324,7 @@ Current repository reality is closer to this transitional state:
 - `packages/runtime-node/` exists and now owns the initial explicit Node DOM adapter, filesystem image handling, and Node composition entry.
 - `markdocx-extension/` still exists as the active browser host implementation.
 - `md-to-docx.mjs` still exists as the legacy CLI surface.
+- `apps/agent-skill/` now exists as the thin Node host wrapper for agent execution.
 - `test-markdown/__golden__/manifest.json` is the active parity corpus index.
 
 That mismatch is intentional during the refactor. The repository does not need to reach the final directory layout before shared-core extraction and parity hardening start delivering value.
@@ -815,6 +816,7 @@ Proposed root workspace commands:
 - `npm run dev:cli`
 - `npm run test:parity`
 - `npm run test:parity:cli`
+- `npm run test:parity:skill`
 - `npm run test:parity:all`
 - `npm run smoke:all`
 
@@ -1248,12 +1250,12 @@ This section turns the design into a next-session work breakdown.
 
 ### Epic 6 - Agent Skill
 
-- [ ] Create `apps/agent-skill/SKILL.md`.
-- [ ] Add `skill.mjs` wrapper.
-- [ ] Reuse Node runtime family.
-- [ ] Add style parameter parsing.
-- [ ] Add env-default support.
-- [ ] Validate parity against golden outputs.
+- [x] Create `apps/agent-skill/SKILL.md`.
+- [x] Add `skill.mjs` wrapper.
+- [x] Reuse Node runtime family.
+- [x] Add style parameter parsing.
+- [x] Add env-default support.
+- [x] Validate parity against golden outputs.
 
 ### Epic 7 - Cleanup and CI
 
