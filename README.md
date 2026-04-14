@@ -292,6 +292,53 @@ If the CLI logs a `Could not find Chrome` error during Mermaid rendering:
 npx puppeteer browsers install chrome
 ```
 
+### Linux shared libraries missing for Chromium
+
+If Mermaid rendering fails with an error like `error while loading shared libraries: libatk-1.0.so.0`, Chromium was downloaded successfully but the host OS is missing Puppeteer's Linux runtime libraries.
+
+On Debian or Ubuntu, if you have root access, let Puppeteer attempt to install them:
+
+```bash
+sudo MARKDOCX_PUPPETEER_INSTALL_DEPS=1 npm run test:export:agent-skill:mermaid
+```
+
+If you prefer to install packages manually on Debian or Ubuntu, start with:
+
+```bash
+sudo apt-get update
+sudo apt-get install -y \
+  ca-certificates \
+  fonts-liberation \
+  libasound2t64 || sudo apt-get install -y libasound2
+
+sudo apt-get install -y \
+  libatk1.0-0 \
+  libatk-bridge2.0-0 \
+  libcups2 \
+  libdbus-1-3 \
+  libdrm2 \
+  libgbm1 \
+  libglib2.0-0 \
+  libgtk-3-0 \
+  libnspr4 \
+  libnss3 \
+  libpango-1.0-0 \
+  libx11-6 \
+  libx11-xcb1 \
+  libxcb1 \
+  libxcomposite1 \
+  libxdamage1 \
+  libxext6 \
+  libxfixes3 \
+  libxkbcommon0 \
+  libxrandr2 \
+  xdg-utils
+```
+
+On some Ubuntu releases the audio package is named `libasound2t64`; on older releases it is still `libasound2`.
+
+In containerized environments you may also need `MARKDOCX_PUPPETEER_NO_SANDBOX=1`.
+
 ### CLI error: install `@markdocx/runtime-node-mermaid`
 
 If the CLI exits with a message about installing `@markdocx/runtime-node-mermaid`, your Markdown contains a Mermaid fence but the optional Puppeteer helper package is not installed. Install the workspace (which pulls it in) and rerun:

@@ -119,9 +119,18 @@ export async function installExportDependencies({ withMermaid = false } = {}) {
   });
 }
 
+function shouldInstallPuppeteerSystemDeps(env = process.env) {
+  return env.MARKDOCX_PUPPETEER_INSTALL_DEPS === '1';
+}
+
 async function installVendoredChromeBrowser() {
+  const installArgs = ['exec', 'puppeteer', 'browsers', 'install', 'chrome'];
+  if (shouldInstallPuppeteerSystemDeps(process.env)) {
+    installArgs.push('--install-deps');
+  }
+
   await fs.mkdir(exportBrowserDir, { recursive: true });
-  const result = await runNpm(['exec', 'puppeteer', 'browsers', 'install', 'chrome'], {
+  const result = await runNpm(installArgs, {
     cwd: exportDir,
     env: {
       ...process.env,
@@ -154,6 +163,25 @@ async function installVendoredChromeBrowser() {
     executablePath,
     relativeExecutablePath: path.relative(exportDir, executablePath),
   };
+}
+
+function buildMermaidSmokeFailureMessage(error) {
+  const text = error instanceof Error ? error.stack || error.message : String(error);
+  if (!/error while loading shared libraries:/i.test(text)) {
+    return text;
+  }
+
+  return [
+    'Mermaid-enabled export bundled Chromium successfully, but the current Linux host is missing one or more shared libraries required to launch it.',
+    'Install the Puppeteer Linux runtime dependencies on the deploy host and rerun the export smoke test.',
+    'On Debian or Ubuntu, you can let Puppeteer attempt this automatically with:',
+    '  sudo MARKDOCX_PUPPETEER_INSTALL_DEPS=1 npm run test:export:agent-skill:mermaid',
+    'If you prefer to install packages manually, install the Chromium runtime libraries required by Puppeteer for your distro.',
+    'If this host is a container or restricted environment, you may also need MARKDOCX_PUPPETEER_NO_SANDBOX=1.',
+    '',
+    'Original launch error:',
+    text,
+  ].join('\n');
 }
 
 export async function writeExportManifest({
@@ -220,10 +248,18 @@ export async function runStandaloneSmokeTest({ withMermaid = false } = {}) {
       "process.stdout.write('ok');",
     ].join('\n');
 
-    const result = await execFile(process.execPath, ['--input-type=module', '--eval', code], {
-      cwd: isolatedSkillDir,
-      env: process.env,
-    });
+    let result;
+    try {
+      result = await execFile(process.execPath, ['--input-type=module', '--eval', code], {
+        cwd: isolatedSkillDir,
+        env: process.env,
+      });
+    } catch (error) {
+      if (withMermaid) {
+        throw new Error(buildMermaidSmokeFailureMessage(error));
+      }
+      throw error;
+    }
 
     assert.equal(result.stdout, 'ok');
     const stat = await fs.stat(outputPath);

@@ -58,6 +58,7 @@ Profile behavior:
 - `npm run export:agent-skill` keeps Mermaid optional. The export includes the optional Mermaid tarball in `vendor/`, but does not install `@markdocx/runtime-node-mermaid` into `node_modules/` and does not bundle Chromium.
 - `npm run export:agent-skill:mermaid` installs `@markdocx/runtime-node-mermaid`, vendors a pinned Chromium browser into the export, writes a runtime manifest, and runs a real Mermaid render smoke test before the export succeeds.
 - Mermaid-enabled exports are platform-specific because the vendored browser is built for the host platform that ran the export.
+- Mermaid-enabled exports still require the host OS to provide Chromium's Linux shared libraries. Minimal VPS images often miss packages such as `libatk1.0-0`.
 - A malformed `markdocx-export-manifest.json` is treated as a hard deployment error. The skill fails loudly instead of guessing around a corrupt Mermaid export.
 
 The exported artifact lives at:
@@ -226,3 +227,50 @@ Mermaid conversion stays optional on the Node host path.
 - Mermaid-enabled export: use `npm run export:agent-skill:mermaid`. That profile installs `@markdocx/runtime-node-mermaid`, vendors a Chromium browser into the export, writes the browser path into `markdocx-export-manifest.json`, and verifies a real Mermaid render during export.
 
 If you want to override the bundled browser on the target host, set `PUPPETEER_EXECUTABLE_PATH` to a compatible Chromium or Chrome binary.
+
+On minimal Debian or Ubuntu hosts, Mermaid-enabled exports may still fail if Chromium shared libraries are missing. If you have root access, let Puppeteer try to install them while exporting:
+
+```bash
+sudo MARKDOCX_PUPPETEER_INSTALL_DEPS=1 npm run test:export:agent-skill:mermaid
+```
+
+If you prefer to install the Linux dependencies manually on Debian or Ubuntu, start with:
+
+```bash
+sudo apt-get update
+sudo apt-get install -y \
+  ca-certificates \
+  fonts-liberation \
+  libasound2t64 || sudo apt-get install -y libasound2
+
+sudo apt-get install -y \
+  libatk1.0-0 \
+  libatk-bridge2.0-0 \
+  libcups2 \
+  libdbus-1-3 \
+  libdrm2 \
+  libgbm1 \
+  libglib2.0-0 \
+  libgtk-3-0 \
+  libnspr4 \
+  libnss3 \
+  libpango-1.0-0 \
+  libx11-6 \
+  libx11-xcb1 \
+  libxcb1 \
+  libxcomposite1 \
+  libxdamage1 \
+  libxext6 \
+  libxfixes3 \
+  libxkbcommon0 \
+  libxrandr2 \
+  xdg-utils
+```
+
+On some Ubuntu releases the audio package is named `libasound2t64`; on older releases it is still `libasound2`.
+
+If the host is a container or restricted environment, you may also need:
+
+```bash
+MARKDOCX_PUPPETEER_NO_SANDBOX=1
+```
