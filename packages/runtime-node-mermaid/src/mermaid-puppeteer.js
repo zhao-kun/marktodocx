@@ -28,10 +28,19 @@ function getMermaidConfig() {
   };
 }
 
-function getDefaultLaunchOptions({ allowNoSandbox = process.env.MARKDOCX_PUPPETEER_NO_SANDBOX === '1' || process.env.CI === 'true' } = {}) {
+function getDefaultLaunchOptions({
+  allowNoSandbox = process.env.MARKDOCX_PUPPETEER_NO_SANDBOX === '1' || process.env.CI === 'true',
+  args: extraArgs = [],
+} = {}) {
+  const sandboxArgs = allowNoSandbox ? ['--no-sandbox', '--disable-setuid-sandbox'] : [];
+  const mergedArgs = [...new Set([
+    ...sandboxArgs,
+    ...(Array.isArray(extraArgs) ? extraArgs : []),
+  ])];
+
   return {
     headless: 'new',
-    args: allowNoSandbox ? ['--no-sandbox', '--disable-setuid-sandbox'] : [],
+    args: mergedArgs,
   };
 }
 
@@ -55,9 +64,12 @@ export async function createPuppeteerMermaidRenderer({
   launchOptions,
   viewport = { width: 1600, height: 1200, deviceScaleFactor: 1 },
 } = {}) {
+  const resolvedLaunchOptions = launchOptions || {};
+  const defaultLaunchOptions = getDefaultLaunchOptions(resolvedLaunchOptions);
   const browser = await puppeteer.launch({
-    ...getDefaultLaunchOptions(),
-    ...(launchOptions || {}),
+    ...defaultLaunchOptions,
+    ...resolvedLaunchOptions,
+    args: defaultLaunchOptions.args,
   });
 
   const page = await browser.newPage();

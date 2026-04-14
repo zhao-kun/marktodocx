@@ -168,6 +168,7 @@ test('resolveBundledMermaidLaunchOptions resolves bundled browser executable fro
         mermaid: {
           bundledBrowser: {
             executablePath: 'browser/chrome',
+            launchArgs: ['--no-sandbox', '--disable-setuid-sandbox'],
           },
         },
       },
@@ -176,6 +177,39 @@ test('resolveBundledMermaidLaunchOptions resolves bundled browser executable fro
 
     assert.deepEqual(launchOptions, {
       executablePath,
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    });
+  } finally {
+    await fs.rm(tempDir, { recursive: true, force: true });
+  }
+});
+
+test('resolveBundledMermaidLaunchOptions defaults missing launchArgs to an empty array', async () => {
+  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'markdocx-agent-skill-manifest-'));
+  const browserDir = path.join(tempDir, 'browser');
+  const executablePath = path.join(browserDir, 'chrome');
+
+  try {
+    await fs.mkdir(browserDir, { recursive: true });
+    await fs.writeFile(executablePath, '', 'utf8');
+
+    const launchOptions = await resolveBundledMermaidLaunchOptions({
+      manifest: {
+        profile: 'with-mermaid',
+        platform: process.platform,
+        arch: process.arch,
+        mermaid: {
+          bundledBrowser: {
+            executablePath: 'browser/chrome',
+          },
+        },
+      },
+      skillRootDir: tempDir,
+    });
+
+    assert.deepEqual(launchOptions, {
+      executablePath,
+      args: [],
     });
   } finally {
     await fs.rm(tempDir, { recursive: true, force: true });

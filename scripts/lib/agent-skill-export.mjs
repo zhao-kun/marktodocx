@@ -123,6 +123,14 @@ function shouldInstallPuppeteerSystemDeps(env = process.env) {
   return env.MARKDOCX_PUPPETEER_INSTALL_DEPS === '1';
 }
 
+function isSandboxRestrictionError(text) {
+  return /No usable sandbox!/i.test(text);
+}
+
+function isMissingSharedLibrariesError(text) {
+  return /error while loading shared libraries:/i.test(text);
+}
+
 async function installVendoredChromeBrowser() {
   const installArgs = ['exec', 'puppeteer', 'browsers', 'install', 'chrome'];
   if (shouldInstallPuppeteerSystemDeps(process.env)) {
@@ -165,9 +173,58 @@ async function installVendoredChromeBrowser() {
   };
 }
 
+async function probeBundledBrowserLaunchArgs(executablePath) {
+  async function tryLaunch(args) {
+    const code = [
+      "import puppeteer from 'puppeteer';",
+      `const browser = await puppeteer.launch({ executablePath: ${JSON.stringify(executablePath)}, args: ${JSON.stringify(args)}, headless: 'new' });`,
+      'await browser.close();',
+      "process.stdout.write('ok');",
+    ].join('\n');
+
+    const result = await execFile(process.execPath, ['--input-type=module', '--eval', code], {
+      cwd: exportDir,
+      env: process.env,
+    });
+
+    assert.equal(result.stdout, 'ok');
+  }
+
+  try {
+    await tryLaunch([]);
+    return [];
+  } catch (error) {
+    const text = error instanceof Error ? error.stack || error.message : String(error);
+    if (isMissingSharedLibrariesError(text)) {
+      throw error;
+    }
+
+    if (!isSandboxRestrictionError(text)) {
+      throw error;
+    }
+
+    await tryLaunch(['--no-sandbox', '--disable-setuid-sandbox']);
+    return ['--no-sandbox', '--disable-setuid-sandbox'];
+  }
+}
+
 function buildMermaidSmokeFailureMessage(error) {
   const text = error instanceof Error ? error.stack || error.message : String(error);
-  if (!/error while loading shared libraries:/i.test(text)) {
+  if (isSandboxRestrictionError(text)) {
+    return [
+      'Mermaid-enabled export bundled Chromium successfully, but the current Linux host does not allow Chromium to start with its sandbox enabled.',
+      'This commonly happens on Ubuntu 23.10+ or other hosts where unprivileged user namespaces are restricted by AppArmor or kernel policy.',
+      'If this is a trusted CI, VPS, or container environment, rerun with:',
+      '  MARKDOCX_PUPPETEER_NO_SANDBOX=1 npm run test:export:agent-skill:mermaid',
+      'If you also need Puppeteer to install Linux runtime libraries automatically, combine it with:',
+      '  sudo MARKDOCX_PUPPETEER_INSTALL_DEPS=1 MARKDOCX_PUPPETEER_NO_SANDBOX=1 npm run test:export:agent-skill:mermaid',
+      '',
+      'Original launch error:',
+      text,
+    ].join('\n');
+  }
+
+  if (!isMissingSharedLibrariesError(text)) {
     return text;
   }
 
@@ -177,7 +234,8 @@ function buildMermaidSmokeFailureMessage(error) {
     'On Debian or Ubuntu, you can let Puppeteer attempt this automatically with:',
     '  sudo MARKDOCX_PUPPETEER_INSTALL_DEPS=1 npm run test:export:agent-skill:mermaid',
     'If you prefer to install packages manually, install the Chromium runtime libraries required by Puppeteer for your distro.',
-    'If this host is a container or restricted environment, you may also need MARKDOCX_PUPPETEER_NO_SANDBOX=1.',
+    'If this host is a container or restricted environment, you may also need:',
+    '  MARKDOCX_PUPPETEER_NO_SANDBOX=1 npm run test:export:agent-skill:mermaid',
     '',
     'Original launch error:',
     text,
@@ -202,6 +260,7 @@ export async function writeExportManifest({
                 browser: bundledBrowser.browser,
                 buildId: bundledBrowser.buildId,
                 executablePath: bundledBrowser.relativeExecutablePath.replace(/\\/g, '/'),
+                launchArgs: Array.isArray(bundledBrowser.launchArgs) ? bundledBrowser.launchArgs : [],
               }
             : null,
         }
@@ -220,6 +279,12 @@ export async function provisionMermaidSupport({ withMermaid = false } = {}) {
   }
 
   const bundledBrowser = await installVendoredChromeBrowser();
+  try {
+    bundledBrowser.launchArgs = await probeBundledBrowserLaunchArgs(bundledBrowser.executablePath);
+  } catch (error) {
+    throw new Error(buildMermaidSmokeFailureMessage(error));
+  }
+
   return writeExportManifest({
     withMermaid: true,
     bundledBrowser,
@@ -397,6 +462,7 @@ export async function verifyExportLayout() {
     const runtimeNodeMermaidPackage = getLockPackage(packageLock, 'node_modules/@markdocx/runtime-node-mermaid');
     assert.equal(manifest.mermaid?.bundled, true, 'Mermaid-enabled export manifest must record bundled Mermaid support.');
     assert.equal(typeof bundledBrowser?.executablePath, 'string', 'Mermaid-enabled export manifest is missing bundled browser executablePath.');
+    assert.equal(Array.isArray(bundledBrowser?.launchArgs), true, 'Mermaid-enabled export manifest must record bundled browser launchArgs.');
     assert.equal(typeof runtimeNodeMermaidPackage?.resolved, 'string');
     assert.equal(runtimeNodeMermaidPackage.resolved.startsWith('file:vendor/markdocx-runtime-node-mermaid-'), true, 'Exported @markdocx/runtime-node-mermaid must resolve from the vendored tarball.');
     await Promise.all([

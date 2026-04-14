@@ -56,7 +56,7 @@ What this does:
 Profile behavior:
 
 - `npm run export:agent-skill` keeps Mermaid optional. The export includes the optional Mermaid tarball in `vendor/`, but does not install `@markdocx/runtime-node-mermaid` into `node_modules/` and does not bundle Chromium.
-- `npm run export:agent-skill:mermaid` installs `@markdocx/runtime-node-mermaid`, vendors a pinned Chromium browser into the export, writes a runtime manifest, and runs a real Mermaid render smoke test before the export succeeds.
+- `npm run export:agent-skill:mermaid` installs `@markdocx/runtime-node-mermaid`, vendors a pinned Chromium browser into the export, probes the working Chromium launch args on the export host, writes them into the runtime manifest, and runs a real Mermaid render smoke test before the export succeeds.
 - Mermaid-enabled exports are platform-specific because the vendored browser is built for the host platform that ran the export.
 - Mermaid-enabled exports still require the host OS to provide Chromium's Linux shared libraries. Minimal VPS images often miss packages such as `libatk1.0-0`.
 - A malformed `markdocx-export-manifest.json` is treated as a hard deployment error. The skill fails loudly instead of guessing around a corrupt Mermaid export.
@@ -75,7 +75,7 @@ apps/agent-skill/dist/markdocx-skill.zip
 
 That directory is self-contained for deployment: it includes `SKILL.md`, `skill.mjs`, a generated `package.json`, vendored workspace tarballs, and installed runtime dependencies under `node_modules/`.
 
-It also includes `markdocx-export-manifest.json`, which records whether the export is `standard` or `with-mermaid`. Mermaid-enabled exports also record the vendored browser path there.
+It also includes `markdocx-export-manifest.json`, which records whether the export is `standard` or `with-mermaid`. Mermaid-enabled exports also record the vendored browser path and any required launch arguments there, so deployments on the same host usually do not need manual sandbox flags.
 
 ## Manual Deployment
 
@@ -224,7 +224,7 @@ Mermaid conversion stays optional on the Node host path.
 
 - Source-tree usage: install `@markdocx/runtime-node-mermaid` if the Markdown contains Mermaid blocks.
 - Standard export: Mermaid stays disabled by default. If the deployed skill sees Mermaid, it fails clearly and tells the operator to re-export with `--with-mermaid` or provision Mermaid support separately.
-- Mermaid-enabled export: use `npm run export:agent-skill:mermaid`. That profile installs `@markdocx/runtime-node-mermaid`, vendors a Chromium browser into the export, writes the browser path into `markdocx-export-manifest.json`, and verifies a real Mermaid render during export.
+- Mermaid-enabled export: use `npm run export:agent-skill:mermaid`. That profile installs `@markdocx/runtime-node-mermaid`, vendors a Chromium browser into the export, probes the working launch args, writes both into `markdocx-export-manifest.json`, and verifies a real Mermaid render during export.
 
 If you want to override the bundled browser on the target host, set `PUPPETEER_EXECUTABLE_PATH` to a compatible Chromium or Chrome binary.
 
@@ -273,4 +273,16 @@ If the host is a container or restricted environment, you may also need:
 
 ```bash
 MARKDOCX_PUPPETEER_NO_SANDBOX=1
+```
+
+If Chromium fails with `No usable sandbox!`, rerun the Mermaid export gate as:
+
+```bash
+MARKDOCX_PUPPETEER_NO_SANDBOX=1 npm run test:export:agent-skill:mermaid
+```
+
+On minimal Ubuntu VPS hosts, you may need both environment variables together:
+
+```bash
+sudo MARKDOCX_PUPPETEER_INSTALL_DEPS=1 MARKDOCX_PUPPETEER_NO_SANDBOX=1 npm run test:export:agent-skill:mermaid
 ```

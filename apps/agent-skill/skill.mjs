@@ -125,8 +125,13 @@ export async function resolveBundledMermaidLaunchOptions({
     );
   }
 
+  const launchArgs = Array.isArray(bundledBrowser.launchArgs)
+    ? bundledBrowser.launchArgs.filter((value) => typeof value === 'string' && value.trim() !== '')
+    : [];
+
   return {
     executablePath: resolvedExecutablePath,
+    args: launchArgs,
   };
 }
 

@@ -1079,7 +1079,7 @@ Concrete package and file work:
   - `skill.mjs`
   - `README.md`
 - Add `scripts/export-agent-skill.mjs` to emit a standalone `apps/agent-skill/dist/markdocx-skill/` folder with vendored workspace tarballs and installed runtime dependencies.
-- Support two export profiles: standard export without Mermaid installation, and `--with-mermaid` export with vendored Chromium plus a runtime manifest.
+- Support two export profiles: standard export without Mermaid installation, and `--with-mermaid` export with vendored Chromium plus a runtime manifest that records the working browser launch args discovered on the export host.
 - Reuse `@markdocx/runtime-node`.
 - Do not create a second conversion implementation for the skill.
 

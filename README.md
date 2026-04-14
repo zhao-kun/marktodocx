@@ -220,7 +220,7 @@ To produce a Mermaid-enabled export with a vendored Chromium browser, run:
 npm run export:agent-skill:mermaid
 ```
 
-That profile is platform-specific and intended for deployment on the same OS and CPU family that built the export.
+That profile is platform-specific and intended for deployment on the same OS and CPU family that built the export. It also persists the working Chromium launch args in the export manifest, so sandbox-restricted hosts that built the export usually do not need manual environment flags at runtime.
 
 For a CI-safe export gate, run:
 
@@ -338,6 +338,18 @@ sudo apt-get install -y \
 On some Ubuntu releases the audio package is named `libasound2t64`; on older releases it is still `libasound2`.
 
 In containerized environments you may also need `MARKDOCX_PUPPETEER_NO_SANDBOX=1`.
+
+If Chromium fails with `No usable sandbox!`, rerun the Mermaid export gate as:
+
+```bash
+MARKDOCX_PUPPETEER_NO_SANDBOX=1 npm run test:export:agent-skill:mermaid
+```
+
+On minimal Ubuntu VPS hosts, you may need both environment variables together:
+
+```bash
+sudo MARKDOCX_PUPPETEER_INSTALL_DEPS=1 MARKDOCX_PUPPETEER_NO_SANDBOX=1 npm run test:export:agent-skill:mermaid
+```
 
 ### CLI error: install `@markdocx/runtime-node-mermaid`
 
