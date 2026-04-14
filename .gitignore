@@ -7,11 +7,12 @@ node_modules/
 !test-markdown/__golden__/manifest.json
 !test-markdown/**/*.md
 !test-markdown/images/**
-markdocx-extension/node_modules/
 dist/
 comparison/
 current-output.docx
 llm_capacity.docx
 temp_*.docx
 temp_*.mjs
+/output.txt
+/*_output.txt
 

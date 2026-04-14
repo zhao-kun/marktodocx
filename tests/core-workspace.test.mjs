@@ -12,6 +12,7 @@ import {
   DEFAULT_STYLE_OPTIONS,
   DOCUMENT_MARGIN_PRESET_ORDER,
   DOCUMENT_STYLE_PRESET_ORDER,
+  IMAGE_EXTENSIONS,
   MERMAID_DOCX_DESCRIPTION_PREFIX,
   STYLE_SYNTAX_THEME_OPTIONS,
   assertCanonicalRenderedMermaidFragment,
@@ -29,8 +30,6 @@ import {
   resolveDocumentStyle,
 } from '@markdocx/core';
 
-import { generateDocx as generateDocxForExtension } from '../markdocx-extension/src/lib/docx-generator.js';
-import { resolveDocumentStyle as resolveDocumentStyleFromShim } from '../markdocx-extension/src/lib/document-style.js';
 import { createJsdomDomAdapter as createRuntimeNodeJsdomDomAdapter } from '@markdocx/runtime-node';
 
 const execFile = promisify(execFileCallback);
@@ -66,6 +65,10 @@ async function runNodeEval(script) {
       message: error.message,
     };
   }
+}
+
+function bytesToBase64(bytes) {
+  return Buffer.from(bytes).toString('base64');
 }
 
 test('core package exports resolve style presets and layout presets consistently', () => {
@@ -192,12 +195,13 @@ test('markdown renderer utilities highlight code, extract Mermaid blocks, and en
   }, /canonical <div class="mermaid-diagram"> wrapper/);
 });
 
-test('buildHtmlDocument and generateDocx return runtime-neutral bytes while the extension shim still returns base64', async () => {
+test('buildHtmlDocument and generateDocx return runtime-neutral bytes that the browser host can transport as base64', async () => {
   const resolvedStyle = resolveDocumentStyle(DEFAULT_STYLE_OPTIONS);
   const htmlDocument = buildHtmlDocument(`<p>${MERMAID_DOCX_DESCRIPTION_PREFIX}smoke</p>`, resolvedStyle);
 
   const bytes = await generateDocx(htmlDocument, resolvedStyle);
-  const base64 = await generateDocxForExtension(htmlDocument, resolvedStyle);
+  // Browser-host byte identity is covered by the fixture parity gates; this unit test only asserts the transport encoding contract.
+  const base64 = bytesToBase64(bytes);
 
   assert.equal(bytes instanceof Uint8Array, true);
   assert.equal(bytes.byteLength > 0, true);
@@ -205,11 +209,12 @@ test('buildHtmlDocument and generateDocx return runtime-neutral bytes while the 
   assert.equal(base64.length > 0, true);
 });
 
-test('extension shims still expose the extracted core surface', () => {
-  const resolvedFromShim = resolveDocumentStyleFromShim(DEFAULT_STYLE_OPTIONS);
+test('core surface still exposes the browser-host style and constants API directly', () => {
   const resolvedFromCore = resolveDocumentStyle(DEFAULT_STYLE_OPTIONS);
 
-  assert.deepEqual(resolvedFromShim, resolvedFromCore);
+  assert.equal(typeof resolvedFromCore.body.fontFamily, 'string');
+  assert.equal(IMAGE_EXTENSIONS instanceof Map, true);
+  assert.equal(IMAGE_EXTENSIONS.get('.png'), 'image/png');
 });
 
 test('shared styleOptions schema stays aligned with the exported code enums', async () => {

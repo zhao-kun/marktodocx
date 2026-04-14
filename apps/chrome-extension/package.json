@@ -1,5 +1,5 @@
 {
-  "name": "markdocx-extension",
+  "name": "markdocx-chrome-extension",
   "private": true,
   "type": "module",
   "scripts": {
@@ -15,5 +15,5 @@
     "vite": "^8.0.8",
     "vite-plugin-node-polyfills": "^0.26.0"
   },
-  "version": "1.0.0"
+  "version": "0.1.0"
 }

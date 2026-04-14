@@ -13,9 +13,9 @@ export { normalizeStyleOptions } from '@markdocx/core';
 const execFileAsync = promisify(execFile);
 const defaultStyleOptions = DEFAULT_STYLE_OPTIONS;
 const extensionPagePath = 'page/index.html';
-const extensionBuildDir = path.resolve(process.cwd(), 'markdocx-extension', 'dist');
+const extensionBuildDir = path.resolve(process.cwd(), 'apps', 'chrome-extension', 'dist');
 const repoPackagePath = path.resolve(process.cwd(), 'package.json');
-const extensionPackagePath = path.resolve(process.cwd(), 'markdocx-extension', 'package.json');
+const extensionPackagePath = path.resolve(process.cwd(), 'apps', 'chrome-extension', 'package.json');
 const corePackagePath = path.resolve(process.cwd(), 'packages/core', 'package.json');
 const runtimeBrowserPackagePath = path.resolve(process.cwd(), 'packages/runtime-browser', 'package.json');
 

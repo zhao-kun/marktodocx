@@ -134,7 +134,7 @@ Rationale:
 ### 4.1 Extension Structure
 
 ```
-markdocx-extension/
+apps/chrome-extension/
 ├── manifest.json              # Manifest V3 config
 ├── background.js              # Service worker: offscreen lifecycle, message routing, error handling
 ├── popup/
@@ -409,7 +409,7 @@ Before committing to the implementation phases, run a focused proof-of-concept:
 
 **Status: PASSED**
 
-The spike is implemented in `markdocx-extension/`. All checklist items in §9 verified.
+The spike is implemented in `apps/chrome-extension/`. All checklist items in §9 verified.
 
 **What worked:**
 
@@ -554,7 +554,7 @@ The color map uses the **exact class attribute value** as the key for compound e
 ### 9.6 Architecture
 
 ```
-markdocx-extension/src/lib/
+apps/chrome-extension/src/lib/
 ├── md-renderer.js          # Modified: calls highlightCode() before building HTML
 └── syntax-highlighter.js   # NEW: highlight.js setup + class-to-inline-style conversion
 ```
@@ -612,7 +612,7 @@ This is negligible compared to the existing offscreen bundle (2.1 MB).
 
 ### 9.9 Implementation Plan
 
-1. Add `highlight.js` dependency to `markdocx-extension/package.json`
+1. Add `highlight.js` dependency to `apps/chrome-extension/package.json`
 2. Create `src/lib/syntax-highlighter.js`:
    - Register six language grammars (python, go, java, bash, javascript, typescript) with aliases
    - Implement class-to-inline-style conversion via regex
@@ -865,7 +865,7 @@ The current styling logic is split across multiple places and includes hardcoded
 To support customization cleanly, introduce a shared style module and a shared layout module:
 
 ```text
-markdocx-extension/src/lib/
+apps/chrome-extension/src/lib/
 ├── document-style.js        # NEW: presets, defaults, validation, style resolution
 ├── document-layout.js       # NEW: margin presets + derived content dimensions per conversion
 ├── md-renderer.js           # Modified: accepts resolved style object

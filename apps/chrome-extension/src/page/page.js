@@ -1,20 +1,18 @@
-import { IMAGE_EXTENSIONS } from '../lib/constants.js';
 import {
+  IMAGE_EXTENSIONS,
   assertValidStyleOptions,
   BODY_FONT_FAMILY_OPTIONS,
   CODE_FONT_FAMILY_OPTIONS,
   DEFAULT_STYLE_OPTIONS,
+  DOCUMENT_MARGIN_PRESET_LABELS,
+  DOCUMENT_MARGIN_PRESET_ORDER,
   DOCUMENT_STYLE_PRESET_ORDER,
   STYLE_PRESET_LABELS,
   STYLE_SYNTAX_THEME_OPTIONS,
   normalizeStyleOptions,
-  resolveDocumentStyle,
-} from '../lib/document-style.js';
-import {
-  DOCUMENT_MARGIN_PRESET_LABELS,
-  DOCUMENT_MARGIN_PRESET_ORDER,
   resolveDocumentLayout,
-} from '../lib/document-layout.js';
+  resolveDocumentStyle,
+} from '@markdocx/core';
 import { renderMermaidArtifactsForMarkdown } from '@markdocx/runtime-browser';
 
 const pickerArea = document.getElementById('picker-area');

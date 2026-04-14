@@ -13,7 +13,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const outDir = path.resolve(__dirname, '../markdocx-extension/public/icons');
+const outDir = path.resolve(__dirname, '../apps/chrome-extension/public/icons');
 
 const sizes = [16, 32, 48, 128];
 

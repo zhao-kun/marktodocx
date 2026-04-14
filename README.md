@@ -6,7 +6,7 @@ markdocx converts Markdown to Word (`.docx`) while preserving headings, paragrap
 
 | Host                | Status        | Entry Point                                    |
 | ------------------- | ------------- | ---------------------------------------------- |
-| Chrome extension    | Implemented   | `markdocx-extension/`                          |
+| Chrome extension    | Implemented   | `apps/chrome-extension/`                      |
 | CLI                 | Implemented   | `md-to-docx.mjs`                               |
 | VSCode extension    | Implemented   | `apps/vscode-extension/`                       |
 | Agent skill         | Implemented   | `apps/agent-skill/`                            |
@@ -19,7 +19,9 @@ The repository follows a **Shared Core + Two Runtime Families** layout:
 - A **browser runtime family** (`@markdocx/runtime-browser`) hosts the Chrome extension and VSCode extension on top of native `DOMParser` and in-page Mermaid rendering.
 - A **Node runtime family** (`@markdocx/runtime-node`, plus the optional `@markdocx/runtime-node-mermaid`) hosts the CLI and agent skill on top of a jsdom DOM adapter and an optional Puppeteer-based Mermaid renderer.
 
-Output parity across hosts is enforced by fixture-driven gates in `scripts/run-parity.mjs` and `scripts/run-cli-parity.mjs`. See `docs/design-core-refactor.md` for the full design, contracts, and rationale.
+Output parity across hosts is enforced by fixture-driven gates in `scripts/run-fixture-parity.mjs`, `scripts/run-cli-parity.mjs`, `scripts/run-vscode-parity.mjs`, and `scripts/run-agent-skill-parity.mjs`. See `docs/design-core-refactor.md` for the full design, contracts, and rationale.
+
+Repository cleanup is still intentionally incremental in one place only: `md-to-docx.mjs` remains the public CLI entry point until the final dead-code removal step is backed by stable parity history.
 
 ## Package Layout
 
@@ -31,9 +33,9 @@ markdocx/
 │   ├── runtime-browser/            # @markdocx/runtime-browser — native DOMParser + in-page Mermaid
 │   ├── runtime-node/               # @markdocx/runtime-node — jsdom adapter + filesystem image map
 │   └── runtime-node-mermaid/       # @markdocx/runtime-node-mermaid — optional Puppeteer Mermaid renderer
-├── markdocx-extension/             # Chrome extension host
 ├── apps/
 │   ├── agent-skill/                # Agent skill host (Node runtime family)
+│   ├── chrome-extension/           # Chrome extension host
 │   └── vscode-extension/           # VSCode extension host (hidden webview + browser runtime)
 ├── test-markdown/__golden__/       # Parity fixtures and golden DOCX artifacts
 └── docs/design-core-refactor.md    # Authoritative design document
@@ -129,7 +131,7 @@ node md-to-docx.mjs report.md dist/report.docx \
 
 ## Chrome Extension
 
-The Chrome extension lives under `markdocx-extension/` and shares conversion logic with the CLI through `@markdocx/core` + `@markdocx/runtime-browser`. To build and load it, run `npm run build:chrome-extension` and load the produced `markdocx-extension/` directory as an unpacked extension in Chrome. The extension needs a directory selection rather than a single file so that it can resolve local image references.
+The Chrome extension lives under `apps/chrome-extension/` and shares conversion logic with the CLI through `@markdocx/core` + `@markdocx/runtime-browser`. To build and load it, run `npm run build:chrome-extension` and load the produced `apps/chrome-extension/dist/` directory as an unpacked extension in Chrome. The extension needs a directory selection rather than a single file so that it can resolve local image references.
 
 ## VSCode Extension
 
@@ -245,6 +247,7 @@ npm run build:core
 npm run build:runtime-browser
 npm run build:runtime-node
 npm run build:runtime-node-mermaid
+npm run build:packages
 npm run build:agent-skill
 npm run export:agent-skill
 npm run export:agent-skill:mermaid
@@ -253,6 +256,7 @@ npm run test:export:agent-skill:mermaid
 npm run build:chrome-extension
 npm run build:vscode-extension
 npm run build:cli
+npm run smoke:all
 ```
 
 Unit and parity gates:
@@ -267,6 +271,8 @@ npm run test:parity:all     # Full pre-ship parity gate (extension + CLI + VSCod
 ```
 
 The full parity gate is `npm run test:parity:all`. Run it before shipping any change that touches the conversion core or any runtime family.
+
+GitHub Actions now mirrors the same local flow in `.github/workflows/ci.yml`: one job installs dependencies and runs `npm run smoke:all` (which builds the shared packages, smoke-tests every host, and verifies the standalone agent-skill export); a second job installs Puppeteer-managed Chrome and runs `npm run test:parity:all` on every pull request.
 
 To refresh fixtures when canonical output intentionally changes:
 

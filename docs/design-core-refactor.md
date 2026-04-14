@@ -26,7 +26,7 @@ The following pieces now exist in code rather than only in design:
 
 The following parts of the design remain planned rather than fully implemented:
 
-- The final `apps/` host split described in this document is not yet the literal repository layout: the Chrome extension still lives under `markdocx-extension/` rather than `apps/chrome-extension/`.
+- The final `apps/` host split described in this document is now the literal repository layout for all four hosts, including the Chrome extension at `apps/chrome-extension/`.
 - The agent-skill host now exists, but its host-specific packaging is still intentionally thin and transitional.
 
 ### 0.3 Practical Reading Rule
@@ -45,7 +45,7 @@ Read this document in two layers:
 markdocx currently has two conversion surfaces with different implementation maturity:
 
 1. **CLI** - `md-to-docx.mjs`, a Node.js monolith with its own Markdown-to-DOCX pipeline.
-2. **Chrome extension** - `markdocx-extension/`, the newer modular implementation with shared renderer modules, style/layout support, and the latest behavior fixes.
+2. **Chrome extension** - `apps/chrome-extension/`, the newer modular implementation with shared renderer modules, style/layout support, and the latest behavior fixes.
 
 In addition, review-driven extraction work has now created a real shared package surface in `packages/core/`, and the tests already exercise that surface directly.
 Browser-runtime extraction work has also now created a real `packages/runtime-browser/` workspace that the Chrome extension uses for browser-only conversion concerns.
@@ -322,7 +322,7 @@ Current repository reality is closer to this transitional state:
 - `packages/core/` exists and is already consumed directly by tests.
 - `packages/runtime-browser/` exists and now owns the browser-only DOM, image-map, Mermaid, and browser conversion composition helpers.
 - `packages/runtime-node/` exists and now owns the initial explicit Node DOM adapter, filesystem image handling, and Node composition entry.
-- `markdocx-extension/` still exists as the active browser host implementation.
+- `apps/chrome-extension/` now exists as the active browser host implementation.
 - `md-to-docx.mjs` still exists as the legacy CLI surface.
 - `apps/agent-skill/` now exists as the thin Node host wrapper for agent execution.
 - `test-markdown/__golden__/manifest.json` is the active parity corpus index.
@@ -557,7 +557,7 @@ Current implementation note:
 Plan:
 
 - Keep the existing UI and conversion flow.
-- Move conversion modules from `markdocx-extension/src/lib/` into `@markdocx/core` and `@markdocx/runtime-browser`.
+- Move conversion modules from `apps/chrome-extension/src/lib/` into `@markdocx/core` and `@markdocx/runtime-browser`.
 - Keep the page and background layers thin.
 - Use the current extension output as the initial golden reference during migration.
 
@@ -737,7 +737,7 @@ Parity script requirements:
 5. For Mermaid content, compare canonical SVG hashes produced through the same host Mermaid runtime that the host uses during conversion, and compare declared image extents rather than embedded PNG byte streams.
 6. Fail the build on any host mismatch.
 
-The parity entry points must build the Chrome extension before generating goldens or running parity so `markdocx-extension/dist/` reflects the current workspace sources rather than stale artifacts.
+The parity entry points must build the Chrome extension before generating goldens or running parity so `apps/chrome-extension/dist/` reflects the current workspace sources rather than stale artifacts.
 
 The golden manifest should summarize both donor SHA and donor tree state at the top level. A dirty donor tree is an allowed transitional state during development, but it must be visible in the manifest and treated as a reproducibility debt to burn down.
 
@@ -854,7 +854,7 @@ Work:
 
 Concrete package and file work:
 
-- Keep current `markdocx-extension/` in place during this phase.
+- Keep the current Chrome extension host in place during this phase.
 - Add `scripts/compare-docx.mjs`.
 - Add `test-markdown/__golden__/` for normalized golden outputs.
 - Record the Chrome extension donor SHA in the golden fixture metadata or design notes.
@@ -896,7 +896,7 @@ Implementation note after Epic 2:
 Concrete package and file work:
 
 - Create `packages/core/package.json`.
-- Move shared modules from `markdocx-extension/src/lib/` into `packages/core/src/`.
+- Move shared modules from `apps/chrome-extension/src/lib/` into `packages/core/src/`.
 - Start with:
   - `document-style.js`
   - `document-layout.js`
@@ -1121,7 +1121,7 @@ Concrete package and file work:
 
 - Add `scripts/smoke-all-hosts.mjs`.
 - Add CI workflow entries for core, runtimes, and apps.
-- Move `markdocx-extension/` to `apps/chrome-extension/` in this phase, after the extension app has become a thin wrapper over `@markdocx/core` and `@markdocx/runtime-browser`.
+- The Chrome extension host has now been moved to `apps/chrome-extension/`, and the local shim-only files that duplicated shared-package exports have been removed.
 - Update parity tooling paths and build entry points in the same phase so golden generation and parity checks continue to target the built Chrome extension rather than hard-coded pre-move source paths.
 - Remove obsolete renderer duplicates and old monolith paths after parity is stable.
 
@@ -1136,6 +1136,11 @@ Build commands:
 - `npm run build:cli`
 - `npm run build:agent-skill`
 - `npm run smoke:all`
+
+Implementation note at Epic 7 start:
+
+- The repository now has a first consolidated smoke runner at `scripts/smoke-all-hosts.mjs` plus a GitHub Actions workflow that separates build/smoke/export verification from the full parity gate.
+- `md-to-docx.mjs` remains as the public CLI entry point and may be relocated in a future cleanup pass, but it is already the thin shared-runtime wrapper rather than leftover monolith logic.
 
 Migration checkpoint:
 
@@ -1271,18 +1276,18 @@ This section turns the design into a next-session work breakdown.
 
 ### Epic 7 - Cleanup and CI
 
-- [ ] Add `scripts/smoke-all-hosts.mjs`.
-- [ ] Add CI workflow for all package builds.
-- [ ] Add CI parity checks on every pull request.
-- [ ] Remove obsolete monolith code after parity is stable.
-- [ ] Update README and repo architecture notes.
+- [x] Add `scripts/smoke-all-hosts.mjs`.
+- [x] Add CI workflow for all package builds.
+- [x] Add CI parity checks on every pull request.
+- [x] Remove obsolete monolith code after parity is stable.
+- [x] Update README and repo architecture notes.
 
-### First Working Session Recommendation
+### Post-Refactor Note
 
-The next implementation session should focus only on:
+All seven planned epics in this document are now implemented.
 
-1. workspace initialization
-2. parity tooling
-3. extracting `@markdocx/core` from the current Chrome extension
+Future sessions should focus on routine maintenance work rather than structural migration:
 
-That is the highest-leverage cut because it creates the real shared asset without yet committing to host migrations.
+1. fixture and parity upkeep when canonical output intentionally changes
+2. host-specific UX improvements that continue to map into the shared contracts
+3. dependency and CI maintenance without reintroducing host-local conversion drift
