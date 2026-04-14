@@ -1,5 +1,7 @@
 # markdocx
 
+English | [简体中文](README.zh-CN.md)
+
 markdocx converts Markdown to Word (`.docx`) while preserving headings, paragraphs, lists, tables, code blocks, blockquotes, local images, and Mermaid diagrams. The same conversion rules are shared across every supported host so that one fix lands everywhere instead of being copied between tools.
 
 ## Host Status
