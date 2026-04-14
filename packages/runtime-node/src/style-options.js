@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
-import { normalizeStyleOptions } from '@markdocx/core';
+import { normalizeStyleOptions } from '@markdocx/core/style-options';
 
 function isPlainObject(value) {
   return Boolean(value) && typeof value === 'object' && !Array.isArray(value);

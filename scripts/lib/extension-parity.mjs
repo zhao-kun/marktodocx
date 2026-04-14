@@ -287,6 +287,29 @@ async function sendConvertMessage(page, payload) {
   throw lastError || new Error('Failed to send conversion message to extension runtime.');
 }
 
+export async function convertWithExtensionInputs(session, {
+  fixtureId,
+  markdown,
+  imageMap,
+  mdRelativeDir,
+  styleOptions,
+}) {
+  const conversionId = `fixture-${fixtureId}-${crypto.randomUUID()}`;
+  const result = await sendConvertMessage(session.page, {
+    conversionId,
+    markdown,
+    imageMap,
+    mdRelativeDir,
+    styleOptions,
+  });
+
+  if (!result?.success || !result.data) {
+    throw new Error(`Fixture ${fixtureId} failed: ${result?.error || 'No response data'}`);
+  }
+
+  return result.data;
+}
+
 export async function convertFixtureWithExtension(session, fixture) {
   const testMarkdownRoot = path.resolve(process.cwd(), 'test-markdown');
   const markdownPath = path.resolve(process.cwd(), fixture.markdownPath);
@@ -295,24 +318,19 @@ export async function convertFixtureWithExtension(session, fixture) {
   const mdRelativeDir = path.relative(testMarkdownRoot, path.dirname(markdownPath)).split(path.sep).join('/');
   const normalizedRelativeDir = mdRelativeDir === '.' ? '' : mdRelativeDir;
   const styleOptions = normalizeStyleOptions(fixture.styleOptions);
-  const conversionId = `fixture-${fixture.id}-${crypto.randomUUID()}`;
 
-  const result = await sendConvertMessage(session.page, {
-    conversionId,
+  const base64 = await convertWithExtensionInputs(session, {
+    fixtureId: fixture.id,
     markdown,
     imageMap,
     mdRelativeDir: normalizedRelativeDir,
     styleOptions,
   });
 
-  if (!result?.success || !result.data) {
-    throw new Error(`Fixture ${fixture.id} failed: ${result?.error || 'No response data'}`);
-  }
-
   return {
     markdown,
     markdownPath,
-    base64: result.data,
+    base64,
     styleOptions,
   };
 }

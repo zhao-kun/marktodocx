@@ -1,0 +1,12 @@
+.vscode/**
+.vscode-test/**
+src/**
+scripts/**
+webview/**
+node_modules/**
+vite.config.mjs
+vite.extension.config.mjs
+.vscodeignore
+**/*.map
+**/.DS_Store
+dist/markdocx-vscode-extension.vsix

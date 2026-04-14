@@ -20,14 +20,14 @@ The following pieces now exist in code rather than only in design:
 - Golden fixture parity is driven by `test-markdown/__golden__/manifest.json` and the parity scripts rather than by ad hoc fixture comparison.
 - Mermaid parity is checked structurally through shared metadata conventions and visual baselines, with explicit handling for expected raster drift versus unacceptable semantic drift.
 - Regression coverage now includes targeted fixtures for blockquote rendering, style propagation, and page overflow behavior.
+- `apps/vscode-extension/` now exists as a real workspace host that drives the shared browser runtime through a hidden webview and is gated by `npm run test:parity:vscode` against the verified golden corpus.
 
 ### 0.2 Not Fully Landed Yet
 
 The following parts of the design remain planned rather than fully implemented:
 
-- The final `apps/` host split described in this document is not yet the literal repository layout.
-- A distinct VSCode extension host and agent-skill host are still design targets.
-- The Node runtime family has started, but the dedicated Mermaid helper package and thin CLI replacement are still incomplete.
+- The final `apps/` host split described in this document is not yet the literal repository layout: the Chrome extension still lives under `markdocx-extension/` rather than `apps/chrome-extension/`.
+- The agent-skill host is still a design target.
 
 ### 0.3 Practical Reading Rule
 
@@ -1020,6 +1020,13 @@ Goal:
 
 - Ship VSCode conversion on the browser runtime family.
 
+Implementation note after Epic 5:
+
+- `apps/vscode-extension/` now exists as a real workspace package with extension activation, the `markdocx.convertToDocx` command, and explorer/editor context-menu entries.
+- The webview host (`src/webview-host.js`) creates a retained hidden webview that bundles `@markdocx/runtime-browser` via Vite, exchanges `READY`/`CONVERT`/`CONVERT_RESULT` messages with the extension main process, and returns DOCX bytes through a base64 transport.
+- Host-side helpers in `src/convert.js` build the shared runtime inputs from the workspace: `collectWorkspaceImageMap` mirrors the Chrome extension's image map shape, `getMarkdownRelativeDir` computes `mdRelativeDir` against the workspace root, and `resolveVsCodeStyleOptionsFromValues` maps `markdocx.*` settings through `resolveNodeStyleOptions` so VSCode and CLI share one style schema.
+- Parity is gated by `scripts/run-vscode-parity.mjs`, which drives `convertMarkdownToDocx` end-to-end through a fake VSCode API and a webview host that reuses the existing Puppeteer-backed Chrome extension session as the shared browser runtime, so the VSCode host wiring is validated against the same verified golden corpus.
+
 Work:
 
 1. Build hidden webview host.
@@ -1033,13 +1040,13 @@ Concrete package and file work:
   - `apps/vscode-extension/src/extension.js`
   - `apps/vscode-extension/src/webview-host.js`
   - `apps/vscode-extension/src/convert.js`
-  - `apps/vscode-extension/webview/index.html`
+  - `apps/vscode-extension/webview/index.js`
 - Use `@markdocx/core` and `@markdocx/runtime-browser` inside the webview host path.
 
 Build commands:
 
 - `npm run build:vscode-extension`
-- `npm run test:parity`
+- `npm run test:parity:vscode`
 
 Migration checkpoint:
 
@@ -1232,12 +1239,12 @@ This section turns the design into a next-session work breakdown.
 
 ### Epic 5 - VSCode Extension
 
-- [ ] Create `apps/vscode-extension/package.json`.
-- [ ] Add extension activation and command registration.
-- [ ] Build hidden webview host.
-- [ ] Map VSCode settings into shared `styleOptions`.
-- [ ] Add fixture conversion smoke tests.
-- [ ] Validate parity against golden outputs.
+- [x] Create `apps/vscode-extension/package.json`.
+- [x] Add extension activation and command registration.
+- [x] Build hidden webview host.
+- [x] Map VSCode settings into shared `styleOptions`.
+- [x] Add fixture conversion smoke tests.
+- [x] Validate parity against golden outputs.
 
 ### Epic 6 - Agent Skill
 

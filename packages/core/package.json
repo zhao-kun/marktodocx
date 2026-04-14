@@ -5,6 +5,7 @@
   "type": "module",
   "exports": {
     ".": "./src/index.js",
+    "./style-options": "./src/style/document-style.js",
     "./style-options.schema.json": "./src/style/style-options.schema.json"
   },
   "scripts": {

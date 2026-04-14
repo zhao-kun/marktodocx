@@ -1,0 +1,101 @@
+{
+  "name": "markdocx-vscode-extension",
+  "displayName": "markdocx",
+  "description": "Convert Markdown to DOCX in VS Code using the shared browser runtime family.",
+  "version": "0.1.0",
+  "private": true,
+  "publisher": "markdocx",
+  "type": "commonjs",
+  "main": "./dist/extension.cjs",
+  "engines": {
+    "vscode": "^1.97.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "markdocx.convertToDocx",
+        "title": "Convert Markdown to DOCX",
+        "category": "markdocx"
+      }
+    ],
+    "menus": {
+      "explorer/context": [
+        {
+          "command": "markdocx.convertToDocx",
+          "when": "resourceExtname == .md || resourceExtname == .markdown",
+          "group": "navigation"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "markdocx.convertToDocx",
+          "when": "resourceLangId == markdown",
+          "group": "navigation"
+        }
+      ],
+      "editor/title": [
+        {
+          "command": "markdocx.convertToDocx",
+          "when": "resourceLangId == markdown",
+          "group": "navigation"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "markdocx",
+      "properties": {
+        "markdocx.stylePreset": {
+          "type": "string",
+          "enum": [
+            "default",
+            "minimal",
+            "report"
+          ],
+          "default": "default",
+          "description": "Base shared style preset for Markdown to DOCX conversion."
+        },
+        "markdocx.marginPreset": {
+          "type": "string",
+          "enum": [
+            "",
+            "default",
+            "compact",
+            "wide"
+          ],
+          "default": "",
+          "description": "Optional page margin preset override. Leave empty to use the preset default."
+        },
+        "markdocx.styleJson": {
+          "type": "string",
+          "default": "",
+          "description": "Inline style JSON string or a workspace-relative path to a JSON file containing shared styleOptions."
+        },
+        "markdocx.styleSet": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "description": "Targeted shared style overrides using dotted-path assignments such as body.fontSizePt=12."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "build": "vite build --config ./vite.config.mjs && vite build --config ./vite.extension.config.mjs && node ./scripts/build-check.js",
+    "watch": "vite build --watch --config ./vite.config.mjs",
+    "package": "npm run build && vsce package --no-dependencies --out ./dist/markdocx-vscode-extension.vsix",
+    "install:vsix": "code --install-extension ./dist/markdocx-vscode-extension.vsix --force"
+  },
+  "devDependencies": {
+    "@markdocx/runtime-browser": "0.1.0",
+    "@markdocx/runtime-node": "0.1.0",
+    "@vscode/vsce": "^3.2.1",
+    "buffer": "^6.0.3",
+    "vite": "^8.0.8",
+    "vite-plugin-node-polyfills": "^0.26.0"
+  }
+}
