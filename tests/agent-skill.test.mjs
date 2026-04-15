@@ -215,3 +215,4 @@ test('resolveBundledMermaidLaunchOptions defaults missing launchArgs to an empty
     await fs.rm(tempDir, { recursive: true, force: true });
   }
 });
+

@@ -14,6 +14,71 @@ These names intentionally serve different purposes. The source app directory and
 
 - `skill.mjs` exports `convertWithAgentSkill()` for programmatic skill execution.
 
+## Quickstart
+
+### Claude Code
+
+Build the standalone export first:
+
+```bash
+npm install
+npm run export:agent-skill
+```
+
+Then copy it into the default Claude Code skills root:
+
+```bash
+mkdir -p ~/.claude/skills
+cp -R apps/agent-skill/dist/markdocx-skill ~/.claude/skills/markdocx-skill
+```
+
+If you prefer zip-based deployment:
+
+```bash
+mkdir -p ~/.claude/skills
+unzip -oq apps/agent-skill/dist/markdocx-skill.zip -d ~/.claude/skills
+```
+
+Start a new Claude Code session after deploying or updating the skill.
+
+`SKILL.md` sets `disable-model-invocation: true`, so during normal Claude Code use:
+
+- make sure the skill is available through your configured skills directory or allowlist
+- do not expect Claude to opportunistically auto-pick it in the background
+- invoke it explicitly with a conversion request when you want Markdown turned into DOCX
+
+Example prompts:
+
+- `Convert docs/report.md to DOCX with stylePreset=minimal.`
+- `Convert docs/report.md to dist/report.docx with marginPreset=wide.`
+- `Convert this Markdown to /tmp/notes.docx using styleSet=body.fontSizePt=12:` followed by inline Markdown content.
+
+### OpenClaw
+
+Build the same standalone export, then copy or unzip it into your OpenClaw skills directory:
+
+```bash
+mkdir -p ~/.openclaw/workspace/skills
+cp -R apps/agent-skill/dist/markdocx-skill ~/.openclaw/workspace/skills/markdocx-skill
+```
+
+or:
+
+```bash
+mkdir -p ~/.openclaw/workspace/skills
+unzip -oq apps/agent-skill/dist/markdocx-skill.zip -d ~/.openclaw/workspace/skills
+```
+
+## Invocation Behavior
+
+`SKILL.md` sets `disable-model-invocation: true`.
+
+In practice that means:
+
+- the skill should be made available through your host's skill loading or allowlist configuration
+- the model should not opportunistically auto-pick it in the background
+- users should invoke it explicitly with a conversion request when they want Markdown turned into DOCX
+
 ## Manual Build
 
 This skill now has one source validation path and two standalone export profiles:
@@ -100,19 +165,10 @@ This exported folder no longer depends on a live markdocx repository checkout.
 
 If your target runtime prefers a single-file handoff, deploy the zip archive and extract it into the target skills directory.
 
-Primary deployment recipes:
+Common deployment roots:
 
-```bash
-mkdir -p ~/.openclaw/workspace/skills
-cp -R apps/agent-skill/dist/markdocx-skill ~/.openclaw/workspace/skills/markdocx-skill
-```
-
-or:
-
-```bash
-mkdir -p ~/.openclaw/workspace/skills
-unzip -oq apps/agent-skill/dist/markdocx-skill.zip -d ~/.openclaw/workspace/skills
-```
+- Claude Code default skills root: `~/.claude/skills/`
+- OpenClaw workspace skills root: `~/.openclaw/workspace/skills/`
 
 Use a symlink only when you deliberately want a development-time deployment that continues to point at the local export directory.
 
@@ -228,61 +284,4 @@ Mermaid conversion stays optional on the Node host path.
 
 If you want to override the bundled browser on the target host, set `PUPPETEER_EXECUTABLE_PATH` to a compatible Chromium or Chrome binary.
 
-On minimal Debian or Ubuntu hosts, Mermaid-enabled exports may still fail if Chromium shared libraries are missing. If you have root access, let Puppeteer try to install them while exporting:
-
-```bash
-sudo MARKDOCX_PUPPETEER_INSTALL_DEPS=1 npm run test:export:agent-skill:mermaid
-```
-
-If you prefer to install the Linux dependencies manually on Debian or Ubuntu, start with:
-
-```bash
-sudo apt-get update
-sudo apt-get install -y \
-  ca-certificates \
-  fonts-liberation \
-  libasound2t64 || sudo apt-get install -y libasound2
-
-sudo apt-get install -y \
-  libatk1.0-0 \
-  libatk-bridge2.0-0 \
-  libcups2 \
-  libdbus-1-3 \
-  libdrm2 \
-  libgbm1 \
-  libglib2.0-0 \
-  libgtk-3-0 \
-  libnspr4 \
-  libnss3 \
-  libpango-1.0-0 \
-  libx11-6 \
-  libx11-xcb1 \
-  libxcb1 \
-  libxcomposite1 \
-  libxdamage1 \
-  libxext6 \
-  libxfixes3 \
-  libxkbcommon0 \
-  libxrandr2 \
-  xdg-utils
-```
-
-On some Ubuntu releases the audio package is named `libasound2t64`; on older releases it is still `libasound2`.
-
-If the host is a container or restricted environment, you may also need:
-
-```bash
-MARKDOCX_PUPPETEER_NO_SANDBOX=1
-```
-
-If Chromium fails with `No usable sandbox!`, rerun the Mermaid export gate as:
-
-```bash
-MARKDOCX_PUPPETEER_NO_SANDBOX=1 npm run test:export:agent-skill:mermaid
-```
-
-On minimal Ubuntu VPS hosts, you may need both environment variables together:
-
-```bash
-sudo MARKDOCX_PUPPETEER_INSTALL_DEPS=1 MARKDOCX_PUPPETEER_NO_SANDBOX=1 npm run test:export:agent-skill:mermaid
-```
+For Linux shared libraries, sandbox restrictions, and the full `MARKDOCX_PUPPETEER_*` troubleshooting matrix, see the root README section [Linux shared libraries missing for Chromium](../../README.md#linux-shared-libraries-missing-for-chromium).

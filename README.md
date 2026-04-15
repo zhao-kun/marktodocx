@@ -4,6 +4,64 @@ English | [简体中文](README.zh-CN.md)
 
 markdocx converts Markdown to Word (`.docx`) while preserving headings, paragraphs, lists, tables, code blocks, blockquotes, local images, and Mermaid diagrams. The same conversion rules are shared across every supported host so that one fix lands everywhere instead of being copied between tools.
 
+markdocx is currently distributed as source-only builds. There is no Chrome Web Store listing, VS Code Marketplace release, npm binary package, or GitHub Releases bundle for end users yet, so every host is built from this repository.
+
+Mermaid support differs by host:
+
+- Chrome extension and VSCode extension include Mermaid through the browser runtime after you build the host.
+- CLI and agent skill run on the Node runtime by default, so Mermaid requires Node-side Chromium support through `@markdocx/runtime-node-mermaid` or a Mermaid-enabled agent-skill export.
+
+## Contents
+
+- [Quickstart](#quickstart)
+- [Host Status](#host-status)
+- [Architecture](#architecture)
+- [Package Layout](#package-layout)
+- [Supported Features](#supported-features)
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [CLI Usage](#cli-usage)
+- [CLI Style Options](#cli-style-options)
+- [Chrome Extension](#chrome-extension)
+- [VSCode Extension](#vscode-extension)
+- [Agent Skill](#agent-skill)
+- [Development](#development)
+- [Limitations](#limitations)
+- [Troubleshooting](#troubleshooting)
+- [Help](#help)
+
+## Quickstart
+
+### CLI Quickstart
+
+1. `npm install`
+2. If your Markdown contains Mermaid, run `npx puppeteer browsers install chrome`
+3. Convert a file with `node md-to-docx.mjs report.md`
+4. The output lands next to `report.md` unless you pass an explicit output path
+
+### Chrome Extension Quickstart
+
+1. `npm install && npm run build:chrome-extension`
+2. Open `chrome://extensions/`, enable **Developer mode**, and click **Load unpacked**
+3. Select `apps/chrome-extension/dist/`
+4. Pin the markdocx icon, open it, select the folder containing your Markdown file and local images, choose the `.md` file, then click **Convert**
+5. The generated `.docx` downloads through Chrome's normal download flow: if **Ask where to save each file** is enabled, Chrome opens a save dialog; otherwise it uses the default download directory
+
+### VSCode Extension Quickstart
+
+1. `npm install && npm run package:vscode-extension`
+2. Install `apps/vscode-extension/dist/markdocx-vscode-extension.vsix` (for example: `code --install-extension apps/vscode-extension/dist/markdocx-vscode-extension.vsix --force`)
+3. Open the workspace containing your Markdown file and local images
+4. Right-click a `.md` file in the Explorer and choose **markdocx: Convert to DOCX**, or run `markdocx.convertToDocx` from the Command Palette
+5. Choose the output path in the save dialog
+
+### Agent Skill Quickstart
+
+1. `npm install && npm run export:agent-skill`
+2. Copy `apps/agent-skill/dist/markdocx-skill/` into your skill host, for example `~/.claude/skills/markdocx-skill` for Claude Code or your OpenClaw skills directory
+3. Start a new agent session and invoke the skill explicitly, for example: `Convert docs/report.md to DOCX with stylePreset=minimal.`
+4. If your Markdown contains Mermaid, use `npm run export:agent-skill:mermaid` instead (platform-specific; export on the same OS and architecture you will deploy to)
+
 ## Host Status
 
 | Host                | Status        | Entry Point                                    |
@@ -54,13 +112,22 @@ markdocx/
 
 ## Requirements
 
+### Build Requirements
+
 - Node.js 22+
 - npm (workspaces enabled)
-- A Chrome binary reachable by Puppeteer (only required when you need Mermaid rendering from the CLI)
+
+### Runtime Requirements
+
+- Chrome extension: Chrome or Chromium 116+ with support for loading unpacked MV3 extensions
+- VSCode extension: VS Code 1.97+
+- CLI: Node.js 22+
+- Agent skill: Node.js 22+ plus a compatible skill host such as Claude Code or OpenClaw
+- Mermaid on Node hosts: a Puppeteer-managed Chrome or Chromium binary, plus host Linux shared libraries when applicable
 
 ## Installation
 
-From the repository root:
+All current installation flows start from a local source checkout. From the repository root:
 
 ```bash
 npm install
@@ -120,30 +187,153 @@ Resolution precedence (later entries override earlier ones): environment preset 
 code.fontSizePt=11;blockquote.italic=false;page.marginPreset=wide
 ```
 
+### Supported `styleSet` Paths
+
+Every `--set` assignment writes into `overrides.<path>`. These are the supported dotted paths:
+
+- `body.fontFamily`
+- `body.fontSizePt`
+- `body.lineHeight`
+- `body.color`
+- `headings.fontFamily`
+- `headings.color`
+- `tables.borderColor`
+- `tables.headerBackgroundColor`
+- `tables.headerTextColor`
+- `code.fontFamily`
+- `code.fontSizePt`
+- `code.syntaxTheme`
+- `code.inlineBackgroundColor`
+- `code.inlineItalic`
+- `code.blockBackgroundColor`
+- `code.blockBorderColor`
+- `code.languageBadgeColor`
+- `blockquote.backgroundColor`
+- `blockquote.textColor`
+- `blockquote.borderColor`
+- `blockquote.italic`
+- `page.marginPreset`
+
+Value parsing rules:
+
+- `true` and `false` become booleans
+- numeric values such as `11` or `1.55` become numbers
+- everything else is treated as a trimmed string
+
+Example:
+
+```bash
+node md-to-docx.mjs report.md \
+  --set body.fontSizePt=12 \
+  --set body.lineHeight=1.6 \
+  --set code.syntaxTheme=dark \
+  --set blockquote.italic=false
+```
+
+### `styleJson` Details
+
+`--style-json` and `MARKDOCX_STYLE_JSON` accept either:
+
+- an inline JSON object string
+- a path to a JSON file
+
+The JSON can use either full `styleOptions` shape:
+
+```json
+{
+  "preset": "minimal",
+  "overrides": {
+    "body": {
+      "fontSizePt": 12
+    }
+  }
+}
+```
+
+or the shorthand object form that contains only override groups:
+
+```json
+{
+  "body": {
+    "fontSizePt": 12
+  },
+  "page": {
+    "marginPreset": "wide"
+  }
+}
+```
+
+See the full example file at `docs/style-options.example.json`.
+
 Example combining several options:
 
 ```bash
 node md-to-docx.mjs report.md dist/report.docx \
   --style-preset minimal \
   --margin-preset wide \
-  --style-json ./style-options.json \
+  --style-json ./docs/style-options.example.json \
   --set body.fontSizePt=12 \
   --set blockquote.italic=false
 ```
 
 ## Chrome Extension
 
-The Chrome extension lives under `apps/chrome-extension/` and shares conversion logic with the CLI through `@markdocx/core` + `@markdocx/runtime-browser`. To build and load it, run `npm run build:chrome-extension` and load the produced `apps/chrome-extension/dist/` directory as an unpacked extension in Chrome. The extension needs a directory selection rather than a single file so that it can resolve local image references.
+The Chrome extension lives under `apps/chrome-extension/` and shares conversion logic with the CLI through `@markdocx/core` + `@markdocx/runtime-browser`.
+
+Build it from source:
+
+```bash
+npm install
+npm run build:chrome-extension
+```
+
+### Load into Chrome
+
+1. Open `chrome://extensions/`.
+2. Enable **Developer mode**.
+3. Click **Load unpacked**.
+4. Select `apps/chrome-extension/dist/`.
+
+### First Conversion Walkthrough
+
+1. Pin the markdocx icon if you want quick access from the toolbar.
+2. Click the extension icon to open the conversion page.
+3. Select the folder that contains the Markdown file and any local images it references.
+4. Choose the target Markdown file from the file selector.
+5. Adjust style options if needed, then click **Convert**.
+6. Chrome starts a normal browser download for the generated `.docx`. If Chrome is configured to ask where to save each file, you will get a save dialog; otherwise it goes to the default download directory.
+
+### Why Directory Selection Is Required
+
+The extension resolves local image paths relative to the Markdown file. A single-file picker would not grant access to sibling or parent directories referenced by Markdown image links, so the extension requires the containing folder instead.
 
 ## VSCode Extension
 
-The VSCode extension lives under `apps/vscode-extension/`. It activates the `markdocx.convertToDocx` command from the explorer, editor, and editor-title context menus, and routes conversion through a hidden webview that bundles `@markdocx/runtime-browser`. Build the bundle with:
+The VSCode extension lives under `apps/vscode-extension/`. It activates the `markdocx.convertToDocx` command from the explorer, editor, and editor-title context menus, and routes conversion through a hidden webview that bundles `@markdocx/runtime-browser`.
+
+Build the bundle with:
 
 ```bash
 npm run build:vscode-extension
 ```
 
-Then point VS Code at `apps/vscode-extension/` (for example via the Run Extension launch configuration) to load the development build. Conversion settings live under the `markdocx` namespace and map directly onto the shared `styleOptions` schema:
+For an installable artifact, package it as a `.vsix`:
+
+```bash
+npm run package:vscode-extension
+```
+
+Then install `apps/vscode-extension/dist/markdocx-vscode-extension.vsix` into VS Code. If you are developing the extension instead, point VS Code at `apps/vscode-extension/` through the Run Extension launch configuration.
+
+### Trigger a Conversion
+
+- Right-click a `.md` file in the Explorer and choose **markdocx: Convert to DOCX**.
+- Or open the Command Palette and run `markdocx.convertToDocx`.
+- Or use the editor context menu or editor title button when a Markdown file is open.
+
+VS Code prompts for the output path with a save dialog. The `.docx` is written wherever you choose, and local images resolve relative to the workspace folder containing the Markdown file.
+
+Conversion settings live under the `markdocx` namespace and map directly onto the shared `styleOptions` schema:
 
 | Setting                 | Purpose                                                                       |
 | ----------------------- | ----------------------------------------------------------------------------- |
@@ -186,6 +376,8 @@ The packaged `.vsix` ships the bundled `dist/extension.cjs`, the webview asset b
 ## Agent Skill
 
 The agent skill source lives under `apps/agent-skill/` and exports `convertWithAgentSkill()` from `apps/agent-skill/skill.mjs`. It is intentionally thin: it resolves file or inline Markdown input, maps skill parameters and environment defaults into the shared `styleOptions` schema through `@markdocx/runtime-node`, and writes a DOCX when an output path is available.
+
+If you want a host-specific deployment walkthrough, see `apps/agent-skill/README.md` for Claude Code and OpenClaw recipes.
 
 Naming rule:
 

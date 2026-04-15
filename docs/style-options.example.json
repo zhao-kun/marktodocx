@@ -1,0 +1,39 @@
+{
+  "preset": "report",
+  "overrides": {
+    "body": {
+      "fontFamily": "Georgia",
+      "fontSizePt": 11,
+      "lineHeight": 1.55,
+      "color": "#2F3A45"
+    },
+    "headings": {
+      "fontFamily": "Cambria",
+      "color": "#1B365D"
+    },
+    "tables": {
+      "borderColor": "#C7D1DB",
+      "headerBackgroundColor": "#EAF1F7",
+      "headerTextColor": "#1B365D"
+    },
+    "code": {
+      "fontFamily": "Cascadia Code",
+      "fontSizePt": 10,
+      "syntaxTheme": "dark",
+      "inlineBackgroundColor": "#EEF2F6",
+      "inlineItalic": false,
+      "blockBackgroundColor": "#0F1720",
+      "blockBorderColor": "#243447",
+      "languageBadgeColor": "#5B708B"
+    },
+    "blockquote": {
+      "backgroundColor": "#F6F8FA",
+      "textColor": "#475467",
+      "borderColor": "#98A2B3",
+      "italic": true
+    },
+    "page": {
+      "marginPreset": "wide"
+    }
+  }
+}
