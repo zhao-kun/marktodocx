@@ -4,7 +4,7 @@ English | [简体中文](README.zh-CN.md)
 
 markdocx converts Markdown to Word (`.docx`) while preserving headings, paragraphs, lists, tables, code blocks, blockquotes, local images, and Mermaid diagrams. The same conversion rules are shared across every supported host so that one fix lands everywhere instead of being copied between tools.
 
-markdocx is currently distributed as source-only builds. There is no Chrome Web Store listing, VS Code Marketplace release, npm binary package, or GitHub Releases bundle for end users yet, so every host is built from this repository.
+markdocx **targets** three public registries — the VS Code Marketplace, the Chrome Web Store, and ClawHub (the OpenClaw skill registry) — plus GitHub Releases for skill zip mirrors. The full publish path is wired up in [`docs/publishing.md`](docs/publishing.md), but no host has shipped to its registry yet, so every host is currently built from this repository. The CLI is intentionally source-only and stays that way.
 
 Mermaid support differs by host:
 
@@ -64,12 +64,14 @@ Mermaid support differs by host:
 
 ## Host Status
 
-| Host                | Status        | Entry Point                                    |
-| ------------------- | ------------- | ---------------------------------------------- |
-| Chrome extension    | Implemented   | `apps/chrome-extension/`                      |
-| CLI                 | Implemented   | `md-to-docx.mjs`                               |
-| VSCode extension    | Implemented   | `apps/vscode-extension/`                       |
-| Agent skill         | Implemented   | `apps/agent-skill/`                            |
+| Host                | Status        | Entry Point                  | Release Target                      |
+| ------------------- | ------------- | ---------------------------- | ----------------------------------- |
+| Chrome extension    | Implemented   | `apps/chrome-extension/`     | Chrome Web Store                    |
+| VSCode extension    | Implemented   | `apps/vscode-extension/`     | VS Code Marketplace                 |
+| Agent skill         | Implemented   | `apps/agent-skill/`          | ClawHub + GitHub Releases           |
+| CLI                 | Implemented   | `md-to-docx.mjs`             | Source-only (no registry)           |
+
+Release process for every host above is documented in [`docs/publishing.md`](docs/publishing.md).
 
 ## Architecture
 
@@ -127,7 +129,9 @@ markdocx/
 
 ## Installation
 
-All current installation flows start from a local source checkout. From the repository root:
+End users can install most hosts from their public registry once it is published — VS Code Marketplace for the VSCode extension, Chrome Web Store for the Chrome extension, ClawHub (`clawhub install markdocx-skill`) for the agent skill. The CLI is intentionally source-only.
+
+The instructions below cover the source build, which works for every host and is required for the CLI:
 
 ```bash
 npm install

@@ -3,14 +3,36 @@
   "displayName": "markdocx",
   "description": "Convert Markdown to DOCX in VS Code using the shared browser runtime family.",
   "version": "0.1.0",
-  "private": true,
-  "publisher": "markdocx",
+  "publisher": "zhao-kun",
+  "license": "MIT",
+  "author": {
+    "name": "Kun Zhao"
+  },
+  "homepage": "https://github.com/zhao-kun/markdocx#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zhao-kun/markdocx.git",
+    "directory": "apps/vscode-extension"
+  },
+  "bugs": {
+    "url": "https://github.com/zhao-kun/markdocx/issues"
+  },
+  "icon": "media/icon.png",
+  "keywords": [
+    "markdown",
+    "docx",
+    "word",
+    "converter",
+    "mermaid",
+    "export"
+  ],
   "type": "commonjs",
   "main": "./dist/extension.cjs",
   "engines": {
     "vscode": "^1.97.0"
   },
   "categories": [
+    "Formatters",
     "Other"
   ],
   "contributes": {
