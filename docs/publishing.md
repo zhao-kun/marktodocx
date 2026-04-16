@@ -192,16 +192,33 @@ The agent skill is published to ClawHub, the OpenClaw skill registry, and mirror
    npm run test:export:agent-skill
    ```
    This rebuilds the export and verifies the artifact layout in a CI-safe way.
-4. Publish to ClawHub:
-   ```bash
-   clawhub skill publish apps/agent-skill/dist/marktodocx-skill \
-     --slug marktodocx-skill \
-     --name "marktodocx-skill" \
-     --version <version> \
-     --changelog "<short release notes>" \
-     --tags markdown,docx,word,mermaid,export
-   ```
-   The path argument points at the **exported** folder, not the source `apps/agent-skill/` directory. ClawHub expects a `SKILL.md` at the root of that folder, which the export already includes.
+4. Publish to ClawHub.
+
+    Current ClawHub CLI versions use the top-level `publish` command, not `clawhub skill publish`:
+
+    ```bash
+    cd apps/agent-skill/dist/marktodocx-skill
+
+    clawhub publish . \
+       --slug marktodocx-skill \
+       --name "marktodocx-skill" \
+       --version <version> \
+       --changelog "<short release notes>" \
+       --tags markdown,docx,word,mermaid,export
+    ```
+
+    If you prefer to stay at the repo root, this is also valid:
+
+    ```bash
+    clawhub publish ./apps/agent-skill/dist/marktodocx-skill \
+       --slug marktodocx-skill \
+       --name "marktodocx-skill" \
+       --version <version> \
+       --changelog "<short release notes>" \
+       --tags markdown,docx,word,mermaid,export
+    ```
+
+    The path argument must point at the **exported** folder, not the source `apps/agent-skill/` directory. ClawHub expects a `SKILL.md` at the root of that exported folder, which the export already includes.
 5. Confirm the new version is browseable on ClawHub.
 6. Tag and push:
    ```bash
@@ -226,6 +243,12 @@ Mermaid-enabled exports are platform-specific because they vendor a Chromium bin
 4. Attach the Mermaid-enabled zip to a separate GitHub Release asset clearly labelled with the host OS and architecture.
 
 The standard export keeps Mermaid disabled and fails clearly if the deployed skill encounters a Mermaid block. That behavior is intentional — see `apps/agent-skill/README.md` for the full Mermaid story.
+
+### ClawHub publish troubleshooting
+
+- `error: unknown command 'publish'` under `clawhub skill`: your CLI is on the newer command layout. Use `clawhub publish`, not `clawhub skill publish`.
+- `Error: Path must be a folder`: verify you are passing the exported directory itself, not the zip file or the source `apps/agent-skill/` folder. The most reliable invocation is `cd apps/agent-skill/dist/marktodocx-skill && clawhub publish . ...`.
+- `GitHub API rate limit exceeded`: the publish command reached a GitHub-backed metadata lookup limit. Wait for the reset window shown by ClawHub and rerun the same command. If it keeps happening, authenticate first with `clawhub login` and verify with `clawhub whoami` before retrying.
 
 ### `disable-model-invocation` note
 

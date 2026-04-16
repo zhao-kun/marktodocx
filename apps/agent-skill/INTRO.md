@@ -55,7 +55,7 @@ Either command installs the skill into the workspace's `skills/` directory. Star
 
 ### From a GitHub Release
 
-Each ClawHub publish is also attached to a GitHub Release. Grab the latest `marktodocx-skill.zip` from https://github.com/zhao-kun/markdocx/releases and extract it into your skill host:
+Each ClawHub publish is also attached to a GitHub Release. Grab the latest `marktodocx-skill.zip` from https://github.com/zhao-kun/marktodocx/releases and extract it into your skill host:
 
 ```bash
 # Claude Code
@@ -104,12 +104,12 @@ Mermaid is optional on the Node host path:
 
 ## License
 
-[MIT](https://github.com/zhao-kun/markdocx/blob/main/LICENSE) © Kun Zhao
+[MIT](https://github.com/zhao-kun/marktodocx/blob/main/LICENSE) © Kun Zhao
 
 ## Feedback
 
-Issues and feature requests: https://github.com/zhao-kun/markdocx/issues
+Issues and feature requests: https://github.com/zhao-kun/marktodocx/issues
 
 ## Maintainers
 
-The ClawHub publish process and GitHub Release process for this skill are documented in [`docs/publishing.md`](https://github.com/zhao-kun/markdocx/blob/main/docs/publishing.md#agent-skill-clawhub) at the project root.
+The ClawHub publish process and GitHub Release process for this skill are documented in [`docs/publishing.md`](https://github.com/zhao-kun/marktodocx/blob/main/docs/publishing.md#agent-skill-clawhub) at the project root.
