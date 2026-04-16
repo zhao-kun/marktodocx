@@ -23,6 +23,10 @@ export const vendorDir = path.join(exportDir, 'vendor');
 export const exportZipPath = path.join(distDir, 'marktodocx-skill.zip');
 export const exportManifestPath = path.join(exportDir, 'marktodocx-export-manifest.json');
 export const exportBrowserDir = path.join(exportDir, 'browser');
+const prunedChromiumRelativePaths = [
+  path.join('resources', 'accessibility', 'reading_mode_gdocs_helper'),
+  path.join('resources', 'accessibility', 'reading_mode_gdocs_helper_manifest.json'),
+];
 export const requiredBaseVendorPackages = [
   'marktodocx-core',
   'marktodocx-runtime-node',
@@ -131,6 +135,14 @@ function isMissingSharedLibrariesError(text) {
   return /error while loading shared libraries:/i.test(text);
 }
 
+async function pruneChromiumResources(browserRootDir) {
+  await Promise.all(
+    prunedChromiumRelativePaths.map((relativePath) =>
+      fs.rm(path.join(browserRootDir, relativePath), { recursive: true, force: true })
+    )
+  );
+}
+
 async function installVendoredChromeBrowser() {
   const installArgs = ['exec', 'puppeteer', 'browsers', 'install', 'chrome'];
   if (shouldInstallPuppeteerSystemDeps(process.env)) {
@@ -164,6 +176,7 @@ async function installVendoredChromeBrowser() {
 
   const executablePath = match[2].trim();
   await fs.access(executablePath);
+  await pruneChromiumResources(path.dirname(executablePath));
 
   return {
     browser: 'chrome',
@@ -460,6 +473,7 @@ export async function verifyExportLayout() {
   if (manifest.profile === 'with-mermaid') {
     const bundledBrowser = manifest.mermaid?.bundledBrowser;
     const runtimeNodeMermaidPackage = getLockPackage(packageLock, 'node_modules/@marktodocx/runtime-node-mermaid');
+    const bundledBrowserRootDir = path.dirname(path.resolve(exportDir, bundledBrowser.executablePath));
     assert.equal(manifest.mermaid?.bundled, true, 'Mermaid-enabled export manifest must record bundled Mermaid support.');
     assert.equal(typeof bundledBrowser?.executablePath, 'string', 'Mermaid-enabled export manifest is missing bundled browser executablePath.');
     assert.equal(Array.isArray(bundledBrowser?.launchArgs), true, 'Mermaid-enabled export manifest must record bundled browser launchArgs.');
@@ -469,6 +483,13 @@ export async function verifyExportLayout() {
       assertPathExists(path.join(exportDir, 'node_modules', '@marktodocx', 'runtime-node-mermaid', 'package.json'), 'Mermaid-enabled export is missing installed @marktodocx/runtime-node-mermaid.'),
       assertPathExists(path.resolve(exportDir, bundledBrowser.executablePath), 'Mermaid-enabled export is missing its bundled browser binary.'),
     ]);
+    for (const relativePath of prunedChromiumRelativePaths) {
+      assert.equal(
+        await pathExists(path.join(bundledBrowserRootDir, relativePath)),
+        false,
+        `Mermaid-enabled export must prune Chromium resource ${relativePath}.`
+      );
+    }
   } else {
     assert.equal(manifest.profile, 'standard');
     assert.equal(manifest.mermaid?.bundled, false, 'Standard export manifest must record Mermaid support as disabled.');

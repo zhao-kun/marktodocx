@@ -257,6 +257,7 @@ Mermaid-enabled exports are platform-specific because they vendor a Chromium bin
    ```bash
    npm run test:export:agent-skill:mermaid
    ```
+   The export pipeline prunes Chromium's Google Docs reading-mode accessibility helper files before packaging. They are not used by headless Mermaid rendering, and removing them avoids ClawHub or VirusTotal heuristics that can flag the vendored browser bundle for dynamic-code execution.
 3. Publish to ClawHub as a separate slug or version tag (e.g. add a `with-mermaid-linux-x64` tag), so users on other platforms do not accidentally install a binary that does not run.
 4. Attach the Mermaid-enabled zip to a separate GitHub Release asset clearly labelled with the host OS and architecture.
 
@@ -267,6 +268,7 @@ The standard export keeps Mermaid disabled and fails clearly if the deployed ski
 - `error: unknown command 'publish'` under `clawhub skill`: your CLI is on the newer command layout. Use `clawhub publish`, not `clawhub skill publish`.
 - `Error: Path must be a folder`: verify you are passing the exported directory itself, not the zip file or the source `apps/agent-skill/` folder. If your machine has an OpenClaw workspace configured, add `--workdir "$PWD"` so ClawHub resolves the publish path from the current shell directory instead of the configured workspace root.
 - `Error: SKILL.md required`: on affected machines this can be the same workdir-resolution problem, not a missing file. If `SKILL.md` exists in the exported folder, rerun from inside that folder with `clawhub publish . --workdir "$PWD" ...`.
+- `VirusTotal suspicious` on `browser/.../resources/accessibility/reading_mode_gdocs_helper/gdocs_script.js`: that file comes from Puppeteer's bundled Chromium, not from skill code. Rebuild with the current export script so the publish artifact prunes Chromium's nonessential Google Docs reading-mode helper before packaging, then republish the Mermaid-enabled skill.
 - `GitHub API rate limit exceeded`: the publish command reached a GitHub-backed metadata lookup limit. Wait for the reset window shown by ClawHub and rerun the same command. If it keeps happening, authenticate first with `clawhub login` and verify with `clawhub whoami` before retrying.
 
 ### `disable-model-invocation` note
