@@ -13,13 +13,27 @@ This file owns the release **process**, not the listing copy.
 
 ## Contents
 
-- [Versioning Policy](#versioning-policy)
-- [Pre-Release Checklist (All Hosts)](#pre-release-checklist-all-hosts)
-- [VS Code Marketplace (vscode-extension)](#vs-code-marketplace-vscode-extension)
-- [Chrome Web Store (chrome-extension)](#chrome-web-store-chrome-extension)
-- [Agent Skill (ClawHub)](#agent-skill-clawhub)
-- [CLI Release Policy (Source-Only)](#cli-release-policy-source-only)
-- [Coordination Across Hosts](#coordination-across-hosts)
+- [Publishing Guide](#publishing-guide)
+  - [Contents](#contents)
+  - [Versioning Policy](#versioning-policy)
+  - [Pre-Release Checklist (All Hosts)](#pre-release-checklist-all-hosts)
+  - [VS Code Marketplace (vscode-extension)](#vs-code-marketplace-vscode-extension)
+    - [Prerequisites (one-time)](#prerequisites-one-time)
+    - [Per-release flow](#per-release-flow)
+    - [What the package contains](#what-the-package-contains)
+    - [Listing assets](#listing-assets)
+  - [Chrome Web Store (chrome-extension)](#chrome-web-store-chrome-extension)
+    - [Prerequisites (one-time)](#prerequisites-one-time-1)
+    - [Per-release flow](#per-release-flow-1)
+    - [Common rejection causes to avoid](#common-rejection-causes-to-avoid)
+  - [Agent Skill (ClawHub)](#agent-skill-clawhub)
+    - [Prerequisites (one-time)](#prerequisites-one-time-2)
+    - [Per-release flow](#per-release-flow-2)
+    - [Mermaid-enabled releases](#mermaid-enabled-releases)
+    - [ClawHub publish troubleshooting](#clawhub-publish-troubleshooting)
+    - [`disable-model-invocation` note](#disable-model-invocation-note)
+  - [CLI Release Policy (Source-Only)](#cli-release-policy-source-only)
+  - [Coordination Across Hosts](#coordination-across-hosts)
 
 ## Versioning Policy
 
@@ -200,6 +214,7 @@ The agent skill is published to ClawHub, the OpenClaw skill registry, and mirror
     cd apps/agent-skill/dist/marktodocx-skill
 
     clawhub publish . \
+       --workdir "$PWD" \
        --slug marktodocx-skill \
        --name "marktodocx-skill" \
        --version <version> \
@@ -211,6 +226,7 @@ The agent skill is published to ClawHub, the OpenClaw skill registry, and mirror
 
     ```bash
     clawhub publish ./apps/agent-skill/dist/marktodocx-skill \
+       --workdir "$PWD" \
        --slug marktodocx-skill \
        --name "marktodocx-skill" \
        --version <version> \
@@ -219,6 +235,8 @@ The agent skill is published to ClawHub, the OpenClaw skill registry, and mirror
     ```
 
     The path argument must point at the **exported** folder, not the source `apps/agent-skill/` directory. ClawHub expects a `SKILL.md` at the root of that exported folder, which the export already includes.
+
+    The explicit `--workdir "$PWD"` is important on machines that have an OpenClaw workspace configured in `~/.openclaw/openclaw.json`. Without it, ClawHub can resolve `.` against that configured workspace instead of your current shell directory and then report misleading errors such as `Path must be a folder` or `SKILL.md required` even when the exported folder is valid.
 5. Confirm the new version is browseable on ClawHub.
 6. Tag and push:
    ```bash
@@ -247,7 +265,8 @@ The standard export keeps Mermaid disabled and fails clearly if the deployed ski
 ### ClawHub publish troubleshooting
 
 - `error: unknown command 'publish'` under `clawhub skill`: your CLI is on the newer command layout. Use `clawhub publish`, not `clawhub skill publish`.
-- `Error: Path must be a folder`: verify you are passing the exported directory itself, not the zip file or the source `apps/agent-skill/` folder. The most reliable invocation is `cd apps/agent-skill/dist/marktodocx-skill && clawhub publish . ...`.
+- `Error: Path must be a folder`: verify you are passing the exported directory itself, not the zip file or the source `apps/agent-skill/` folder. If your machine has an OpenClaw workspace configured, add `--workdir "$PWD"` so ClawHub resolves the publish path from the current shell directory instead of the configured workspace root.
+- `Error: SKILL.md required`: on affected machines this can be the same workdir-resolution problem, not a missing file. If `SKILL.md` exists in the exported folder, rerun from inside that folder with `clawhub publish . --workdir "$PWD" ...`.
 - `GitHub API rate limit exceeded`: the publish command reached a GitHub-backed metadata lookup limit. Wait for the reset window shown by ClawHub and rerun the same command. If it keeps happening, authenticate first with `clawhub login` and verify with `clawhub whoami` before retrying.
 
 ### `disable-model-invocation` note
