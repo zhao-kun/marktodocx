@@ -28,9 +28,9 @@ import {
   normalizeTables,
   resolveDocumentLayout,
   resolveDocumentStyle,
-} from '@markdocx/core';
+} from '@marktodocx/core';
 
-import { createJsdomDomAdapter as createRuntimeNodeJsdomDomAdapter } from '@markdocx/runtime-node';
+import { createJsdomDomAdapter as createRuntimeNodeJsdomDomAdapter } from '@marktodocx/runtime-node';
 
 const execFile = promisify(execFileCallback);
 

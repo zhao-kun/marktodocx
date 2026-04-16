@@ -1,15 +1,15 @@
-# markdocx
+# marktodocx
 
 English | [简体中文](README.zh-CN.md)
 
-markdocx converts Markdown to Word (`.docx`) while preserving headings, paragraphs, lists, tables, code blocks, blockquotes, local images, and Mermaid diagrams. The same conversion rules are shared across every supported host so that one fix lands everywhere instead of being copied between tools.
+marktodocx converts Markdown to Word (`.docx`) while preserving headings, paragraphs, lists, tables, code blocks, blockquotes, local images, and Mermaid diagrams. The same conversion rules are shared across every supported host so that one fix lands everywhere instead of being copied between tools.
 
-markdocx **targets** three public registries — the VS Code Marketplace, the Chrome Web Store, and ClawHub (the OpenClaw skill registry) — plus GitHub Releases for skill zip mirrors. The full publish path is wired up in [`docs/publishing.md`](docs/publishing.md), but no host has shipped to its registry yet, so every host is currently built from this repository. The CLI is intentionally source-only and stays that way.
+marktodocx **targets** three public registries — the VS Code Marketplace, the Chrome Web Store, and ClawHub (the OpenClaw skill registry) — plus GitHub Releases for skill zip mirrors. The full publish path is wired up in [`docs/publishing.md`](docs/publishing.md), but no host has shipped to its registry yet, so every host is currently built from this repository. The CLI is intentionally source-only and stays that way.
 
 Mermaid support differs by host:
 
 - Chrome extension and VSCode extension include Mermaid through the browser runtime after you build the host.
-- CLI and agent skill run on the Node runtime by default, so Mermaid requires Node-side Chromium support through `@markdocx/runtime-node-mermaid` or a Mermaid-enabled agent-skill export.
+- CLI and agent skill run on the Node runtime by default, so Mermaid requires Node-side Chromium support through `@marktodocx/runtime-node-mermaid` or a Mermaid-enabled agent-skill export.
 
 ## Contents
 
@@ -44,21 +44,21 @@ Mermaid support differs by host:
 1. `npm install && npm run build:chrome-extension`
 2. Open `chrome://extensions/`, enable **Developer mode**, and click **Load unpacked**
 3. Select `apps/chrome-extension/dist/`
-4. Pin the markdocx icon, open it, select the folder containing your Markdown file and local images, choose the `.md` file, then click **Convert**
+4. Pin the marktodocx icon, open it, select the folder containing your Markdown file and local images, choose the `.md` file, then click **Convert**
 5. The generated `.docx` downloads through Chrome's normal download flow: if **Ask where to save each file** is enabled, Chrome opens a save dialog; otherwise it uses the default download directory
 
 ### VSCode Extension Quickstart
 
 1. `npm install && npm run package:vscode-extension`
-2. Install `apps/vscode-extension/dist/markdocx-vscode-extension.vsix` (for example: `code --install-extension apps/vscode-extension/dist/markdocx-vscode-extension.vsix --force`)
+2. Install `apps/vscode-extension/dist/marktodocx-vscode-extension.vsix` (for example: `code --install-extension apps/vscode-extension/dist/marktodocx-vscode-extension.vsix --force`)
 3. Open the workspace containing your Markdown file and local images
-4. Right-click a `.md` file in the Explorer and choose **markdocx: Convert to DOCX**, or run `markdocx.convertToDocx` from the Command Palette
+4. Right-click a `.md` file in the Explorer and choose **marktodocx: Convert to DOCX**, or run `marktodocx.convertToDocx` from the Command Palette
 5. Choose the output path in the save dialog
 
 ### Agent Skill Quickstart
 
 1. `npm install && npm run export:agent-skill`
-2. Copy `apps/agent-skill/dist/markdocx-skill/` into your skill host, for example `~/.claude/skills/markdocx-skill` for Claude Code or your OpenClaw skills directory
+2. Copy `apps/agent-skill/dist/marktodocx-skill/` into your skill host, for example `~/.claude/skills/marktodocx-skill` for Claude Code or your OpenClaw skills directory
 3. Start a new agent session and invoke the skill explicitly, for example: `Convert docs/report.md to DOCX with stylePreset=minimal.`
 4. If your Markdown contains Mermaid, use `npm run export:agent-skill:mermaid` instead (platform-specific; export on the same OS and architecture you will deploy to)
 
@@ -78,8 +78,8 @@ Release process for every host above is documented in [`docs/publishing.md`](doc
 The repository follows a **Shared Core + Two Runtime Families** layout:
 
 - A shared conversion core owns the canonical Markdown → HTML → DOCX rules, the style and layout schemas, DOCX normalization, and the parity fixtures.
-- A **browser runtime family** (`@markdocx/runtime-browser`) hosts the Chrome extension and VSCode extension on top of native `DOMParser` and in-page Mermaid rendering.
-- A **Node runtime family** (`@markdocx/runtime-node`, plus the optional `@markdocx/runtime-node-mermaid`) hosts the CLI and agent skill on top of a jsdom DOM adapter and an optional Puppeteer-based Mermaid renderer.
+- A **browser runtime family** (`@marktodocx/runtime-browser`) hosts the Chrome extension and VSCode extension on top of native `DOMParser` and in-page Mermaid rendering.
+- A **Node runtime family** (`@marktodocx/runtime-node`, plus the optional `@marktodocx/runtime-node-mermaid`) hosts the CLI and agent skill on top of a jsdom DOM adapter and an optional Puppeteer-based Mermaid renderer.
 
 Output parity across hosts is enforced by fixture-driven gates in `scripts/run-fixture-parity.mjs`, `scripts/run-cli-parity.mjs`, `scripts/run-vscode-parity.mjs`, and `scripts/run-agent-skill-parity.mjs`. See `docs/design-core-refactor.md` for the full design, contracts, and rationale.
 
@@ -88,13 +88,13 @@ Repository cleanup is still intentionally incremental in one place only: `md-to-
 ## Package Layout
 
 ```
-markdocx/
+marktodocx/
 ├── md-to-docx.mjs                  # Thin CLI wrapper (argument parsing + style resolution)
 ├── packages/
-│   ├── core/                       # @markdocx/core — canonical rules, schemas, fixtures
-│   ├── runtime-browser/            # @markdocx/runtime-browser — native DOMParser + in-page Mermaid
-│   ├── runtime-node/               # @markdocx/runtime-node — jsdom adapter + filesystem image map
-│   └── runtime-node-mermaid/       # @markdocx/runtime-node-mermaid — optional Puppeteer Mermaid renderer
+│   ├── core/                       # @marktodocx/core — canonical rules, schemas, fixtures
+│   ├── runtime-browser/            # @marktodocx/runtime-browser — native DOMParser + in-page Mermaid
+│   ├── runtime-node/               # @marktodocx/runtime-node — jsdom adapter + filesystem image map
+│   └── runtime-node-mermaid/       # @marktodocx/runtime-node-mermaid — optional Puppeteer Mermaid renderer
 ├── apps/
 │   ├── agent-skill/                # Agent skill host (Node runtime family)
 │   ├── chrome-extension/           # Chrome extension host
@@ -129,7 +129,7 @@ markdocx/
 
 ## Installation
 
-End users can install most hosts from their public registry once it is published — VS Code Marketplace for the VSCode extension, Chrome Web Store for the Chrome extension, ClawHub (`clawhub install markdocx-skill`) for the agent skill. The CLI is intentionally source-only.
+End users can install most hosts from their public registry once it is published — VS Code Marketplace for the VSCode extension, Chrome Web Store for the Chrome extension, ClawHub (`clawhub install marktodocx-skill`) for the agent skill. The CLI is intentionally source-only.
 
 The instructions below cover the source build, which works for every host and is required for the CLI:
 
@@ -137,7 +137,7 @@ The instructions below cover the source build, which works for every host and is
 npm install
 ```
 
-This installs all workspace packages, including `@markdocx/core`, `@markdocx/runtime-browser`, `@markdocx/runtime-node`, and `@markdocx/runtime-node-mermaid`.
+This installs all workspace packages, including `@marktodocx/core`, `@marktodocx/runtime-browser`, `@marktodocx/runtime-node`, and `@marktodocx/runtime-node-mermaid`.
 
 If your Markdown contains Mermaid diagrams and you plan to convert it via the CLI, install a Puppeteer-managed Chrome once:
 
@@ -174,18 +174,18 @@ npm run convert -- report.md dist/report.docx
 
 ## CLI Style Options
 
-The CLI resolves shared `styleOptions` through `@markdocx/runtime-node`. All configuration goes through the same schema used by every host, so a preset set on the CLI produces the same output as the same preset configured in the extension.
+The CLI resolves shared `styleOptions` through `@marktodocx/runtime-node`. All configuration goes through the same schema used by every host, so a preset set on the CLI produces the same output as the same preset configured in the extension.
 
 | CLI flag                    | Environment variable        | Purpose                                     |
 | --------------------------- | --------------------------- | ------------------------------------------- |
-| `--style-preset <name>`     | `MARKDOCX_STYLE_PRESET`     | Base style preset (`default`, `minimal`, `report`) |
-| `--margin-preset <name>`    | `MARKDOCX_MARGIN_PRESET`    | Page margin preset (`default`, `compact`, `wide`)  |
-| `--style-json <json\|path>` | `MARKDOCX_STYLE_JSON`       | Inline JSON string or path to a JSON file    |
-| `--set key=value`           | `MARKDOCX_STYLE_SET`        | Targeted dotted-path override (repeatable)  |
+| `--style-preset <name>`     | `MARKTODOCX_STYLE_PRESET`     | Base style preset (`default`, `minimal`, `report`) |
+| `--margin-preset <name>`    | `MARKTODOCX_MARGIN_PRESET`    | Page margin preset (`default`, `compact`, `wide`)  |
+| `--style-json <json\|path>` | `MARKTODOCX_STYLE_JSON`       | Inline JSON string or path to a JSON file    |
+| `--set key=value`           | `MARKTODOCX_STYLE_SET`        | Targeted dotted-path override (repeatable)  |
 
 Resolution precedence (later entries override earlier ones): environment preset → environment JSON → environment margin → environment assignments → CLI preset → CLI JSON → CLI margin → CLI assignments. The resolved object is then validated by core's `normalizeStyleOptions`.
 
-`--set` and `MARKDOCX_STYLE_SET` share the same dotted-path, semicolon-separated syntax:
+`--set` and `MARKTODOCX_STYLE_SET` share the same dotted-path, semicolon-separated syntax:
 
 ```text
 code.fontSizePt=11;blockquote.italic=false;page.marginPreset=wide
@@ -236,7 +236,7 @@ node md-to-docx.mjs report.md \
 
 ### `styleJson` Details
 
-`--style-json` and `MARKDOCX_STYLE_JSON` accept either:
+`--style-json` and `MARKTODOCX_STYLE_JSON` accept either:
 
 - an inline JSON object string
 - a path to a JSON file
@@ -282,7 +282,7 @@ node md-to-docx.mjs report.md dist/report.docx \
 
 ## Chrome Extension
 
-The Chrome extension lives under `apps/chrome-extension/` and shares conversion logic with the CLI through `@markdocx/core` + `@markdocx/runtime-browser`.
+The Chrome extension lives under `apps/chrome-extension/` and shares conversion logic with the CLI through `@marktodocx/core` + `@marktodocx/runtime-browser`.
 
 Build it from source:
 
@@ -300,7 +300,7 @@ npm run build:chrome-extension
 
 ### First Conversion Walkthrough
 
-1. Pin the markdocx icon if you want quick access from the toolbar.
+1. Pin the marktodocx icon if you want quick access from the toolbar.
 2. Click the extension icon to open the conversion page.
 3. Select the folder that contains the Markdown file and any local images it references.
 4. Choose the target Markdown file from the file selector.
@@ -313,7 +313,7 @@ The extension resolves local image paths relative to the Markdown file. A single
 
 ## VSCode Extension
 
-The VSCode extension lives under `apps/vscode-extension/`. It activates the `markdocx.convertToDocx` command from the explorer, editor, and editor-title context menus, and routes conversion through a hidden webview that bundles `@markdocx/runtime-browser`.
+The VSCode extension lives under `apps/vscode-extension/`. It activates the `marktodocx.convertToDocx` command from the explorer, editor, and editor-title context menus, and routes conversion through a hidden webview that bundles `@marktodocx/runtime-browser`.
 
 Build the bundle with:
 
@@ -327,37 +327,37 @@ For an installable artifact, package it as a `.vsix`:
 npm run package:vscode-extension
 ```
 
-Then install `apps/vscode-extension/dist/markdocx-vscode-extension.vsix` into VS Code. If you are developing the extension instead, point VS Code at `apps/vscode-extension/` through the Run Extension launch configuration.
+Then install `apps/vscode-extension/dist/marktodocx-vscode-extension.vsix` into VS Code. If you are developing the extension instead, point VS Code at `apps/vscode-extension/` through the Run Extension launch configuration.
 
 ### Trigger a Conversion
 
-- Right-click a `.md` file in the Explorer and choose **markdocx: Convert to DOCX**.
-- Or open the Command Palette and run `markdocx.convertToDocx`.
+- Right-click a `.md` file in the Explorer and choose **marktodocx: Convert to DOCX**.
+- Or open the Command Palette and run `marktodocx.convertToDocx`.
 - Or use the editor context menu or editor title button when a Markdown file is open.
 
 VS Code prompts for the output path with a save dialog. The `.docx` is written wherever you choose, and local images resolve relative to the workspace folder containing the Markdown file.
 
-Conversion settings live under the `markdocx` namespace and map directly onto the shared `styleOptions` schema:
+Conversion settings live under the `marktodocx` namespace and map directly onto the shared `styleOptions` schema:
 
 | Setting                 | Purpose                                                                       |
 | ----------------------- | ----------------------------------------------------------------------------- |
-| `markdocx.stylePreset`  | Base style preset (`default`, `minimal`, `report`)                            |
-| `markdocx.marginPreset` | Optional page margin preset override (`default`, `compact`, `wide`)           |
-| `markdocx.styleJson`    | Inline style JSON string or workspace-relative path to a style JSON file      |
-| `markdocx.styleSet`     | Targeted dotted-path overrides such as `body.fontSizePt=12` (array of strings) |
+| `marktodocx.stylePreset`  | Base style preset (`default`, `minimal`, `report`)                            |
+| `marktodocx.marginPreset` | Optional page margin preset override (`default`, `compact`, `wide`)           |
+| `marktodocx.styleJson`    | Inline style JSON string or workspace-relative path to a style JSON file      |
+| `marktodocx.styleSet`     | Targeted dotted-path overrides such as `body.fontSizePt=12` (array of strings) |
 
 Local images are resolved against the workspace folder of the converted Markdown file, mirroring the Chrome extension's directory-selection contract.
 
 ### Packaging the VSCode Extension
 
-The extension is packaged with [`@vscode/vsce`](https://github.com/microsoft/vscode-vsce). The `package` script builds the bundle, runs the bundle smoke check, and writes a standalone `.vsix` to `apps/vscode-extension/dist/markdocx-vscode-extension.vsix`.
+The extension is packaged with [`@vscode/vsce`](https://github.com/microsoft/vscode-vsce). The `package` script builds the bundle, runs the bundle smoke check, and writes a standalone `.vsix` to `apps/vscode-extension/dist/marktodocx-vscode-extension.vsix`.
 
 Run any of these from the repository root:
 
 ```bash
 npm run package:vscode-extension
 # or
-npm run package -w markdocx-vscode-extension
+npm run package -w marktodocx-vscode-extension
 ```
 
 Or from the extension directory:
@@ -370,24 +370,24 @@ npm run package
 Install the produced `.vsix` into your local VS Code:
 
 ```bash
-npm run install:vsix -w markdocx-vscode-extension
+npm run install:vsix -w marktodocx-vscode-extension
 # or
-code --install-extension apps/vscode-extension/dist/markdocx-vscode-extension.vsix --force
+code --install-extension apps/vscode-extension/dist/marktodocx-vscode-extension.vsix --force
 ```
 
-The packaged `.vsix` ships the bundled `dist/extension.cjs`, the webview asset bundle, and the manifest. Workspace `@markdocx/*` packages are inlined at build time, so the extension does not require `node_modules` at install time and `vsce package` is invoked with `--no-dependencies`.
+The packaged `.vsix` ships the bundled `dist/extension.cjs`, the webview asset bundle, and the manifest. Workspace `@marktodocx/*` packages are inlined at build time, so the extension does not require `node_modules` at install time and `vsce package` is invoked with `--no-dependencies`.
 
 ## Agent Skill
 
-The agent skill source lives under `apps/agent-skill/` and exports `convertWithAgentSkill()` from `apps/agent-skill/skill.mjs`. It is intentionally thin: it resolves file or inline Markdown input, maps skill parameters and environment defaults into the shared `styleOptions` schema through `@markdocx/runtime-node`, and writes a DOCX when an output path is available.
+The agent skill source lives under `apps/agent-skill/` and exports `convertWithAgentSkill()` from `apps/agent-skill/skill.mjs`. It is intentionally thin: it resolves file or inline Markdown input, maps skill parameters and environment defaults into the shared `styleOptions` schema through `@marktodocx/runtime-node`, and writes a DOCX when an output path is available.
 
 If you want a host-specific deployment walkthrough, see `apps/agent-skill/README.md` for Claude Code and OpenClaw recipes.
 
 Naming rule:
 
 - Internal source app path: `apps/agent-skill/`
-- Internal workspace package: `markdocx-agent-skill`
-- Public Claude skill name: `markdocx-skill`
+- Internal workspace package: `marktodocx-agent-skill`
+- Public Claude skill name: `marktodocx-skill`
 
 The source folder name does not need to match the public Claude skill name. The public skill identity is defined by the `name` field in `apps/agent-skill/SKILL.md`.
 
@@ -404,7 +404,7 @@ Skill parameters match the design contract:
 | `styleJson`     | Shared style JSON string, plain object, or JSON file path               |
 | `styleSet`      | Shared dotted-path overrides such as `body.fontSizePt=12`               |
 
-The skill honors the same environment defaults as the CLI: `MARKDOCX_STYLE_PRESET`, `MARKDOCX_MARGIN_PRESET`, `MARKDOCX_STYLE_JSON`, and `MARKDOCX_STYLE_SET`. Mermaid behavior is also the same: install `@markdocx/runtime-node-mermaid` when the document contains Mermaid blocks.
+The skill honors the same environment defaults as the CLI: `MARKTODOCX_STYLE_PRESET`, `MARKTODOCX_MARGIN_PRESET`, `MARKTODOCX_STYLE_JSON`, and `MARKTODOCX_STYLE_SET`. Mermaid behavior is also the same: install `@marktodocx/runtime-node-mermaid` when the document contains Mermaid blocks.
 
 To produce a standalone deployable skill folder that does not depend on a live repository checkout, run:
 
@@ -412,7 +412,7 @@ To produce a standalone deployable skill folder that does not depend on a live r
 npm run export:agent-skill
 ```
 
-This writes `apps/agent-skill/dist/markdocx-skill/` plus `apps/agent-skill/dist/markdocx-skill.zip`, which can be copied or symlinked into another agent runtime's skills directory.
+This writes `apps/agent-skill/dist/marktodocx-skill/` plus `apps/agent-skill/dist/marktodocx-skill.zip`, which can be copied or symlinked into another agent runtime's skills directory.
 
 To produce a Mermaid-enabled export with a vendored Chromium browser, run:
 
@@ -503,7 +503,7 @@ If Mermaid rendering fails with an error like `error while loading shared librar
 On Debian or Ubuntu, if you have root access, let Puppeteer attempt to install them:
 
 ```bash
-sudo MARKDOCX_PUPPETEER_INSTALL_DEPS=1 npm run test:export:agent-skill:mermaid
+sudo MARKTODOCX_PUPPETEER_INSTALL_DEPS=1 npm run test:export:agent-skill:mermaid
 ```
 
 If you prefer to install packages manually on Debian or Ubuntu, start with:
@@ -541,23 +541,23 @@ sudo apt-get install -y \
 
 On some Ubuntu releases the audio package is named `libasound2t64`; on older releases it is still `libasound2`.
 
-In containerized environments you may also need `MARKDOCX_PUPPETEER_NO_SANDBOX=1`.
+In containerized environments you may also need `MARKTODOCX_PUPPETEER_NO_SANDBOX=1`.
 
 If Chromium fails with `No usable sandbox!`, rerun the Mermaid export gate as:
 
 ```bash
-MARKDOCX_PUPPETEER_NO_SANDBOX=1 npm run test:export:agent-skill:mermaid
+MARKTODOCX_PUPPETEER_NO_SANDBOX=1 npm run test:export:agent-skill:mermaid
 ```
 
 On minimal Ubuntu VPS hosts, you may need both environment variables together:
 
 ```bash
-sudo MARKDOCX_PUPPETEER_INSTALL_DEPS=1 MARKDOCX_PUPPETEER_NO_SANDBOX=1 npm run test:export:agent-skill:mermaid
+sudo MARKTODOCX_PUPPETEER_INSTALL_DEPS=1 MARKTODOCX_PUPPETEER_NO_SANDBOX=1 npm run test:export:agent-skill:mermaid
 ```
 
-### CLI error: install `@markdocx/runtime-node-mermaid`
+### CLI error: install `@marktodocx/runtime-node-mermaid`
 
-If the CLI exits with a message about installing `@markdocx/runtime-node-mermaid`, your Markdown contains a Mermaid fence but the optional Puppeteer helper package is not installed. Install the workspace (which pulls it in) and rerun:
+If the CLI exits with a message about installing `@marktodocx/runtime-node-mermaid`, your Markdown contains a Mermaid fence but the optional Puppeteer helper package is not installed. Install the workspace (which pulls it in) and rerun:
 
 ```bash
 npm install

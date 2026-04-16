@@ -1,5 +1,5 @@
 {
-  "name": "markdocx-chrome-extension",
+  "name": "marktodocx-chrome-extension",
   "private": true,
   "type": "module",
   "scripts": {
@@ -7,8 +7,8 @@
     "watch": "vite build --watch"
   },
   "dependencies": {
-    "@markdocx/core": "0.1.0",
-    "@markdocx/runtime-browser": "0.1.0",
+    "@marktodocx/core": "0.1.0",
+    "@marktodocx/runtime-browser": "0.1.0",
     "buffer": "^6.0.3"
   },
   "devDependencies": {

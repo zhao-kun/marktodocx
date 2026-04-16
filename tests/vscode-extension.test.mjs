@@ -7,7 +7,7 @@ import { createRequire } from 'node:module';
 
 import JSZip from 'jszip';
 
-import { convertMarkdownInNode } from '@markdocx/runtime-node';
+import { convertMarkdownInNode } from '@marktodocx/runtime-node';
 
 const require = createRequire(import.meta.url);
 const {
@@ -132,7 +132,7 @@ test('VSCode style mapping resolves through the shared styleOptions parser', asy
 test('VSCode convert flow drives the host pipeline end-to-end on a fixture', async () => {
   const workspaceRoot = path.resolve(process.cwd(), 'test-markdown');
   const markdownPath = path.join(workspaceRoot, 'blockquote-regression.md');
-  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'markdocx-vscode-smoke-'));
+  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'marktodocx-vscode-smoke-'));
   const savePath = path.join(tempDir, 'blockquote-regression.docx');
   const logs = { errors: [], info: [], progress: [] };
 

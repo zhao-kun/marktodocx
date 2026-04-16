@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import {
   createPuppeteerMermaidRenderer,
   renderMermaidToImageTagInNode,
-} from '@markdocx/runtime-node-mermaid';
+} from '@marktodocx/runtime-node-mermaid';
 
 test('runtime-node-mermaid renders a Mermaid diagram to an image tag', async () => {
   const rendered = await renderMermaidToImageTagInNode('graph TD\n  A-->B\n', 0);

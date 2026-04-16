@@ -13,8 +13,8 @@ async function main() {
 
   const bundleSource = await fs.readFile(extensionBundlePath, 'utf8');
   assert.ok(
-    !/require\(['"]@markdocx\//.test(bundleSource) && !/from ['"]@markdocx\//.test(bundleSource),
-    'Bundled extension.cjs still references @markdocx/* workspace packages at runtime.'
+    !/require\(['"]@marktodocx\//.test(bundleSource) && !/from ['"]@marktodocx\//.test(bundleSource),
+    'Bundled extension.cjs still references @marktodocx/* workspace packages at runtime.'
   );
 
   const manifest = JSON.parse(await fs.readFile(manifestPath, 'utf8'));

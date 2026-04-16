@@ -15,7 +15,7 @@ async function main() {
 
   assert.equal(docx instanceof Uint8Array, true);
   assert.equal(docx.byteLength > 0, true);
-  console.log('@markdocx/core build smoke passed');
+  console.log('@marktodocx/core build smoke passed');
 }
 
 main().catch((error) => {

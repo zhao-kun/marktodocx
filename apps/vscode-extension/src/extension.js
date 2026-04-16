@@ -1,14 +1,14 @@
 const vscode = require('vscode');
 
 const { convertMarkdownToDocx } = require('./convert');
-const { MarkdocxWebviewHost } = require('./webview-host');
+const { MarktodocxWebviewHost } = require('./webview-host');
 
 function activate(context) {
-  const webviewHost = new MarkdocxWebviewHost(context);
+  const webviewHost = new MarktodocxWebviewHost(context);
   context.subscriptions.push(webviewHost);
 
   context.subscriptions.push(
-    vscode.commands.registerCommand('markdocx.convertToDocx', async (resourceUri) => {
+    vscode.commands.registerCommand('marktodocx.convertToDocx', async (resourceUri) => {
       await convertMarkdownToDocx({
         context,
         resourceUri,

@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
-import { normalizeStyleOptions } from '@markdocx/core/style-options';
+import { normalizeStyleOptions } from '@marktodocx/core/style-options';
 
 function isPlainObject(value) {
   return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
@@ -147,10 +147,10 @@ export async function resolveNodeStyleOptions({
 } = {}) {
   let styleOptions = {};
 
-  const envStylePreset = env.MARKDOCX_STYLE_PRESET;
-  const envStyleJson = env.MARKDOCX_STYLE_JSON;
-  const envMarginPreset = env.MARKDOCX_MARGIN_PRESET;
-  const envStyleSet = env.MARKDOCX_STYLE_SET;
+  const envStylePreset = env.MARKTODOCX_STYLE_PRESET;
+  const envStyleJson = env.MARKTODOCX_STYLE_JSON;
+  const envMarginPreset = env.MARKTODOCX_MARGIN_PRESET;
+  const envStyleSet = env.MARKTODOCX_STYLE_SET;
 
   if (typeof envStylePreset === 'string' && envStylePreset.trim() !== '') {
     styleOptions = mergeDeep(styleOptions, { preset: envStylePreset.trim() });

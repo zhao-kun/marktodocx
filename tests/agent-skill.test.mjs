@@ -16,16 +16,16 @@ test('resolveAgentSkillStyleOptions honors env defaults and explicit skill param
   const styleOptions = await resolveAgentSkillStyleOptions({
     cwd: process.cwd(),
     env: {
-      MARKDOCX_STYLE_PRESET: 'minimal',
-      MARKDOCX_MARGIN_PRESET: 'wide',
-      MARKDOCX_STYLE_JSON: JSON.stringify({
+      MARKTODOCX_STYLE_PRESET: 'minimal',
+      MARKTODOCX_MARGIN_PRESET: 'wide',
+      MARKTODOCX_STYLE_JSON: JSON.stringify({
         overrides: {
           blockquote: {
             italic: true,
           },
         },
       }),
-      MARKDOCX_STYLE_SET: 'body.fontSizePt=12;code.fontSizePt=9',
+      MARKTODOCX_STYLE_SET: 'body.fontSizePt=12;code.fontSizePt=9',
     },
     stylePreset: 'report',
     marginPreset: 'compact',
@@ -52,7 +52,7 @@ test('normalizeSkillStyleSet accepts string and array inputs', () => {
 });
 
 test('agent skill wrapper converts markdown and writes the default output beside the source file', async () => {
-  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'markdocx-agent-skill-test-'));
+  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'marktodocx-agent-skill-test-'));
   const markdownPath = path.join(tempDir, 'sample.md');
   const expectedOutputPath = path.join(tempDir, 'sample.docx');
 
@@ -126,7 +126,7 @@ test('resolveBundledMermaidLaunchOptions rejects export manifest without target 
 });
 
 test('resolveBundledMermaidLaunchOptions rejects missing bundled browser executable', async () => {
-  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'markdocx-agent-skill-manifest-'));
+  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'marktodocx-agent-skill-manifest-'));
 
   try {
     await assert.rejects(
@@ -152,7 +152,7 @@ test('resolveBundledMermaidLaunchOptions rejects missing bundled browser executa
 
 
 test('resolveBundledMermaidLaunchOptions resolves bundled browser executable from manifest', async () => {
-  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'markdocx-agent-skill-manifest-'));
+  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'marktodocx-agent-skill-manifest-'));
   const browserDir = path.join(tempDir, 'browser');
   const executablePath = path.join(browserDir, 'chrome');
 
@@ -185,7 +185,7 @@ test('resolveBundledMermaidLaunchOptions resolves bundled browser executable fro
 });
 
 test('resolveBundledMermaidLaunchOptions defaults missing launchArgs to an empty array', async () => {
-  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'markdocx-agent-skill-manifest-'));
+  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'marktodocx-agent-skill-manifest-'));
   const browserDir = path.join(tempDir, 'browser');
   const executablePath = path.join(browserDir, 'chrome');
 

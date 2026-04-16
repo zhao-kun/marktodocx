@@ -1,13 +1,13 @@
 ---
-name: markdocx-skill
-description: Convert Markdown into a DOCX file using the shared markdocx Node runtime. Use when the user explicitly wants Markdown content or a Markdown file converted to .docx in this repository.
+name: marktodocx-skill
+description: Convert Markdown into a DOCX file using the shared marktodocx Node runtime. Use when the user explicitly wants Markdown content or a Markdown file converted to .docx in this repository.
 when_to_use: Use for explicit Markdown-to-DOCX conversion requests. This skill writes files, so prefer direct invocation rather than automatic background use.
 argument-hint: "[input.md] [output.docx optional]"
 disable-model-invocation: true
 allowed-tools: Read Grep Bash(node *)
 ---
 
-# markdocx-skill
+# marktodocx-skill
 
 Convert Markdown into DOCX using the shared Node runtime family in this repository.
 
@@ -23,7 +23,7 @@ Convert Markdown into DOCX using the shared Node runtime family in this reposito
 2. Require exactly one input source: either `inputPath` or inline `markdown`.
 3. Resolve style options through the wrapper so explicit parameters override environment defaults in the same way as the CLI.
 4. Preserve local image behavior by using the Markdown file directory for `inputPath`, or an explicit `baseDir` for inline Markdown.
-5. If the document contains Mermaid and `@markdocx/runtime-node-mermaid` is unavailable, fail clearly instead of silently degrading.
+5. If the document contains Mermaid and `@marktodocx/runtime-node-mermaid` is unavailable, fail clearly instead of silently degrading.
 6. Report the output file path after a successful conversion.
 
 ## Recommended Workflow

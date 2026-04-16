@@ -1,6 +1,6 @@
 export function createNativeDomAdapter() {
   if (typeof DOMParser !== 'function') {
-    throw new Error('Native DOMParser is unavailable. @markdocx/runtime-browser requires a browser-like DOM environment.');
+    throw new Error('Native DOMParser is unavailable. @marktodocx/runtime-browser requires a browser-like DOM environment.');
   }
 
   return {

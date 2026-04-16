@@ -7,7 +7,7 @@ import {
   FLOWCHART_WRAPPING_WIDTH,
   MERMAID_RENDER_SCALE,
   resolveDocumentLayout,
-} from '@markdocx/core';
+} from '@marktodocx/core';
 
 function getMermaidConfig() {
   return {
@@ -29,7 +29,7 @@ function getMermaidConfig() {
 }
 
 function getDefaultLaunchOptions({
-  allowNoSandbox = process.env.MARKDOCX_PUPPETEER_NO_SANDBOX === '1' || process.env.CI === 'true',
+  allowNoSandbox = process.env.MARKTODOCX_PUPPETEER_NO_SANDBOX === '1' || process.env.CI === 'true',
   args: extraArgs = [],
 } = {}) {
   const sandboxArgs = allowNoSandbox ? ['--no-sandbox', '--disable-setuid-sandbox'] : [];
@@ -151,7 +151,7 @@ export async function createPuppeteerMermaidRenderer({
 
         const mermaidApi = window.mermaid;
         mermaidApi.initialize(mermaidConfig);
-        const { svg } = await mermaidApi.render(`markdocx-node-mermaid-${index}`, code);
+        const { svg } = await mermaidApi.render(`marktodocx-node-mermaid-${index}`, code);
         const { svgWidth, svgHeight } = extractSvgDimensions(svg);
         const canvasWidth = Math.ceil(svgWidth * scale);
         const canvasHeight = Math.ceil(svgHeight * scale);

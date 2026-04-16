@@ -18,14 +18,14 @@ const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 export const repoRoot = path.resolve(scriptDir, '..', '..');
 export const appDir = path.join(repoRoot, 'apps', 'agent-skill');
 export const distDir = path.join(appDir, 'dist');
-export const exportDir = path.join(distDir, 'markdocx-skill');
+export const exportDir = path.join(distDir, 'marktodocx-skill');
 export const vendorDir = path.join(exportDir, 'vendor');
-export const exportZipPath = path.join(distDir, 'markdocx-skill.zip');
-export const exportManifestPath = path.join(exportDir, 'markdocx-export-manifest.json');
+export const exportZipPath = path.join(distDir, 'marktodocx-skill.zip');
+export const exportManifestPath = path.join(exportDir, 'marktodocx-export-manifest.json');
 export const exportBrowserDir = path.join(exportDir, 'browser');
 export const requiredBaseVendorPackages = [
-  'markdocx-core',
-  'markdocx-runtime-node',
+  'marktodocx-core',
+  'marktodocx-runtime-node',
 ];
 
 async function readRootPackageManifest() {
@@ -76,19 +76,19 @@ export async function packPackage(packageDir) {
 export async function createExportPackageJson({ coreTarball, runtimeNodeTarball, runtimeNodeMermaidTarball }) {
   const rootManifest = await readRootPackageManifest();
   return {
-    name: 'markdocx-skill-export',
+    name: 'marktodocx-skill-export',
     private: true,
     type: 'module',
     main: './skill.mjs',
     dependencies: {
-      '@markdocx/runtime-node': `file:./vendor/${runtimeNodeTarball}`,
+      '@marktodocx/runtime-node': `file:./vendor/${runtimeNodeTarball}`,
     },
     optionalDependencies: {
-      '@markdocx/runtime-node-mermaid': `file:./vendor/${runtimeNodeMermaidTarball}`,
+      '@marktodocx/runtime-node-mermaid': `file:./vendor/${runtimeNodeMermaidTarball}`,
     },
     overrides: {
       ...(rootManifest.overrides || {}),
-      '@markdocx/core': `file:./vendor/${coreTarball}`,
+      '@marktodocx/core': `file:./vendor/${coreTarball}`,
     },
   };
 }
@@ -120,7 +120,7 @@ export async function installExportDependencies({ withMermaid = false } = {}) {
 }
 
 function shouldInstallPuppeteerSystemDeps(env = process.env) {
-  return env.MARKDOCX_PUPPETEER_INSTALL_DEPS === '1';
+  return env.MARKTODOCX_PUPPETEER_INSTALL_DEPS === '1';
 }
 
 function isSandboxRestrictionError(text) {
@@ -215,9 +215,9 @@ function buildMermaidSmokeFailureMessage(error) {
       'Mermaid-enabled export bundled Chromium successfully, but the current Linux host does not allow Chromium to start with its sandbox enabled.',
       'This commonly happens on Ubuntu 23.10+ or other hosts where unprivileged user namespaces are restricted by AppArmor or kernel policy.',
       'If this is a trusted CI, VPS, or container environment, rerun with:',
-      '  MARKDOCX_PUPPETEER_NO_SANDBOX=1 npm run test:export:agent-skill:mermaid',
+      '  MARKTODOCX_PUPPETEER_NO_SANDBOX=1 npm run test:export:agent-skill:mermaid',
       'If you also need Puppeteer to install Linux runtime libraries automatically, combine it with:',
-      '  sudo MARKDOCX_PUPPETEER_INSTALL_DEPS=1 MARKDOCX_PUPPETEER_NO_SANDBOX=1 npm run test:export:agent-skill:mermaid',
+      '  sudo MARKTODOCX_PUPPETEER_INSTALL_DEPS=1 MARKTODOCX_PUPPETEER_NO_SANDBOX=1 npm run test:export:agent-skill:mermaid',
       '',
       'Original launch error:',
       text,
@@ -232,10 +232,10 @@ function buildMermaidSmokeFailureMessage(error) {
     'Mermaid-enabled export bundled Chromium successfully, but the current Linux host is missing one or more shared libraries required to launch it.',
     'Install the Puppeteer Linux runtime dependencies on the deploy host and rerun the export smoke test.',
     'On Debian or Ubuntu, you can let Puppeteer attempt this automatically with:',
-    '  sudo MARKDOCX_PUPPETEER_INSTALL_DEPS=1 npm run test:export:agent-skill:mermaid',
+    '  sudo MARKTODOCX_PUPPETEER_INSTALL_DEPS=1 npm run test:export:agent-skill:mermaid',
     'If you prefer to install packages manually, install the Chromium runtime libraries required by Puppeteer for your distro.',
     'If this host is a container or restricted environment, you may also need:',
-    '  MARKDOCX_PUPPETEER_NO_SANDBOX=1 npm run test:export:agent-skill:mermaid',
+    '  MARKTODOCX_PUPPETEER_NO_SANDBOX=1 npm run test:export:agent-skill:mermaid',
     '',
     'Original launch error:',
     text,
@@ -292,8 +292,8 @@ export async function provisionMermaidSupport({ withMermaid = false } = {}) {
 }
 
 export async function runStandaloneSmokeTest({ withMermaid = false } = {}) {
-  const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'markdocx-skill-export-'));
-  const isolatedSkillDir = path.join(tempRoot, 'markdocx-skill');
+  const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'marktodocx-skill-export-'));
+  const isolatedSkillDir = path.join(tempRoot, 'marktodocx-skill');
   const markdownPath = path.join(tempRoot, 'sample.md');
   const outputPath = path.join(tempRoot, 'sample.docx');
 
@@ -398,9 +398,9 @@ function getLockPackage(lockFile, packagePath) {
 async function verifyExportArchive() {
   const archive = await JSZip.loadAsync(await fs.readFile(exportZipPath));
   const exportRootName = path.basename(exportDir);
-  assert.equal(archive.file(`${exportRootName}/SKILL.md`) != null, true, 'Exported zip archive is missing markdocx-skill/SKILL.md.');
-  assert.equal(archive.file(`${exportRootName}/skill.mjs`) != null, true, 'Exported zip archive is missing markdocx-skill/skill.mjs.');
-  assert.equal(archive.file(`${exportRootName}/markdocx-export-manifest.json`) != null, true, 'Exported zip archive is missing markdocx-skill/markdocx-export-manifest.json.');
+  assert.equal(archive.file(`${exportRootName}/SKILL.md`) != null, true, 'Exported zip archive is missing marktodocx-skill/SKILL.md.');
+  assert.equal(archive.file(`${exportRootName}/skill.mjs`) != null, true, 'Exported zip archive is missing marktodocx-skill/skill.mjs.');
+  assert.equal(archive.file(`${exportRootName}/marktodocx-export-manifest.json`) != null, true, 'Exported zip archive is missing marktodocx-skill/marktodocx-export-manifest.json.');
 }
 
 export async function verifyExportLayout() {
@@ -417,9 +417,9 @@ export async function verifyExportLayout() {
     assertPathExists(path.join(exportDir, 'skill.mjs'), 'Exported skill is missing skill.mjs.'),
     assertPathExists(path.join(exportDir, 'package.json'), 'Exported skill is missing package.json.'),
     assertPathExists(path.join(exportDir, 'package-lock.json'), 'Exported skill is missing package-lock.json.'),
-    assertPathExists(exportManifestPath, 'Exported skill is missing markdocx-export-manifest.json.'),
-    assertPathExists(path.join(exportDir, 'node_modules', '@markdocx', 'runtime-node', 'package.json'), 'Exported skill is missing installed @markdocx/runtime-node.'),
-    assertPathExists(path.join(exportDir, 'node_modules', '@markdocx', 'core', 'package.json'), 'Exported skill is missing installed @markdocx/core.'),
+    assertPathExists(exportManifestPath, 'Exported skill is missing marktodocx-export-manifest.json.'),
+    assertPathExists(path.join(exportDir, 'node_modules', '@marktodocx', 'runtime-node', 'package.json'), 'Exported skill is missing installed @marktodocx/runtime-node.'),
+    assertPathExists(path.join(exportDir, 'node_modules', '@marktodocx', 'core', 'package.json'), 'Exported skill is missing installed @marktodocx/core.'),
   ]);
 
   const vendorEntries = await fs.readdir(vendorDir);
@@ -431,23 +431,23 @@ export async function verifyExportLayout() {
     );
   }
   assert.equal(
-    vendorEntries.some((entry) => entry.startsWith('markdocx-runtime-node-mermaid-') && entry.endsWith('.tgz')),
+    vendorEntries.some((entry) => entry.startsWith('marktodocx-runtime-node-mermaid-') && entry.endsWith('.tgz')),
     true,
-    'Exported skill vendor directory is missing markdocx-runtime-node-mermaid tarball.'
+    'Exported skill vendor directory is missing marktodocx-runtime-node-mermaid tarball.'
   );
 
-  assert.equal(packageJson.name, 'markdocx-skill-export');
+  assert.equal(packageJson.name, 'marktodocx-skill-export');
   assert.equal(packageJson.type, 'module');
-  assert.equal(typeof packageJson.dependencies?.['@markdocx/runtime-node'], 'string');
-  assert.equal(typeof packageJson.optionalDependencies?.['@markdocx/runtime-node-mermaid'], 'string');
-  assert.equal('@markdocx/runtime-node-mermaid' in (packageJson.dependencies || {}), false, 'Mermaid runtime must remain optional in exported package.json.');
+  assert.equal(typeof packageJson.dependencies?.['@marktodocx/runtime-node'], 'string');
+  assert.equal(typeof packageJson.optionalDependencies?.['@marktodocx/runtime-node-mermaid'], 'string');
+  assert.equal('@marktodocx/runtime-node-mermaid' in (packageJson.dependencies || {}), false, 'Mermaid runtime must remain optional in exported package.json.');
 
-  const runtimeNodePackage = getLockPackage(packageLock, 'node_modules/@markdocx/runtime-node');
-  const corePackage = getLockPackage(packageLock, 'node_modules/@markdocx/core');
+  const runtimeNodePackage = getLockPackage(packageLock, 'node_modules/@marktodocx/runtime-node');
+  const corePackage = getLockPackage(packageLock, 'node_modules/@marktodocx/core');
   assert.equal(typeof runtimeNodePackage?.resolved, 'string');
-  assert.equal(runtimeNodePackage.resolved.startsWith('file:vendor/markdocx-runtime-node-'), true, 'Exported @markdocx/runtime-node must resolve from the vendored tarball.');
+  assert.equal(runtimeNodePackage.resolved.startsWith('file:vendor/marktodocx-runtime-node-'), true, 'Exported @marktodocx/runtime-node must resolve from the vendored tarball.');
   assert.equal(typeof corePackage?.resolved, 'string');
-  assert.equal(corePackage.resolved.startsWith('file:vendor/markdocx-core-'), true, 'Exported @markdocx/core must resolve from the vendored tarball.');
+  assert.equal(corePackage.resolved.startsWith('file:vendor/marktodocx-core-'), true, 'Exported @marktodocx/core must resolve from the vendored tarball.');
 
   const zipStat = await fs.stat(exportZipPath);
   assert.equal(zipStat.size > 0, true, 'Exported skill zip archive is empty.');
@@ -459,20 +459,20 @@ export async function verifyExportLayout() {
 
   if (manifest.profile === 'with-mermaid') {
     const bundledBrowser = manifest.mermaid?.bundledBrowser;
-    const runtimeNodeMermaidPackage = getLockPackage(packageLock, 'node_modules/@markdocx/runtime-node-mermaid');
+    const runtimeNodeMermaidPackage = getLockPackage(packageLock, 'node_modules/@marktodocx/runtime-node-mermaid');
     assert.equal(manifest.mermaid?.bundled, true, 'Mermaid-enabled export manifest must record bundled Mermaid support.');
     assert.equal(typeof bundledBrowser?.executablePath, 'string', 'Mermaid-enabled export manifest is missing bundled browser executablePath.');
     assert.equal(Array.isArray(bundledBrowser?.launchArgs), true, 'Mermaid-enabled export manifest must record bundled browser launchArgs.');
     assert.equal(typeof runtimeNodeMermaidPackage?.resolved, 'string');
-    assert.equal(runtimeNodeMermaidPackage.resolved.startsWith('file:vendor/markdocx-runtime-node-mermaid-'), true, 'Exported @markdocx/runtime-node-mermaid must resolve from the vendored tarball.');
+    assert.equal(runtimeNodeMermaidPackage.resolved.startsWith('file:vendor/marktodocx-runtime-node-mermaid-'), true, 'Exported @marktodocx/runtime-node-mermaid must resolve from the vendored tarball.');
     await Promise.all([
-      assertPathExists(path.join(exportDir, 'node_modules', '@markdocx', 'runtime-node-mermaid', 'package.json'), 'Mermaid-enabled export is missing installed @markdocx/runtime-node-mermaid.'),
+      assertPathExists(path.join(exportDir, 'node_modules', '@marktodocx', 'runtime-node-mermaid', 'package.json'), 'Mermaid-enabled export is missing installed @marktodocx/runtime-node-mermaid.'),
       assertPathExists(path.resolve(exportDir, bundledBrowser.executablePath), 'Mermaid-enabled export is missing its bundled browser binary.'),
     ]);
   } else {
     assert.equal(manifest.profile, 'standard');
     assert.equal(manifest.mermaid?.bundled, false, 'Standard export manifest must record Mermaid support as disabled.');
-    assert.equal(await pathExists(path.join(exportDir, 'node_modules', '@markdocx', 'runtime-node-mermaid', 'package.json')), false, 'Standard export must not install @markdocx/runtime-node-mermaid.');
+    assert.equal(await pathExists(path.join(exportDir, 'node_modules', '@marktodocx', 'runtime-node-mermaid', 'package.json')), false, 'Standard export must not install @marktodocx/runtime-node-mermaid.');
     assert.equal(await pathExists(exportBrowserDir), false, 'Standard export must not bundle a browser directory.');
   }
 

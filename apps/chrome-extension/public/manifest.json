@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "markdocx",
+  "name": "marktodocx",
   "version": "0.0.0",
   "description": "Convert Markdown to Word (.docx) with Mermaid diagram support",
   "minimum_chrome_version": "116",

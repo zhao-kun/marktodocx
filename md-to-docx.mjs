@@ -7,7 +7,7 @@ import process from 'node:process';
 import {
   convertMarkdownFileInNode,
   resolveNodeStyleOptions,
-} from '@markdocx/runtime-node';
+} from '@marktodocx/runtime-node';
 
 function printUsage() {
   console.log([
@@ -22,10 +22,10 @@ function printUsage() {
     '  --help, -h                Show this help',
     '',
     'Environment defaults:',
-    '  MARKDOCX_STYLE_PRESET',
-    '  MARKDOCX_MARGIN_PRESET',
-    '  MARKDOCX_STYLE_JSON',
-    '  MARKDOCX_STYLE_SET',
+    '  MARKTODOCX_STYLE_PRESET',
+    '  MARKTODOCX_MARGIN_PRESET',
+    '  MARKTODOCX_STYLE_JSON',
+    '  MARKTODOCX_STYLE_SET',
     '',
     'Examples:',
     '  node md-to-docx.mjs report.md',
@@ -116,7 +116,7 @@ function parseArgs(argv) {
 
 function isOptionalModuleMissing(error) {
   return error?.code === 'ERR_MODULE_NOT_FOUND'
-    && String(error.message || '').includes('@markdocx/runtime-node-mermaid');
+    && String(error.message || '').includes('@marktodocx/runtime-node-mermaid');
 }
 
 async function createOptionalMermaidRenderer(markdown) {
@@ -125,12 +125,12 @@ async function createOptionalMermaidRenderer(markdown) {
   }
 
   try {
-    const { createPuppeteerMermaidRenderer } = await import('@markdocx/runtime-node-mermaid');
+    const { createPuppeteerMermaidRenderer } = await import('@marktodocx/runtime-node-mermaid');
     return createPuppeteerMermaidRenderer();
   } catch (error) {
     if (isOptionalModuleMissing(error)) {
       throw new Error(
-        'This document contains Mermaid diagrams. Install @markdocx/runtime-node-mermaid to enable Mermaid rendering on the Node CLI path.'
+        'This document contains Mermaid diagrams. Install @marktodocx/runtime-node-mermaid to enable Mermaid rendering on the Node CLI path.'
       );
     }
     throw error;

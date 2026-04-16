@@ -1,4 +1,4 @@
-import { inlineLocalImages } from '@markdocx/core';
+import { inlineLocalImages } from '@marktodocx/core';
 
 import { createBrowserRuntime } from './dom-native.js';
 

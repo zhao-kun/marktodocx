@@ -9,7 +9,7 @@ Rules:
 - `npm run generate:goldens` generates or refreshes pending goldens from the current Chrome extension donor build and records the donor git SHA.
 - To refresh existing goldens, use `npm run generate:goldens -- --refresh all` or `npm run generate:goldens -- --refresh <fixture-id>[,<fixture-id>...]`.
 - Golden generation refuses to run on a dirty working tree unless `--allow-dirty` is passed. Dirty-tree generations are recorded per fixture as non-clean provenance.
-- Chromium sandbox-disabling flags are off by default. Use `MARKDOCX_PUPPETEER_NO_SANDBOX=1` or `--no-sandbox` only in CI/container environments that require it.
+- Chromium sandbox-disabling flags are off by default. Use `MARKTODOCX_PUPPETEER_NO_SANDBOX=1` or `--no-sandbox` only in CI/container environments that require it.
 - `status: "pending"` means the fixture is selected for the parity corpus but does not yet have a verified Chrome-extension-generated golden.
 - `status: "verified"` means the fixture has a verified golden and participates in automated parity runs.
 - Mermaid visual baselines are non-gating artifacts used for manual review only.

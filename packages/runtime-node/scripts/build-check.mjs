@@ -36,7 +36,7 @@ async function main() {
 
   assert.equal(bytes instanceof Uint8Array, true);
   assert.equal(bytes.byteLength > 0, true);
-  console.log('@markdocx/runtime-node build smoke passed');
+  console.log('@marktodocx/runtime-node build smoke passed');
 }
 
 main().catch((error) => {

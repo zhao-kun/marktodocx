@@ -18,7 +18,7 @@ function main() {
   assert.equal(typeof renderMermaidToImageTag, 'function');
   assert.equal(typeof renderMermaidArtifactsForMarkdown, 'function');
   assert.equal(typeof convertMarkdownInBrowser, 'function');
-  console.log('@markdocx/runtime-browser build smoke passed');
+  console.log('@marktodocx/runtime-browser build smoke passed');
 }
 
 main();

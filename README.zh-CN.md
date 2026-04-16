@@ -1,15 +1,15 @@
-# markdocx
+# marktodocx
 
 [English](README.md) | 简体中文
 
-markdocx 可以将 Markdown 转换为 Word（`.docx`）文档，同时尽可能保留标题、段落、列表、表格、代码块、引用块、本地图片和 Mermaid 图表。所有支持的宿主都共享同一套转换规则，因此修复一次即可在所有入口生效，而不需要在不同工具之间重复实现。
+marktodocx 可以将 Markdown 转换为 Word（`.docx`）文档，同时尽可能保留标题、段落、列表、表格、代码块、引用块、本地图片和 Mermaid 图表。所有支持的宿主都共享同一套转换规则，因此修复一次即可在所有入口生效，而不需要在不同工具之间重复实现。
 
-markdocx **的发布目标**是三个公开仓库：VS Code Marketplace、Chrome Web Store 以及 ClawHub（OpenClaw 的 skill registry），并把 skill 的 zip 制品同步到 GitHub Releases。完整发布流程已经在 [`docs/publishing.md`](docs/publishing.md) 中描述，但目前还没有任何宿主真正发布到对应的 registry，因此现在所有宿主都需要从本仓库本地构建。CLI 故意保持源码安装，不发布到任何 registry。
+marktodocx **的发布目标**是三个公开仓库：VS Code Marketplace、Chrome Web Store 以及 ClawHub（OpenClaw 的 skill registry），并把 skill 的 zip 制品同步到 GitHub Releases。完整发布流程已经在 [`docs/publishing.md`](docs/publishing.md) 中描述，但目前还没有任何宿主真正发布到对应的 registry，因此现在所有宿主都需要从本仓库本地构建。CLI 故意保持源码安装，不发布到任何 registry。
 
 不同宿主的 Mermaid 支持方式不同：
 
 - Chrome 扩展和 VS Code 扩展在构建完成后，都会通过浏览器运行时内置 Mermaid 支持。
-- CLI 和 agent skill 默认运行在 Node 运行时上，因此当文档包含 Mermaid fence 时，需要 `@markdocx/runtime-node-mermaid` 或使用 Mermaid 增强导出包。
+- CLI 和 agent skill 默认运行在 Node 运行时上，因此当文档包含 Mermaid fence 时，需要 `@marktodocx/runtime-node-mermaid` 或使用 Mermaid 增强导出包。
 
 ## 目录
 
@@ -44,21 +44,21 @@ markdocx **的发布目标**是三个公开仓库：VS Code Marketplace、Chrome
 1. `npm install && npm run build:chrome-extension`
 2. 打开 `chrome://extensions/`，启用 **开发者模式**，点击 **加载已解压的扩展程序**
 3. 选择 `apps/chrome-extension/dist/`
-4. 固定 markdocx 图标，打开扩展页面，选择包含 Markdown 和本地图片的目录，选择 `.md` 文件后点击 **Convert**
+4. 固定 marktodocx 图标，打开扩展页面，选择包含 Markdown 和本地图片的目录，选择 `.md` 文件后点击 **Convert**
 5. 生成的 `.docx` 会走 Chrome 的正常下载流程：如果启用了 **下载前询问每个文件的保存位置**，Chrome 会弹出保存对话框；否则会写入默认下载目录
 
 ### VS Code 扩展快速开始
 
 1. `npm install && npm run package:vscode-extension`
-2. 安装 `apps/vscode-extension/dist/markdocx-vscode-extension.vsix`（例如：`code --install-extension apps/vscode-extension/dist/markdocx-vscode-extension.vsix --force`）
+2. 安装 `apps/vscode-extension/dist/marktodocx-vscode-extension.vsix`（例如：`code --install-extension apps/vscode-extension/dist/marktodocx-vscode-extension.vsix --force`）
 3. 打开包含 Markdown 文件和本地图片的工作区
-4. 在资源管理器中右键 `.md` 文件并选择 **markdocx: Convert to DOCX**，或从命令面板运行 `markdocx.convertToDocx`
+4. 在资源管理器中右键 `.md` 文件并选择 **marktodocx: Convert to DOCX**，或从命令面板运行 `marktodocx.convertToDocx`
 5. 在保存对话框中选择输出路径
 
 ### Agent Skill 快速开始
 
 1. `npm install && npm run export:agent-skill`
-2. 将 `apps/agent-skill/dist/markdocx-skill/` 复制到技能宿主目录，例如 Claude Code 的 `~/.claude/skills/markdocx-skill` 或 OpenClaw 的 skills 目录
+2. 将 `apps/agent-skill/dist/marktodocx-skill/` 复制到技能宿主目录，例如 Claude Code 的 `~/.claude/skills/marktodocx-skill` 或 OpenClaw 的 skills 目录
 3. 启动新的 agent 会话并显式发起转换请求，例如：`Convert docs/report.md to DOCX with stylePreset=minimal.`
 4. 如果文档包含 Mermaid，请改用 `npm run export:agent-skill:mermaid`（该导出具备平台相关性；请在与你部署目标相同的操作系统和架构上导出）
 
@@ -78,8 +78,8 @@ markdocx **的发布目标**是三个公开仓库：VS Code Marketplace、Chrome
 仓库采用 **Shared Core + Two Runtime Families** 布局：
 
 - 一个共享转换核心负责规范的 Markdown → HTML → DOCX 规则、样式与布局 schema、DOCX 归一化逻辑以及 parity 测试夹具。
-- 一个 **浏览器运行时家族**（`@markdocx/runtime-browser`）承载 Chrome 扩展与 VS Code 扩展，基于原生 `DOMParser` 和页面内 Mermaid 渲染。
-- 一个 **Node 运行时家族**（`@markdocx/runtime-node`，以及可选的 `@markdocx/runtime-node-mermaid`）承载 CLI 和 agent skill，基于 jsdom DOM 适配器与可选的 Puppeteer Mermaid 渲染器。
+- 一个 **浏览器运行时家族**（`@marktodocx/runtime-browser`）承载 Chrome 扩展与 VS Code 扩展，基于原生 `DOMParser` 和页面内 Mermaid 渲染。
+- 一个 **Node 运行时家族**（`@marktodocx/runtime-node`，以及可选的 `@marktodocx/runtime-node-mermaid`）承载 CLI 和 agent skill，基于 jsdom DOM 适配器与可选的 Puppeteer Mermaid 渲染器。
 
 跨宿主输出一致性通过以下基于夹具的 parity 检查强制保证：`scripts/run-fixture-parity.mjs`、`scripts/run-cli-parity.mjs`、`scripts/run-vscode-parity.mjs` 和 `scripts/run-agent-skill-parity.mjs`。完整设计、契约与背景说明见 `docs/design-core-refactor.md`。
 
@@ -88,13 +88,13 @@ markdocx **的发布目标**是三个公开仓库：VS Code Marketplace、Chrome
 ## 包布局
 
 ```text
-markdocx/
+marktodocx/
 ├── md-to-docx.mjs                  # 轻量 CLI 包装层（参数解析 + 样式解析）
 ├── packages/
-│   ├── core/                       # @markdocx/core — 规范规则、schema、夹具
-│   ├── runtime-browser/            # @markdocx/runtime-browser — 原生 DOMParser + 页面内 Mermaid
-│   ├── runtime-node/               # @markdocx/runtime-node — jsdom 适配器 + 文件系统图片映射
-│   └── runtime-node-mermaid/       # @markdocx/runtime-node-mermaid — 可选 Puppeteer Mermaid 渲染器
+│   ├── core/                       # @marktodocx/core — 规范规则、schema、夹具
+│   ├── runtime-browser/            # @marktodocx/runtime-browser — 原生 DOMParser + 页面内 Mermaid
+│   ├── runtime-node/               # @marktodocx/runtime-node — jsdom 适配器 + 文件系统图片映射
+│   └── runtime-node-mermaid/       # @marktodocx/runtime-node-mermaid — 可选 Puppeteer Mermaid 渲染器
 ├── apps/
 │   ├── agent-skill/                # Agent skill 宿主（Node 运行时家族）
 │   ├── chrome-extension/           # Chrome 扩展宿主
@@ -129,7 +129,7 @@ markdocx/
 
 ## 安装
 
-最终用户可以在对应宿主发布到 registry 之后，直接从公开仓库安装：VS Code 扩展走 VS Code Marketplace，Chrome 扩展走 Chrome Web Store，Agent Skill 通过 `clawhub install markdocx-skill` 走 ClawHub。CLI 故意保持源码安装。
+最终用户可以在对应宿主发布到 registry 之后，直接从公开仓库安装：VS Code 扩展走 VS Code Marketplace，Chrome 扩展走 Chrome Web Store，Agent Skill 通过 `clawhub install marktodocx-skill` 走 ClawHub。CLI 故意保持源码安装。
 
 下面的步骤介绍源码构建流程，对所有宿主都有效，并且是 CLI 唯一的安装方式。在仓库根目录执行：
 
@@ -137,7 +137,7 @@ markdocx/
 npm install
 ```
 
-这会安装所有 workspace 包，包括 `@markdocx/core`、`@markdocx/runtime-browser`、`@markdocx/runtime-node` 和 `@markdocx/runtime-node-mermaid`。
+这会安装所有 workspace 包，包括 `@marktodocx/core`、`@marktodocx/runtime-browser`、`@marktodocx/runtime-node` 和 `@marktodocx/runtime-node-mermaid`。
 
 如果你的 Markdown 包含 Mermaid，并且计划通过 CLI 转换，请先安装一次由 Puppeteer 管理的 Chrome：
 
@@ -174,18 +174,18 @@ npm run convert -- report.md dist/report.docx
 
 ## CLI 样式选项
 
-CLI 通过 `@markdocx/runtime-node` 解析共享 `styleOptions`。所有配置都会经过和其他宿主相同的 schema，因此 CLI 上设置的样式预设，与扩展中设置相同预设时会得到一致输出。
+CLI 通过 `@marktodocx/runtime-node` 解析共享 `styleOptions`。所有配置都会经过和其他宿主相同的 schema，因此 CLI 上设置的样式预设，与扩展中设置相同预设时会得到一致输出。
 
 | CLI 参数 | 环境变量 | 作用 |
 | --- | --- | --- |
-| `--style-preset <name>` | `MARKDOCX_STYLE_PRESET` | 基础样式预设（`default`、`minimal`、`report`） |
-| `--margin-preset <name>` | `MARKDOCX_MARGIN_PRESET` | 页面边距预设（`default`、`compact`、`wide`） |
-| `--style-json <json\|path>` | `MARKDOCX_STYLE_JSON` | 内联 JSON 字符串或 JSON 文件路径 |
-| `--set key=value` | `MARKDOCX_STYLE_SET` | 精准 dotted-path 覆盖项（可重复） |
+| `--style-preset <name>` | `MARKTODOCX_STYLE_PRESET` | 基础样式预设（`default`、`minimal`、`report`） |
+| `--margin-preset <name>` | `MARKTODOCX_MARGIN_PRESET` | 页面边距预设（`default`、`compact`、`wide`） |
+| `--style-json <json\|path>` | `MARKTODOCX_STYLE_JSON` | 内联 JSON 字符串或 JSON 文件路径 |
+| `--set key=value` | `MARKTODOCX_STYLE_SET` | 精准 dotted-path 覆盖项（可重复） |
 
 解析优先级如下（后者覆盖前者）：环境变量 preset → 环境变量 JSON → 环境变量 margin → 环境变量赋值 → CLI preset → CLI JSON → CLI margin → CLI 赋值。最终对象会交给 core 的 `normalizeStyleOptions` 做校验。
 
-`--set` 与 `MARKDOCX_STYLE_SET` 使用相同的 dotted-path 分号分隔语法：
+`--set` 与 `MARKTODOCX_STYLE_SET` 使用相同的 dotted-path 分号分隔语法：
 
 ```text
 code.fontSizePt=11;blockquote.italic=false;page.marginPreset=wide
@@ -236,7 +236,7 @@ node md-to-docx.mjs report.md \
 
 ### `styleJson` 详细说明
 
-`--style-json` 和 `MARKDOCX_STYLE_JSON` 支持两种输入形式：
+`--style-json` 和 `MARKTODOCX_STYLE_JSON` 支持两种输入形式：
 
 - 内联 JSON 对象字符串
 - JSON 文件路径
@@ -282,7 +282,7 @@ node md-to-docx.mjs report.md dist/report.docx \
 
 ## Chrome 扩展
 
-Chrome 扩展位于 `apps/chrome-extension/`，并通过 `@markdocx/core` + `@markdocx/runtime-browser` 与 CLI 共享转换逻辑。
+Chrome 扩展位于 `apps/chrome-extension/`，并通过 `@marktodocx/core` + `@marktodocx/runtime-browser` 与 CLI 共享转换逻辑。
 
 从源码构建：
 
@@ -300,7 +300,7 @@ npm run build:chrome-extension
 
 ### 首次转换流程
 
-1. 如有需要，先将 markdocx 图标固定到工具栏。
+1. 如有需要，先将 marktodocx 图标固定到工具栏。
 2. 点击扩展图标打开转换页面。
 3. 选择包含 Markdown 文件及其本地图片的目录。
 4. 在文件选择器中选择要转换的 Markdown 文件。
@@ -313,7 +313,7 @@ npm run build:chrome-extension
 
 ## VS Code 扩展
 
-VS Code 扩展位于 `apps/vscode-extension/`。它注册 `markdocx.convertToDocx` 命令，可从资源管理器、编辑器右键菜单和编辑器标题栏触发，并通过一个隐藏 webview 加载 `@markdocx/runtime-browser` 来完成转换。
+VS Code 扩展位于 `apps/vscode-extension/`。它注册 `marktodocx.convertToDocx` 命令，可从资源管理器、编辑器右键菜单和编辑器标题栏触发，并通过一个隐藏 webview 加载 `@marktodocx/runtime-browser` 来完成转换。
 
 构建命令：
 
@@ -327,37 +327,37 @@ npm run build:vscode-extension
 npm run package:vscode-extension
 ```
 
-然后安装 `apps/vscode-extension/dist/markdocx-vscode-extension.vsix`。如果你是在开发扩展，也可以通过 Run Extension 启动配置直接让 VS Code 指向 `apps/vscode-extension/`。
+然后安装 `apps/vscode-extension/dist/marktodocx-vscode-extension.vsix`。如果你是在开发扩展，也可以通过 Run Extension 启动配置直接让 VS Code 指向 `apps/vscode-extension/`。
 
 ### 触发转换
 
-- 在资源管理器中右键 `.md` 文件并选择 **markdocx: Convert to DOCX**。
-- 或打开命令面板并运行 `markdocx.convertToDocx`。
+- 在资源管理器中右键 `.md` 文件并选择 **marktodocx: Convert to DOCX**。
+- 或打开命令面板并运行 `marktodocx.convertToDocx`。
 - 或在打开 Markdown 文件时使用编辑器右键菜单或编辑器标题按钮。
 
 VS Code 会通过保存对话框询问输出路径。`.docx` 会写到你选择的位置，而本地图片则相对于包含该 Markdown 文件的工作区目录解析。
 
-扩展配置位于 `markdocx` 命名空间下，并直接映射到共享的 `styleOptions` schema：
+扩展配置位于 `marktodocx` 命名空间下，并直接映射到共享的 `styleOptions` schema：
 
 | 配置项 | 作用 |
 | --- | --- |
-| `markdocx.stylePreset` | 基础样式预设（`default`、`minimal`、`report`） |
-| `markdocx.marginPreset` | 可选页面边距预设覆盖（`default`、`compact`、`wide`） |
-| `markdocx.styleJson` | 内联样式 JSON 字符串，或工作区相对路径的样式 JSON 文件 |
-| `markdocx.styleSet` | 精准 dotted-path 覆盖，例如 `body.fontSizePt=12`（字符串数组） |
+| `marktodocx.stylePreset` | 基础样式预设（`default`、`minimal`、`report`） |
+| `marktodocx.marginPreset` | 可选页面边距预设覆盖（`default`、`compact`、`wide`） |
+| `marktodocx.styleJson` | 内联样式 JSON 字符串，或工作区相对路径的样式 JSON 文件 |
+| `marktodocx.styleSet` | 精准 dotted-path 覆盖，例如 `body.fontSizePt=12`（字符串数组） |
 
 本地图片相对于当前被转换 Markdown 文件所属工作区目录解析，这与 Chrome 扩展的目录选择约束保持一致。
 
 ### 打包 VS Code 扩展
 
-扩展通过 [`@vscode/vsce`](https://github.com/microsoft/vscode-vsce) 打包。`package` 脚本会构建 bundle、运行 bundle smoke 检查，并把独立 `.vsix` 写到 `apps/vscode-extension/dist/markdocx-vscode-extension.vsix`。
+扩展通过 [`@vscode/vsce`](https://github.com/microsoft/vscode-vsce) 打包。`package` 脚本会构建 bundle、运行 bundle smoke 检查，并把独立 `.vsix` 写到 `apps/vscode-extension/dist/marktodocx-vscode-extension.vsix`。
 
 在仓库根目录可执行：
 
 ```bash
 npm run package:vscode-extension
 # 或
-npm run package -w markdocx-vscode-extension
+npm run package -w marktodocx-vscode-extension
 ```
 
 或者在扩展目录中执行：
@@ -370,12 +370,12 @@ npm run package
 将生成的 `.vsix` 安装到本地 VS Code：
 
 ```bash
-npm run install:vsix -w markdocx-vscode-extension
+npm run install:vsix -w marktodocx-vscode-extension
 # 或
-code --install-extension apps/vscode-extension/dist/markdocx-vscode-extension.vsix --force
+code --install-extension apps/vscode-extension/dist/marktodocx-vscode-extension.vsix --force
 ```
 
-打包后的 `.vsix` 包含 `dist/extension.cjs`、webview 资源 bundle 和 manifest。workspace 内的 `@markdocx/*` 包会在构建时内联，因此安装扩展时不需要 `node_modules`，而且 `vsce package` 使用了 `--no-dependencies`。
+打包后的 `.vsix` 包含 `dist/extension.cjs`、webview 资源 bundle 和 manifest。workspace 内的 `@marktodocx/*` 包会在构建时内联，因此安装扩展时不需要 `node_modules`，而且 `vsce package` 使用了 `--no-dependencies`。
 
 ## Agent Skill
 
@@ -386,8 +386,8 @@ agent skill 源码位于 `apps/agent-skill/`，并从 `apps/agent-skill/skill.mj
 命名规则：
 
 - 内部源码目录：`apps/agent-skill/`
-- 内部 workspace 包名：`markdocx-agent-skill`
-- 对外 Claude skill 名称：`markdocx-skill`
+- 内部 workspace 包名：`marktodocx-agent-skill`
+- 对外 Claude skill 名称：`marktodocx-skill`
 
 源码目录名不要求与对外 Claude skill 名称一致。公开 skill 身份由 `apps/agent-skill/SKILL.md` 中的 `name` 字段定义。
 
@@ -404,7 +404,7 @@ skill 参数与设计契约保持一致：
 | `styleJson` | 共享样式 JSON 字符串、普通对象或 JSON 文件路径 |
 | `styleSet` | 共享 dotted-path 覆盖，例如 `body.fontSizePt=12` |
 
-skill 与 CLI 使用同一组环境变量默认值：`MARKDOCX_STYLE_PRESET`、`MARKDOCX_MARGIN_PRESET`、`MARKDOCX_STYLE_JSON` 和 `MARKDOCX_STYLE_SET`。Mermaid 行为也一致：当文档包含 Mermaid fence 时，需要安装 `@markdocx/runtime-node-mermaid`。
+skill 与 CLI 使用同一组环境变量默认值：`MARKTODOCX_STYLE_PRESET`、`MARKTODOCX_MARGIN_PRESET`、`MARKTODOCX_STYLE_JSON` 和 `MARKTODOCX_STYLE_SET`。Mermaid 行为也一致：当文档包含 Mermaid fence 时，需要安装 `@marktodocx/runtime-node-mermaid`。
 
 要生成一个不依赖当前仓库 checkout 的独立可部署 skill 目录，请执行：
 
@@ -412,7 +412,7 @@ skill 与 CLI 使用同一组环境变量默认值：`MARKDOCX_STYLE_PRESET`、`
 npm run export:agent-skill
 ```
 
-这会生成 `apps/agent-skill/dist/markdocx-skill/` 以及 `apps/agent-skill/dist/markdocx-skill.zip`，可直接复制或软链接到其他 agent 运行时的 skills 目录中。
+这会生成 `apps/agent-skill/dist/marktodocx-skill/` 以及 `apps/agent-skill/dist/marktodocx-skill.zip`，可直接复制或软链接到其他 agent 运行时的 skills 目录中。
 
 要生成带有内置 Chromium 的 Mermaid 增强导出包，请执行：
 
@@ -503,7 +503,7 @@ npx puppeteer browsers install chrome
 在 Debian 或 Ubuntu 上，如果你有 root 权限，可以让 Puppeteer 尝试自动安装：
 
 ```bash
-sudo MARKDOCX_PUPPETEER_INSTALL_DEPS=1 npm run test:export:agent-skill:mermaid
+sudo MARKTODOCX_PUPPETEER_INSTALL_DEPS=1 npm run test:export:agent-skill:mermaid
 ```
 
 如果你更希望手动安装 Debian / Ubuntu 依赖，可以先执行：
@@ -541,23 +541,23 @@ sudo apt-get install -y \
 
 在部分 Ubuntu 版本中，音频包名称是 `libasound2t64`；在较老版本中则仍是 `libasound2`。
 
-在容器环境中，你可能还需要设置 `MARKDOCX_PUPPETEER_NO_SANDBOX=1`。
+在容器环境中，你可能还需要设置 `MARKTODOCX_PUPPETEER_NO_SANDBOX=1`。
 
 如果 Chromium 报错 `No usable sandbox!`，请使用以下方式重新运行 Mermaid 导出 gate：
 
 ```bash
-MARKDOCX_PUPPETEER_NO_SANDBOX=1 npm run test:export:agent-skill:mermaid
+MARKTODOCX_PUPPETEER_NO_SANDBOX=1 npm run test:export:agent-skill:mermaid
 ```
 
 在精简版 Ubuntu VPS 上，你可能需要同时设置两个环境变量：
 
 ```bash
-sudo MARKDOCX_PUPPETEER_INSTALL_DEPS=1 MARKDOCX_PUPPETEER_NO_SANDBOX=1 npm run test:export:agent-skill:mermaid
+sudo MARKTODOCX_PUPPETEER_INSTALL_DEPS=1 MARKTODOCX_PUPPETEER_NO_SANDBOX=1 npm run test:export:agent-skill:mermaid
 ```
 
-### CLI 报错：请安装 `@markdocx/runtime-node-mermaid`
+### CLI 报错：请安装 `@marktodocx/runtime-node-mermaid`
 
-如果 CLI 提示需要安装 `@markdocx/runtime-node-mermaid`，说明你的 Markdown 中包含 Mermaid fence，但可选的 Puppeteer helper 包尚未安装。安装 workspace 依赖后重新执行：
+如果 CLI 提示需要安装 `@marktodocx/runtime-node-mermaid`，说明你的 Markdown 中包含 Mermaid fence，但可选的 Puppeteer helper 包尚未安装。安装 workspace 依赖后重新执行：
 
 ```bash
 npm install

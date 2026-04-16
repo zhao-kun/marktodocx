@@ -12,11 +12,11 @@ This document started as a forward-looking design. Parts of it are now implement
 
 The following pieces now exist in code rather than only in design:
 
-- `@markdocx/core` exposes shared style, layout, markdown, HTML, DOCX, and runtime-contract utilities.
-- `@markdocx/runtime-browser` now exists as a real workspace package with a native DOM adapter, image-map helper, browser Mermaid renderer, and browser conversion composition entry point.
-- `@markdocx/runtime-node` now exists as an initial workspace package with an explicit Node DOM adapter, filesystem image handling, and a Node conversion composition entry point.
+- `@marktodocx/core` exposes shared style, layout, markdown, HTML, DOCX, and runtime-contract utilities.
+- `@marktodocx/runtime-browser` now exists as a real workspace package with a native DOM adapter, image-map helper, browser Mermaid renderer, and browser conversion composition entry point.
+- `@marktodocx/runtime-node` now exists as an initial workspace package with an explicit Node DOM adapter, filesystem image handling, and a Node conversion composition entry point.
 - Style options are normalized and validated centrally rather than being treated as host-local loose objects.
-- The extension now routes live browser-host conversion through `@markdocx/runtime-browser`, while compatibility shims remain for the still-thin host surface.
+- The extension now routes live browser-host conversion through `@marktodocx/runtime-browser`, while compatibility shims remain for the still-thin host surface.
 - Golden fixture parity is driven by `test-markdown/__golden__/manifest.json` and the parity scripts rather than by ad hoc fixture comparison.
 - Mermaid parity is checked structurally through shared metadata conventions and visual baselines, with explicit handling for expected raster drift versus unacceptable semantic drift.
 - Regression coverage now includes targeted fixtures for blockquote rendering, style propagation, and page overflow behavior.
@@ -42,7 +42,7 @@ Read this document in two layers:
 
 ### 1.1 Current State
 
-markdocx currently has two conversion surfaces with different implementation maturity:
+marktodocx currently has two conversion surfaces with different implementation maturity:
 
 1. **CLI** - `md-to-docx.mjs`, a Node.js monolith with its own Markdown-to-DOCX pipeline.
 2. **Chrome extension** - `apps/chrome-extension/`, the newer modular implementation with shared renderer modules, style/layout support, and the latest behavior fixes.
@@ -123,7 +123,7 @@ This refactor does not aim to:
 
 ## 2. Decision Summary
 
-We will refactor markdocx into:
+We will refactor marktodocx into:
 
 1. A **shared conversion core** that owns the canonical Markdown-to-DOCX rules, style schema, layout schema, normalization behavior, and parity fixtures.
 2. A **browser runtime family** used by the Chrome extension and the VSCode extension.
@@ -266,7 +266,7 @@ Important: the Node family does **not** run the whole document conversion inside
 This section describes the target layout, not the exact present-day directory tree.
 
 ```text
-markdocx/
+marktodocx/
 ├── package.json
 ├── scripts/
 ├── packages/
@@ -338,7 +338,7 @@ Rationale:
 
 ### 4.3 Shared Core Responsibilities
 
-`@markdocx/core` owns the canonical conversion behavior:
+`@marktodocx/core` owns the canonical conversion behavior:
 
 - Style and layout schemas.
 - Markdown parsing.
@@ -353,7 +353,7 @@ Rationale:
 
 `syntax-highlighter.js` belongs in core because it is pure JavaScript and has no DOM dependency.
 
-`@markdocx/core` must not depend on:
+`@marktodocx/core` must not depend on:
 
 - `chrome.*`
 - `node:*`
@@ -361,7 +361,7 @@ Rationale:
 - `puppeteer`
 - VSCode APIs
 
-`@markdocx/core` may depend on pure libraries such as:
+`@marktodocx/core` may depend on pure libraries such as:
 
 - `markdown-it`
 - `highlight.js`
@@ -376,13 +376,13 @@ Current implemented contract:
 
 ```js
 /**
- * @typedef {Object} MarkdocxDomAdapter
+ * @typedef {Object} MarktodocxDomAdapter
  * @property {(html: string) => Document} parseHtml
  * @property {typeof Node=} Node
  * @property {typeof NodeFilter=} NodeFilter
  *
- * @typedef {Object} MarkdocxRuntimeContracts
- * @property {MarkdocxDomAdapter=} dom
+ * @typedef {Object} MarktodocxRuntimeContracts
+ * @property {MarktodocxDomAdapter=} dom
  */
 ```
 
@@ -391,7 +391,7 @@ This is intentionally narrower than the target end-state runtime-family contract
 Current boundary rule after Epic 3:
 
 - Core no longer guesses a browser DOM adapter implicitly.
-- Browser callers must provide `runtime.dom` explicitly, typically through `@markdocx/runtime-browser`.
+- Browser callers must provide `runtime.dom` explicitly, typically through `@marktodocx/runtime-browser`.
 - This keeps the runtime-family boundary explicit rather than letting core infer host behavior from globals.
 
 Current image inlining contract:
@@ -456,7 +456,7 @@ Target end-state note:
 - Until those packages land, the contract of record is the narrower implemented contract above.
 - Any future higher-level hook must preserve the same canonical Mermaid fragment shape and the same DOM-adapter behavior.
 
-Buffer handling is intentionally outside the runtime contract. `@markdocx/core` stays import-clean; browser Buffer polyfills are the responsibility of the browser runtime/app bundling layer, and Node uses native Buffer. Consumers of `@markdocx/core` in a browser environment must have Buffer available before the DOCX generation path executes.
+Buffer handling is intentionally outside the runtime contract. `@marktodocx/core` stays import-clean; browser Buffer polyfills are the responsibility of the browser runtime/app bundling layer, and Node uses native Buffer. Consumers of `@marktodocx/core` in a browser environment must have Buffer available before the DOCX generation path executes.
 
 Current implementation note:
 
@@ -478,7 +478,7 @@ The shared pipeline stays the same across hosts:
 
 ### 4.5 Browser Runtime Responsibilities
 
-`@markdocx/runtime-browser` now provides:
+`@marktodocx/runtime-browser` now provides:
 
 - a native DOM adapter via `dom-native.js`
 - image-map based local image resolution helpers via `image-map.js`
@@ -494,12 +494,12 @@ This runtime family is the natural fit for:
 
 Current implementation note:
 
-- The Chrome extension offscreen conversion path now calls `@markdocx/runtime-browser` directly.
+- The Chrome extension offscreen conversion path now calls `@marktodocx/runtime-browser` directly.
 - The extension parity page now also uses the runtime-browser Mermaid path for parity artifact generation.
 
 ### 4.6 Node Runtime Responsibilities
 
-`@markdocx/runtime-node` should provide:
+`@marktodocx/runtime-node` should provide:
 
 - `resolveImage` via filesystem reads
 - `parseHtml` via a lightweight DOM adapter such as `linkedom`
@@ -508,10 +508,10 @@ Current implementation note:
 
 Current implementation note:
 
-- `@markdocx/runtime-node` now exists and composes core through an explicit Node runtime package rather than core fallbacks.
+- `@marktodocx/runtime-node` now exists and composes core through an explicit Node runtime package rather than core fallbacks.
 - The first landed DOM adapter is `jsdom`-backed, which keeps the boundary explicit while Epic 4 is in progress.
-- `@markdocx/runtime-node-mermaid` now exists as the narrow Puppeteer-based Mermaid helper for the Node runtime family.
-- The root CLI entry is now a thin wrapper over `@markdocx/runtime-node` and resolves shared `styleOptions` from args and environment variables instead of owning a monolithic conversion path.
+- `@marktodocx/runtime-node-mermaid` now exists as the narrow Puppeteer-based Mermaid helper for the Node runtime family.
+- The root CLI entry is now a thin wrapper over `@marktodocx/runtime-node` and resolves shared `styleOptions` from args and environment variables instead of owning a monolithic conversion path.
 - Runtime-node still fails fast if Mermaid content is present and the dedicated helper is unavailable.
 - The CLI parity runner now passes on the full verified fixture set, so Epic 4's host-level parity gate is satisfied.
 
@@ -525,10 +525,10 @@ For Mermaid, Node runtime should use this rule:
 
 1. **Default requirement:** preserve parity with browser-family output.
 2. **Implementation preference:** keep the main document pipeline pure Node.
-3. **Chosen helper mechanism:** use `@markdocx/runtime-node-mermaid`, implemented as a narrow Puppeteer-based Mermaid renderer with a Puppeteer version pinned in package management so the bundled Chromium version is pinned implicitly. The default plan is to use bundled Chromium, not an externally managed browser.
+3. **Chosen helper mechanism:** use `@marktodocx/runtime-node-mermaid`, implemented as a narrow Puppeteer-based Mermaid renderer with a Puppeteer version pinned in package management so the bundled Chromium version is pinned implicitly. The default plan is to use bundled Chromium, not an externally managed browser.
 4. **Install tradeoff:** CLI and agent skill stay lean for non-Mermaid documents. Mermaid documents require the Node Mermaid helper package to be installed and available.
 5. **Failure behavior:** if the document contains Mermaid and the parity-preserving Mermaid helper is unavailable, fail with a clear error rather than emit a divergent document.
-6. **Execution mode:** `@markdocx/runtime-node-mermaid` runs Puppeteer in headless `new` mode. CI images must install the Puppeteer Linux dependency set required by Chromium.
+6. **Execution mode:** `@marktodocx/runtime-node-mermaid` runs Puppeteer in headless `new` mode. CI images must install the Puppeteer Linux dependency set required by Chromium.
 
 This keeps the heavy browser dependency off the main CLI and skill path for non-Mermaid documents while still honoring the parity requirement when Mermaid is used.
 
@@ -536,7 +536,7 @@ Version pinning is mandatory for deterministic output:
 
 - one Mermaid version across the repository
 - one `html-to-docx` version across the repository
-- one Chromium version implicitly pinned by the pinned Puppeteer version used in `@markdocx/runtime-node-mermaid`
+- one Chromium version implicitly pinned by the pinned Puppeteer version used in `@marktodocx/runtime-node-mermaid`
 
 The root workspace manifest should enforce this with `overrides` so workspaces cannot drift silently.
 
@@ -550,14 +550,14 @@ Status: already implemented and currently the best source of truth.
 
 Current implementation note:
 
-- Shared conversion behavior lives in `@markdocx/core`.
-- Browser-only conversion behavior now lives in `@markdocx/runtime-browser`.
+- Shared conversion behavior lives in `@marktodocx/core`.
+- Browser-only conversion behavior now lives in `@marktodocx/runtime-browser`.
 - The extension app remains responsible for UI, file selection, offscreen document lifecycle, and download transport.
 
 Plan:
 
 - Keep the existing UI and conversion flow.
-- Move conversion modules from `apps/chrome-extension/src/lib/` into `@markdocx/core` and `@markdocx/runtime-browser`.
+- Move conversion modules from `apps/chrome-extension/src/lib/` into `@marktodocx/core` and `@marktodocx/runtime-browser`.
 - Keep the page and background layers thin.
 - Use the current extension output as the initial golden reference during migration.
 
@@ -592,10 +592,10 @@ CLI style configuration must be first-class, not deferred:
 - `--style-json <json-or-path>`
 - `--set key=value` for targeted overrides
 - environment defaults such as:
-  - `MARKDOCX_STYLE_PRESET`
-  - `MARKDOCX_MARGIN_PRESET`
-  - `MARKDOCX_STYLE_JSON`
-  - `MARKDOCX_STYLE_SET`
+  - `MARKTODOCX_STYLE_PRESET`
+  - `MARKTODOCX_MARGIN_PRESET`
+  - `MARKTODOCX_STYLE_JSON`
+  - `MARKTODOCX_STYLE_SET`
 
 CLI precedence order:
 
@@ -607,7 +607,7 @@ CLI precedence order:
 6. Environment variables override defaults.
 7. Default preset is last.
 
-`MARKDOCX_STYLE_SET` uses semicolon-separated dotted-path assignments, for example:
+`MARKTODOCX_STYLE_SET` uses semicolon-separated dotted-path assignments, for example:
 
 ```text
 code.fontSizePt=11;blockquote.italic=false;page.marginPreset=wide
@@ -642,7 +642,7 @@ Skill precedence order:
 5. Environment variables override defaults.
 6. Default preset is last.
 
-`styleSet` is a string parameter using the same dotted-path assignment syntax as CLI `--set` and `MARKDOCX_STYLE_SET`, not an object. Agents passing an object should use `styleJson` instead.
+`styleSet` is a string parameter using the same dotted-path assignment syntax as CLI `--set` and `MARKTODOCX_STYLE_SET`, not an object. Agents passing an object should use `styleJson` instead.
 
 No UI is required or desired for CLI and skill.
 
@@ -683,7 +683,7 @@ Font handling also needs a declared rule: parity checks compare declared font na
 
 All hosts must share:
 
-- the same `@markdocx/core` conversion rules
+- the same `@marktodocx/core` conversion rules
 - the same style preset definitions
 - the same layout preset definitions
 - the same syntax highlighting behavior
@@ -822,10 +822,10 @@ Proposed root workspace commands:
 
 Proposed package names:
 
-- `@markdocx/core`
-- `@markdocx/runtime-browser`
-- `@markdocx/runtime-node`
-- `@markdocx/runtime-node-mermaid`
+- `@marktodocx/core`
+- `@marktodocx/runtime-browser`
+- `@marktodocx/runtime-node`
+- `@marktodocx/runtime-node-mermaid`
 
 Migration should preserve current user-facing entry points until replacements are proven by parity gates.
 
@@ -877,7 +877,7 @@ Gate:
 
 Goal:
 
-- Move stable logic from the current Chrome extension modules into `@markdocx/core`.
+- Move stable logic from the current Chrome extension modules into `@marktodocx/core`.
 
 Work:
 
@@ -917,23 +917,23 @@ Build commands:
 
 Migration checkpoint:
 
-- Chrome extension compiles against `@markdocx/core` for extracted modules without output drift.
+- Chrome extension compiles against `@marktodocx/core` for extracted modules without output drift.
 
 Gate:
 
-- Chrome extension rebuilt on `@markdocx/core` still produces a normalized match against the golden set.
+- Chrome extension rebuilt on `@marktodocx/core` still produces a normalized match against the golden set.
 
 ### Phase C - Build Browser Runtime Family
 
 Goal:
 
-- Move browser-specific adapters into `@markdocx/runtime-browser`.
+- Move browser-specific adapters into `@marktodocx/runtime-browser`.
 
 Implementation note after Epic 3:
 
 - `packages/runtime-browser/` now exists and is part of the workspace.
 - The browser Mermaid renderer, native DOM adapter, and image-map helper now live there.
-- Chrome extension offscreen conversion and parity Mermaid artifact generation now consume `@markdocx/runtime-browser`.
+- Chrome extension offscreen conversion and parity Mermaid artifact generation now consume `@marktodocx/runtime-browser`.
 - Full parity remained green after the extraction.
 
 Work:
@@ -951,7 +951,7 @@ Concrete package and file work:
   - `packages/runtime-browser/src/image-map.js`
   - `packages/runtime-browser/src/mermaid-browser.js`
   - `packages/runtime-browser/src/index.js`
-- Update Chrome extension orchestration to consume `@markdocx/runtime-browser`.
+- Update Chrome extension orchestration to consume `@marktodocx/runtime-browser`.
 
 Build commands:
 
@@ -978,7 +978,7 @@ Implementation note after Epic 4 start:
 - `packages/runtime-node/` now exists and is part of the workspace.
 - The first explicit Node runtime slice includes a `jsdom`-backed DOM adapter, filesystem image loading, and a shared-core composition entry for Node hosts.
 - `packages/runtime-node-mermaid/` now provides the Puppeteer-based Mermaid renderer used by Node-family hosts.
-- The root `md-to-docx.mjs` entry is now a thin CLI wrapper over `@markdocx/runtime-node` with style args and env parsing.
+- The root `md-to-docx.mjs` entry is now a thin CLI wrapper over `@marktodocx/runtime-node` with style args and env parsing.
 - The first Node-side fixture parity attempt surfaced a real blockquote-border XML drift, and Epic 4 resolved it by removing adapter-sensitive CSSOM serialization from blockquote table-cell normalization.
 
 Work:
@@ -1024,9 +1024,9 @@ Goal:
 
 Implementation note after Epic 5:
 
-- `apps/vscode-extension/` now exists as a real workspace package with extension activation, the `markdocx.convertToDocx` command, and explorer/editor context-menu entries.
-- The webview host (`src/webview-host.js`) creates a retained hidden webview that bundles `@markdocx/runtime-browser` via Vite, exchanges `READY`/`CONVERT`/`CONVERT_RESULT` messages with the extension main process, and returns DOCX bytes through a base64 transport.
-- Host-side helpers in `src/convert.js` build the shared runtime inputs from the workspace: `collectWorkspaceImageMap` mirrors the Chrome extension's image map shape, `getMarkdownRelativeDir` computes `mdRelativeDir` against the workspace root, and `resolveVsCodeStyleOptionsFromValues` maps `markdocx.*` settings through `resolveNodeStyleOptions` so VSCode and CLI share one style schema.
+- `apps/vscode-extension/` now exists as a real workspace package with extension activation, the `marktodocx.convertToDocx` command, and explorer/editor context-menu entries.
+- The webview host (`src/webview-host.js`) creates a retained hidden webview that bundles `@marktodocx/runtime-browser` via Vite, exchanges `READY`/`CONVERT`/`CONVERT_RESULT` messages with the extension main process, and returns DOCX bytes through a base64 transport.
+- Host-side helpers in `src/convert.js` build the shared runtime inputs from the workspace: `collectWorkspaceImageMap` mirrors the Chrome extension's image map shape, `getMarkdownRelativeDir` computes `mdRelativeDir` against the workspace root, and `resolveVsCodeStyleOptionsFromValues` maps `marktodocx.*` settings through `resolveNodeStyleOptions` so VSCode and CLI share one style schema.
 - Parity is gated by `scripts/run-vscode-parity.mjs`, which drives `convertMarkdownToDocx` end-to-end through a fake VSCode API and a webview host that reuses the existing Puppeteer-backed Chrome extension session as the shared browser runtime, so the VSCode host wiring is validated against the same verified golden corpus.
 
 Work:
@@ -1043,7 +1043,7 @@ Concrete package and file work:
   - `apps/vscode-extension/src/webview-host.js`
   - `apps/vscode-extension/src/convert.js`
   - `apps/vscode-extension/webview/index.js`
-- Use `@markdocx/core` and `@markdocx/runtime-browser` inside the webview host path.
+- Use `@marktodocx/core` and `@marktodocx/runtime-browser` inside the webview host path.
 
 Build commands:
 
@@ -1078,9 +1078,9 @@ Concrete package and file work:
   - `SKILL.md`
   - `skill.mjs`
   - `README.md`
-- Add `scripts/export-agent-skill.mjs` to emit a standalone `apps/agent-skill/dist/markdocx-skill/` folder with vendored workspace tarballs and installed runtime dependencies.
+- Add `scripts/export-agent-skill.mjs` to emit a standalone `apps/agent-skill/dist/marktodocx-skill/` folder with vendored workspace tarballs and installed runtime dependencies.
 - Support two export profiles: standard export without Mermaid installation, and `--with-mermaid` export with vendored Chromium plus a runtime manifest that records the working browser launch args discovered on the export host.
-- Reuse `@markdocx/runtime-node`.
+- Reuse `@marktodocx/runtime-node`.
 - Do not create a second conversion implementation for the skill.
 
 Build commands:
@@ -1161,7 +1161,7 @@ CI requirement:
 | Risk | Why it matters | Mitigation |
 | --- | --- | --- |
 | Runtime drift between browser and Node | Violates the same-result requirement | Use shared core, pinned versions, shared fixtures, and a strict parity gate |
-| Mermaid rendering mismatch | Mermaid is the most likely source of host divergence | Pin Mermaid/config/layout; define parity at SVG+extent level; route Node-family rasterization through `@markdocx/runtime-node-mermaid` |
+| Mermaid rendering mismatch | Mermaid is the most likely source of host divergence | Pin Mermaid/config/layout; define parity at SVG+extent level; route Node-family rasterization through `@marktodocx/runtime-node-mermaid` |
 | CLI or skill dependency bloat | Conflicts with the small-host requirement | Keep the main pipeline Node-native and isolate any browser-backed helper to Mermaid only |
 | Over-abstracting too early | Can make the repo harder to understand | Extract only stable behavior from the current extension, keep host wrappers thin |
 | Silent feature degradation | Creates support and trust problems | Fail fast when a parity-preserving path is unavailable |
@@ -1179,7 +1179,7 @@ That is the cleaner design for this repository because it preserves parity while
 This refactor is complete when all of the following are true:
 
 1. Chrome extension, VSCode extension, CLI, and agent skill all convert the same fixture corpus to the same normalized DOCX result.
-2. The shared conversion rules live in `@markdocx/core` rather than being copied across apps.
+2. The shared conversion rules live in `@marktodocx/core` rather than being copied across apps.
 3. Browser-specific code lives in the browser runtime family.
 4. Node-specific code lives in the Node runtime family.
 5. CLI and agent skill support style configuration via args/parameters and environment variables without UI.
@@ -1193,7 +1193,7 @@ This refactor is complete when all of the following are true:
 
 ## 11. Summary
 
-The right refactor for markdocx is not "one runtime everywhere". The right refactor is:
+The right refactor for marktodocx is not "one runtime everywhere". The right refactor is:
 
 - one shared conversion core
 - one browser runtime family

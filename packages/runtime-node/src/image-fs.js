@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
-import { IMAGE_EXTENSIONS } from '@markdocx/core';
+import { IMAGE_EXTENSIONS } from '@marktodocx/core';
 
 function normalizePathForCore(filePath) {
   return filePath.split(path.sep).join('/');

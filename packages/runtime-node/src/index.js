@@ -9,7 +9,7 @@ import {
   normalizeTables,
   resolveDocumentLayout,
   resolveDocumentStyle,
-} from '@markdocx/core';
+} from '@marktodocx/core';
 
 import { createJsdomDomAdapter, createNodeRuntime } from './dom-jsdom.js';
 import { buildImageMapFromHtml, normalizeBaseDirForCore } from './image-fs.js';

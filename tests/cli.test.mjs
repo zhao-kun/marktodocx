@@ -6,7 +6,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { promisify } from 'node:util';
 
-import { resolveNodeStyleOptions } from '@markdocx/runtime-node';
+import { resolveNodeStyleOptions } from '@marktodocx/runtime-node';
 
 const execFile = promisify(execFileCallback);
 
@@ -14,16 +14,16 @@ test('resolveNodeStyleOptions honors env defaults and CLI precedence by option k
   const styleOptions = await resolveNodeStyleOptions({
     cwd: process.cwd(),
     env: {
-      MARKDOCX_STYLE_PRESET: 'minimal',
-      MARKDOCX_MARGIN_PRESET: 'wide',
-      MARKDOCX_STYLE_JSON: JSON.stringify({
+      MARKTODOCX_STYLE_PRESET: 'minimal',
+      MARKTODOCX_MARGIN_PRESET: 'wide',
+      MARKTODOCX_STYLE_JSON: JSON.stringify({
         overrides: {
           blockquote: {
             italic: true,
           },
         },
       }),
-      MARKDOCX_STYLE_SET: 'body.fontSizePt=12;code.fontSizePt=9',
+      MARKTODOCX_STYLE_SET: 'body.fontSizePt=12;code.fontSizePt=9',
     },
     stylePreset: 'report',
     marginPreset: 'compact',
@@ -45,7 +45,7 @@ test('resolveNodeStyleOptions honors env defaults and CLI precedence by option k
 });
 
 test('CLI wrapper converts markdown through runtime-node with style arguments', async () => {
-  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'markdocx-cli-test-'));
+  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'marktodocx-cli-test-'));
   const markdownPath = path.join(tempDir, 'sample.md');
   const styleJsonPath = path.join(tempDir, 'style.json');
   const outputPath = path.join(tempDir, 'sample.docx');

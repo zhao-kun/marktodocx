@@ -1,8 +1,8 @@
-# markdocx for VS Code
+# marktodocx for VS Code
 
 Convert Markdown files to Word (`.docx`) directly from VS Code — headings, lists, tables, code blocks, blockquotes, local images, and Mermaid diagrams all preserved.
 
-markdocx uses the same shared conversion core as the markdocx Chrome extension, CLI, and agent skill, so one Markdown file renders to the same DOCX output everywhere.
+marktodocx uses the same shared conversion core as the marktodocx Chrome extension, CLI, and agent skill, so one Markdown file renders to the same DOCX output everywhere.
 
 ## Features
 
@@ -17,19 +17,19 @@ markdocx uses the same shared conversion core as the markdocx Chrome extension, 
 
 1. Open a workspace that contains your Markdown file and any local images it references
 2. Run the command in one of these ways:
-   - Right-click a `.md` file in the Explorer and pick **markdocx: Convert to DOCX**
+   - Right-click a `.md` file in the Explorer and pick **marktodocx: Convert to DOCX**
    - Right-click inside an open Markdown editor and pick the same command
-   - Open the Command Palette and run `markdocx: Convert Markdown to DOCX`
+   - Open the Command Palette and run `marktodocx: Convert Markdown to DOCX`
 3. Pick the output path in the save dialog
 
 ## Settings
 
 | Setting | Description |
 | --- | --- |
-| `markdocx.stylePreset` | Base style preset: `default`, `minimal`, or `report` |
-| `markdocx.marginPreset` | Page margin preset override: `default`, `compact`, `wide`, or empty |
-| `markdocx.styleJson` | Inline style JSON string or a workspace-relative path to a JSON file |
-| `markdocx.styleSet` | Targeted overrides such as `body.fontSizePt=12` or `blockquote.italic=false` |
+| `marktodocx.stylePreset` | Base style preset: `default`, `minimal`, or `report` |
+| `marktodocx.marginPreset` | Page margin preset override: `default`, `compact`, `wide`, or empty |
+| `marktodocx.styleJson` | Inline style JSON string or a workspace-relative path to a JSON file |
+| `marktodocx.styleSet` | Targeted overrides such as `body.fontSizePt=12` or `blockquote.italic=false` |
 
 Explicit settings override preset defaults field by field, so you can start from a preset and tweak just what you need.
 
@@ -50,9 +50,9 @@ Explicit settings override preset defaults field by field, so you can start from
 
 Once published to the Marketplace, install one of these ways:
 
-- Open the **Extensions** view in VS Code, search for `markdocx`, and click **Install**
-- Or run from the Command Palette: `ext install zhao-kun.markdocx-vscode-extension`
-- Or install the `.vsix` directly: `code --install-extension markdocx-vscode-extension.vsix`
+- Open the **Extensions** view in VS Code, search for `marktodocx`, and click **Install**
+- Or run from the Command Palette: `ext install zhao-kun.marktodocx-vscode-extension`
+- Or install the `.vsix` directly: `code --install-extension marktodocx-vscode-extension.vsix`
 
 To build a `.vsix` from source instead, see the project repository's [`docs/publishing.md`](https://github.com/zhao-kun/markdocx/blob/main/docs/publishing.md#vs-code-marketplace-vscode-extension).
 

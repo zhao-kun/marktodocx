@@ -27,7 +27,7 @@ function parseArgs(argv) {
   const options = {
     refresh: null,
     allowDirty: false,
-    allowNoSandbox: process.env.MARKDOCX_PUPPETEER_NO_SANDBOX === '1' || process.env.CI === 'true',
+    allowNoSandbox: process.env.MARKTODOCX_PUPPETEER_NO_SANDBOX === '1' || process.env.CI === 'true',
   };
 
   for (let index = 0; index < argv.length; index += 1) {

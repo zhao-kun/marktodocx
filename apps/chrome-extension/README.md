@@ -1,8 +1,8 @@
-# markdocx for Chrome
+# marktodocx for Chrome
 
 Convert any Markdown file on your computer into a Word (`.docx`) document — right from your browser, with no upload to any server.
 
-markdocx runs the entire conversion inside the extension. Your Markdown and images never leave your machine.
+marktodocx runs the entire conversion inside the extension. Your Markdown and images never leave your machine.
 
 ## Features
 
@@ -15,7 +15,7 @@ markdocx runs the entire conversion inside the extension. Your Markdown and imag
 
 ## How to Use
 
-1. Click the markdocx icon in the Chrome toolbar to open the popup
+1. Click the marktodocx icon in the Chrome toolbar to open the popup
 2. Click **Select folder** and pick the folder that contains both your Markdown file and any images it references
 3. Pick the `.md` file you want to convert
 4. Click **Convert**
@@ -25,7 +25,7 @@ markdocx runs the entire conversion inside the extension. Your Markdown and imag
 
 ## Why a Folder Instead of a File
 
-Chrome extensions cannot read arbitrary sibling files next to a single picked `.md` file. Picking a folder lets markdocx resolve local image references (`![alt](./img/foo.png)`) without asking for any host permissions or network access.
+Chrome extensions cannot read arbitrary sibling files next to a single picked `.md` file. Picking a folder lets marktodocx resolve local image references (`![alt](./img/foo.png)`) without asking for any host permissions or network access.
 
 ## Permissions
 
@@ -65,7 +65,7 @@ Everything runs locally inside the extension. No telemetry, no uploads, no track
 
 ## Install
 
-Once published, install from the Chrome Web Store search for **markdocx** and click **Add to Chrome**.
+Once published, install from the Chrome Web Store search for **marktodocx** and click **Add to Chrome**.
 
 To run an unpacked development build from source, follow the [Chrome Extension Quickstart](https://github.com/zhao-kun/markdocx#chrome-extension-quickstart) in the project README.
 

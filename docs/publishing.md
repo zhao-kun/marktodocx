@@ -1,6 +1,6 @@
 # Publishing Guide
 
-This document is the maintainer-facing release guide for markdocx. It covers the three hosts that ship to public registries (VS Code Marketplace, Chrome Web Store, ClawHub) and explicitly states the CLI release policy.
+This document is the maintainer-facing release guide for marktodocx. It covers the three hosts that ship to public registries (VS Code Marketplace, Chrome Web Store, ClawHub) and explicitly states the CLI release policy.
 
 User-facing listing copy lives next to each host:
 
@@ -25,7 +25,7 @@ This file owns the release **process**, not the listing copy.
 
 - All hosts follow semver.
 - Each host owns its own version in its own `package.json`. Versions are independent — bumping the VS Code extension does not require bumping the Chrome extension.
-- The Chrome extension's `manifest.json` `version` field is **always** synced from `apps/chrome-extension/package.json` at build time by the `markdocx-sync-manifest-version` Vite plugin. Do not edit `public/manifest.json` `version` by hand — it is treated as a placeholder (`0.0.0`) and overwritten in `dist/manifest.json` during `npm run build:chrome-extension`.
+- The Chrome extension's `manifest.json` `version` field is **always** synced from `apps/chrome-extension/package.json` at build time by the `marktodocx-sync-manifest-version` Vite plugin. Do not edit `public/manifest.json` `version` by hand — it is treated as a placeholder (`0.0.0`) and overwritten in `dist/manifest.json` during `npm run build:chrome-extension`.
 - Tag releases on `main` as `<host>-v<version>` (for example `vscode-extension-v0.1.0`, `chrome-extension-v0.1.0`, `agent-skill-v0.1.0`). Tags drive GitHub Release artifact names.
 
 ## Pre-Release Checklist (All Hosts)
@@ -64,12 +64,12 @@ If any of these fail, do not publish.
    npm install
    npm run package:vscode-extension
    ```
-   Output: `apps/vscode-extension/dist/markdocx-vscode-extension.vsix`.
+   Output: `apps/vscode-extension/dist/marktodocx-vscode-extension.vsix`.
 3. Smoke-install the VSIX locally to confirm it loads in a clean window:
    ```bash
-   code --install-extension apps/vscode-extension/dist/markdocx-vscode-extension.vsix --force
+   code --install-extension apps/vscode-extension/dist/marktodocx-vscode-extension.vsix --force
    ```
-   Reload, run **markdocx: Convert Markdown to DOCX** on a sample file, and confirm a `.docx` is produced.
+   Reload, run **marktodocx: Convert Markdown to DOCX** on a sample file, and confirm a `.docx` is produced.
 4. Publish to the Marketplace:
    ```bash
    cd apps/vscode-extension
@@ -78,7 +78,7 @@ If any of these fail, do not publish.
    `vsce publish` reads the version from `package.json`. To bump and publish in one step you can also use `vsce publish patch` / `minor` / `major`.
 5. Confirm the listing went live at:
    ```
-   https://marketplace.visualstudio.com/items?itemName=zhao-kun.markdocx-vscode-extension
+   https://marketplace.visualstudio.com/items?itemName=zhao-kun.marktodocx-vscode-extension
    ```
    This URL will return HTTP 404 until the first successful `vsce publish`. After that, every subsequent publish updates the same listing.
 6. Tag and push:
@@ -127,13 +127,13 @@ If you change any of these, run `npm run package:vscode-extension` again so the 
 4. Zip the unpacked build:
    ```bash
    cd apps/chrome-extension/dist
-   zip -r ../markdocx-chrome-extension.zip .
+   zip -r ../marktodocx-chrome-extension.zip .
    ```
 5. Upload the zip to the Web Store Developer Dashboard. The dashboard path differs for the first release vs. subsequent releases:
-   - **First release**: open https://chrome.google.com/webstore/devconsole/, click **Add new item**, accept the developer agreement if prompted, then upload `apps/chrome-extension/markdocx-chrome-extension.zip` on the resulting screen.
-   - **Subsequent releases**: open https://chrome.google.com/webstore/devconsole/, click the existing **markdocx** item in the items table, then click **Package → Upload new package** and upload the same zip.
+   - **First release**: open https://chrome.google.com/webstore/devconsole/, click **Add new item**, accept the developer agreement if prompted, then upload `apps/chrome-extension/marktodocx-chrome-extension.zip` on the resulting screen.
+   - **Subsequent releases**: open https://chrome.google.com/webstore/devconsole/, click the existing **marktodocx** item in the items table, then click **Package → Upload new package** and upload the same zip.
 6. Fill in the listing fields. **All listed fields are required for the first release**; for subsequent releases, only update the ones that changed:
-   - **Title**: `markdocx`
+   - **Title**: `marktodocx`
    - **Summary**: one-line description (matches `apps/chrome-extension/public/manifest.json` `description`)
    - **Description**: paste the body of `apps/chrome-extension/README.md`
    - **Category**: `Productivity`
@@ -151,7 +151,7 @@ If you change any of these, run `npm run package:vscode-extension` again so the 
    git tag chrome-extension-v<version>
    git push origin chrome-extension-v<version>
    ```
-9. Attach the same `markdocx-chrome-extension.zip` to a GitHub Release for the tag, in case users want a manual unpacked install.
+9. Attach the same `marktodocx-chrome-extension.zip` to a GitHub Release for the tag, in case users want a manual unpacked install.
 
 ### Common rejection causes to avoid
 
@@ -185,8 +185,8 @@ The agent skill is published to ClawHub, the OpenClaw skill registry, and mirror
    npm run export:agent-skill
    ```
    Output:
-   - `apps/agent-skill/dist/markdocx-skill/` — the self-contained skill folder
-   - `apps/agent-skill/dist/markdocx-skill.zip` — the distributable archive
+   - `apps/agent-skill/dist/marktodocx-skill/` — the self-contained skill folder
+   - `apps/agent-skill/dist/marktodocx-skill.zip` — the distributable archive
 3. Run the export verification:
    ```bash
    npm run test:export:agent-skill
@@ -194,9 +194,9 @@ The agent skill is published to ClawHub, the OpenClaw skill registry, and mirror
    This rebuilds the export and verifies the artifact layout in a CI-safe way.
 4. Publish to ClawHub:
    ```bash
-   clawhub skill publish apps/agent-skill/dist/markdocx-skill \
-     --slug markdocx-skill \
-     --name "markdocx-skill" \
+   clawhub skill publish apps/agent-skill/dist/marktodocx-skill \
+     --slug marktodocx-skill \
+     --name "marktodocx-skill" \
      --version <version> \
      --changelog "<short release notes>" \
      --tags markdown,docx,word,mermaid,export
@@ -208,7 +208,7 @@ The agent skill is published to ClawHub, the OpenClaw skill registry, and mirror
    git tag agent-skill-v<version>
    git push origin agent-skill-v<version>
    ```
-7. Cut a GitHub Release for the tag and attach `apps/agent-skill/dist/markdocx-skill.zip`. Use the body of `apps/agent-skill/INTRO.md` as the release description.
+7. Cut a GitHub Release for the tag and attach `apps/agent-skill/dist/marktodocx-skill.zip`. Use the body of `apps/agent-skill/INTRO.md` as the release description.
 
 ### Mermaid-enabled releases
 
@@ -229,7 +229,7 @@ The standard export keeps Mermaid disabled and fails clearly if the deployed ski
 
 ### `disable-model-invocation` note
 
-The `SKILL.md` frontmatter sets `disable-model-invocation: true`. This is intentional: the skill writes files and should be invoked explicitly, not opportunistically picked up by a model in the background. Document this clearly in any ClawHub release notes so users know they must invoke `markdocx-skill` by name.
+The `SKILL.md` frontmatter sets `disable-model-invocation: true`. This is intentional: the skill writes files and should be invoked explicitly, not opportunistically picked up by a model in the background. Document this clearly in any ClawHub release notes so users know they must invoke `marktodocx-skill` by name.
 
 ## CLI Release Policy (Source-Only)
 
@@ -238,7 +238,7 @@ The CLI is intentionally **source-only**. There is no npm release for it.
 - Entry point: `md-to-docx.mjs` at the repo root.
 - Install: clone the repository and run `npm install`.
 - Use: `node md-to-docx.mjs <input.md>`.
-- Mermaid: install the optional `@markdocx/runtime-node-mermaid` package or run `npx puppeteer browsers install chrome` per the root README.
+- Mermaid: install the optional `@marktodocx/runtime-node-mermaid` package or run `npx puppeteer browsers install chrome` per the root README.
 
 The root `package.json` is and should remain `private: true`. Do not add a `bin` entry, do not publish the root workspace to npm, and do not set up a GitHub Release artifact for the CLI on its own — its release surface is the repository itself. Major CLI behavior changes are surfaced through commit history and the root `README.md` CLI section.
 
@@ -247,7 +247,7 @@ If we ever decide to ship a real npm CLI, it will live under `packages/cli/` as 
 ## Coordination Across Hosts
 
 - Output parity is the hard ship-gate. Run `npm run test:parity:all` before any publish, regardless of which host is going out.
-- Host versions are independent, but if a fix lands in `@markdocx/core` or one of the runtime packages and changes user-visible output, plan to release **all** affected hosts in the same window so users do not get split behavior across tools.
+- Host versions are independent, but if a fix lands in `@marktodocx/core` or one of the runtime packages and changes user-visible output, plan to release **all** affected hosts in the same window so users do not get split behavior across tools.
 - Release order recommendation when shipping a coordinated change:
   1. Tag the merge commit on `main`.
   2. Publish the agent skill to ClawHub (slowest registry to refresh, fastest to verify with a one-line install).

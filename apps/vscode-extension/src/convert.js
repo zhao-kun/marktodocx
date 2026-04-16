@@ -76,7 +76,7 @@ function getMarkdownRelativeDir(rootDir, markdownPath) {
 }
 
 async function resolveVsCodeStyleOptionsFromValues(values, { cwd }) {
-  const { resolveNodeStyleOptions } = await import('@markdocx/runtime-node/style-options');
+  const { resolveNodeStyleOptions } = await import('@marktodocx/runtime-node/style-options');
   return resolveNodeStyleOptions({
     cwd,
     env: {},
@@ -88,7 +88,7 @@ async function resolveVsCodeStyleOptionsFromValues(values, { cwd }) {
 }
 
 async function resolveVsCodeStyleOptions(vscodeApi, markdownUri, workspaceRoot) {
-  const config = vscodeApi.workspace.getConfiguration('markdocx', markdownUri);
+  const config = vscodeApi.workspace.getConfiguration('marktodocx', markdownUri);
   return resolveVsCodeStyleOptionsFromValues(
     {
       stylePreset: config.get('stylePreset'),

@@ -17,7 +17,7 @@ function assertValidSkillFrontmatter(source) {
 
   assert.ok(nameMatch, 'SKILL.md frontmatter must include a valid lowercase hyphenated name field.');
   assert.ok(descriptionMatch, 'SKILL.md frontmatter must include a description field.');
-  assert.equal(nameMatch[1], 'markdocx-skill', 'SKILL.md must use the canonical public Claude skill name markdocx-skill.');
+  assert.equal(nameMatch[1], 'marktodocx-skill', 'SKILL.md must use the canonical public Claude skill name marktodocx-skill.');
   assert.ok(argumentHintMatch, 'SKILL.md argument-hint must be a quoted string when present.');
 }
 
@@ -31,7 +31,7 @@ async function main() {
   await fs.access(skillDocPath);
   assertValidSkillFrontmatter(await fs.readFile(skillDocPath, 'utf8'));
 
-  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'markdocx-agent-skill-build-'));
+  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'marktodocx-agent-skill-build-'));
   const markdownPath = path.join(tempDir, 'sample.md');
   const outputPath = path.join(tempDir, 'sample.docx');
 

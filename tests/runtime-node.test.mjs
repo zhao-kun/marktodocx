@@ -14,7 +14,7 @@ import {
   parseStyleAssignments,
   parseStyleJsonInput,
   resolveNodeStyleOptions,
-} from '@markdocx/runtime-node';
+} from '@marktodocx/runtime-node';
 
 const ONE_BY_ONE_PNG_BASE64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO7Z0ioAAAAASUVORK5CYII=';
 
@@ -26,7 +26,7 @@ test('runtime-node exports an explicit jsdom-backed runtime adapter', () => {
 });
 
 test('runtime-node builds a filesystem image map keyed for core resolution', async () => {
-  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'markdocx-runtime-node-'));
+  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'marktodocx-runtime-node-'));
   const imagePath = path.join(tempDir, 'diagram.png');
   await fs.writeFile(imagePath, Buffer.from(ONE_BY_ONE_PNG_BASE64, 'base64'));
 
@@ -44,7 +44,7 @@ test('runtime-node builds a filesystem image map keyed for core resolution', asy
 });
 
 test('runtime-node converts non-mermaid markdown through the explicit runtime package', async () => {
-  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'markdocx-runtime-node-'));
+  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'marktodocx-runtime-node-'));
   const imagePath = path.join(tempDir, 'diagram.png');
   await fs.writeFile(imagePath, Buffer.from(ONE_BY_ONE_PNG_BASE64, 'base64'));
 
@@ -74,7 +74,7 @@ test('runtime-node fails fast on Mermaid until an explicit mermaid adapter is pr
 });
 
 test('runtime-node can write a DOCX file through the file conversion entry point', async () => {
-  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'markdocx-runtime-node-'));
+  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'marktodocx-runtime-node-'));
   const markdownPath = path.join(tempDir, 'sample.md');
   await fs.writeFile(markdownPath, '# File Conversion\n\nBody text.\n', 'utf8');
 

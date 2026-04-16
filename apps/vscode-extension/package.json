@@ -1,6 +1,6 @@
 {
-  "name": "markdocx-vscode-extension",
-  "displayName": "markdocx",
+  "name": "marktodocx-vscode-extension",
+  "displayName": "marktodocx",
   "description": "Convert Markdown to DOCX in VS Code using the shared browser runtime family.",
   "version": "0.1.0",
   "publisher": "zhao-kun",
@@ -38,38 +38,38 @@
   "contributes": {
     "commands": [
       {
-        "command": "markdocx.convertToDocx",
+        "command": "marktodocx.convertToDocx",
         "title": "Convert Markdown to DOCX",
-        "category": "markdocx"
+        "category": "marktodocx"
       }
     ],
     "menus": {
       "explorer/context": [
         {
-          "command": "markdocx.convertToDocx",
+          "command": "marktodocx.convertToDocx",
           "when": "resourceExtname == .md || resourceExtname == .markdown",
           "group": "navigation"
         }
       ],
       "editor/context": [
         {
-          "command": "markdocx.convertToDocx",
+          "command": "marktodocx.convertToDocx",
           "when": "resourceLangId == markdown",
           "group": "navigation"
         }
       ],
       "editor/title": [
         {
-          "command": "markdocx.convertToDocx",
+          "command": "marktodocx.convertToDocx",
           "when": "resourceLangId == markdown",
           "group": "navigation"
         }
       ]
     },
     "configuration": {
-      "title": "markdocx",
+      "title": "marktodocx",
       "properties": {
-        "markdocx.stylePreset": {
+        "marktodocx.stylePreset": {
           "type": "string",
           "enum": [
             "default",
@@ -79,7 +79,7 @@
           "default": "default",
           "description": "Base shared style preset for Markdown to DOCX conversion."
         },
-        "markdocx.marginPreset": {
+        "marktodocx.marginPreset": {
           "type": "string",
           "enum": [
             "",
@@ -90,12 +90,12 @@
           "default": "",
           "description": "Optional page margin preset override. Leave empty to use the preset default."
         },
-        "markdocx.styleJson": {
+        "marktodocx.styleJson": {
           "type": "string",
           "default": "",
           "description": "Inline style JSON string or a workspace-relative path to a JSON file containing shared styleOptions."
         },
-        "markdocx.styleSet": {
+        "marktodocx.styleSet": {
           "type": "array",
           "default": [],
           "items": {
@@ -109,12 +109,12 @@
   "scripts": {
     "build": "vite build --config ./vite.config.mjs && vite build --config ./vite.extension.config.mjs && node ./scripts/build-check.js",
     "watch": "vite build --watch --config ./vite.config.mjs",
-    "package": "npm run build && vsce package --no-dependencies --out ./dist/markdocx-vscode-extension.vsix",
-    "install:vsix": "code --install-extension ./dist/markdocx-vscode-extension.vsix --force"
+    "package": "npm run build && vsce package --no-dependencies --out ./dist/marktodocx-vscode-extension.vsix",
+    "install:vsix": "code --install-extension ./dist/marktodocx-vscode-extension.vsix --force"
   },
   "devDependencies": {
-    "@markdocx/runtime-browser": "0.1.0",
-    "@markdocx/runtime-node": "0.1.0",
+    "@marktodocx/runtime-browser": "0.1.0",
+    "@marktodocx/runtime-node": "0.1.0",
     "@vscode/vsce": "^3.2.1",
     "buffer": "^6.0.3",
     "vite": "^8.0.8",

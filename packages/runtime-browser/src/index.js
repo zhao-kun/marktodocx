@@ -6,7 +6,7 @@ import {
   normalizeTables,
   resolveDocumentLayout,
   resolveDocumentStyle,
-} from '@markdocx/core';
+} from '@marktodocx/core';
 
 import { createBrowserRuntime, createNativeDomAdapter } from './dom-native.js';
 import { inlineImagesFromMap } from './image-map.js';

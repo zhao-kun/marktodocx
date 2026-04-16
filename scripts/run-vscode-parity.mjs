@@ -135,12 +135,12 @@ async function main() {
     throw new Error('Parity manifest has no verified fixtures.');
   }
 
-  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'markdocx-vscode-parity-'));
+  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'marktodocx-vscode-parity-'));
   const failures = [];
   const passes = [];
 
   const session = await createExtensionSession({
-    allowNoSandbox: process.env.MARKDOCX_PUPPETEER_NO_SANDBOX === '1' || process.env.CI === 'true',
+    allowNoSandbox: process.env.MARKTODOCX_PUPPETEER_NO_SANDBOX === '1' || process.env.CI === 'true',
   });
 
   try {

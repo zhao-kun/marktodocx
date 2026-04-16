@@ -11,7 +11,7 @@ function createNonce() {
   return crypto.randomBytes(16).toString('base64');
 }
 
-class MarkdocxWebviewHost {
+class MarktodocxWebviewHost {
   constructor(context) {
     this.context = context;
     this.panel = undefined;
@@ -22,7 +22,7 @@ class MarkdocxWebviewHost {
   }
 
   dispose() {
-    this.rejectPendingConversions(new Error('markdocx webview host was disposed.'));
+    this.rejectPendingConversions(new Error('marktodocx webview host was disposed.'));
     this.panel?.dispose();
     this.panel = undefined;
   }
@@ -43,7 +43,7 @@ class MarkdocxWebviewHost {
     panel.reveal(panel.viewColumn || vscode.ViewColumn.Beside, true);
     await this.readyPromise;
 
-    const conversionId = `markdocx-${Date.now()}-${++this.sequence}`;
+    const conversionId = `marktodocx-${Date.now()}-${++this.sequence}`;
     return new Promise((resolve, reject) => {
       this.pendingConversions.set(conversionId, {
         resolve,
@@ -77,8 +77,8 @@ class MarkdocxWebviewHost {
     });
 
     this.panel = vscode.window.createWebviewPanel(
-      'markdocx.runtimeHost',
-      'markdocx Runtime',
+      'marktodocx.runtimeHost',
+      'marktodocx Runtime',
       { viewColumn: vscode.ViewColumn.Beside, preserveFocus: true },
       {
         enableScripts: true,
@@ -88,7 +88,7 @@ class MarkdocxWebviewHost {
     );
 
     this.panel.onDidDispose(() => {
-      this.rejectPendingConversions(new Error('markdocx webview host was closed during conversion.'));
+      this.rejectPendingConversions(new Error('marktodocx webview host was closed during conversion.'));
       this.panel = undefined;
       this.readyPromise = undefined;
       this.resolveReady = undefined;
@@ -135,7 +135,7 @@ class MarkdocxWebviewHost {
       '  <meta charset="UTF-8" />',
       `  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src ${webview.cspSource} data: blob:; script-src 'nonce-${nonce}' ${webview.cspSource}; style-src ${webview.cspSource} 'unsafe-inline';">`,
       '  <meta name="viewport" content="width=device-width, initial-scale=1.0" />',
-      '  <title>markdocx Runtime</title>',
+      '  <title>marktodocx Runtime</title>',
       '</head>',
       '<body>',
       `  <script type="module" nonce="${nonce}" src="${scriptUri}"></script>`,
@@ -158,5 +158,5 @@ class MarkdocxWebviewHost {
 }
 
 module.exports = {
-  MarkdocxWebviewHost,
+  MarktodocxWebviewHost,
 };

@@ -11,7 +11,7 @@ const pkg = JSON.parse(
 );
 
 const syncManifestVersion = () => ({
-  name: 'markdocx-sync-manifest-version',
+  name: 'marktodocx-sync-manifest-version',
   apply: 'build',
   closeBundle() {
     const manifestPath = resolve(__dirname, 'dist/manifest.json');

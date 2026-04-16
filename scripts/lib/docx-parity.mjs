@@ -3,7 +3,7 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 
 import JSZip from 'jszip';
-import { MERMAID_DOCX_DESCRIPTION_PREFIX } from '@markdocx/core';
+import { MERMAID_DOCX_DESCRIPTION_PREFIX } from '@marktodocx/core';
 
 const XML_ENTRY_PATTERN = /\.(xml|rels)$/i;
 const RSID_ATTRIBUTE_PATTERN = /\s+w:rsid[^=]*="[^"]*"/g;

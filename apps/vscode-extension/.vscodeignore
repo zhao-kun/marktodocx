@@ -9,4 +9,4 @@ vite.extension.config.mjs
 .vscodeignore
 **/*.map
 **/.DS_Store
-dist/markdocx-vscode-extension.vsix
+dist/marktodocx-vscode-extension.vsix

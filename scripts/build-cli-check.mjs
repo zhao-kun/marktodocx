@@ -8,7 +8,7 @@ import { promisify } from 'node:util';
 const execFile = promisify(execFileCallback);
 
 async function main() {
-  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'markdocx-cli-build-'));
+  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'marktodocx-cli-build-'));
   const markdownPath = path.join(tempDir, 'sample.md');
   const outputPath = path.join(tempDir, 'sample.docx');
 

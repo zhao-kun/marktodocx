@@ -5,7 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 
 import JSZip from 'jszip';
-import { MERMAID_DOCX_DESCRIPTION_PREFIX } from '@markdocx/core';
+import { MERMAID_DOCX_DESCRIPTION_PREFIX } from '@marktodocx/core';
 
 import {
   buildRelationshipMap,
@@ -259,7 +259,7 @@ test('loadDocxEntriesFromBuffer preserves per-entry errors instead of aborting t
 });
 
 test('loadDocxEntriesFromFile works on disk-backed DOCX inputs', async () => {
-  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'markdocx-test-'));
+  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'marktodocx-test-'));
   const docxPath = path.join(tempDir, 'sample.docx');
 
   try {

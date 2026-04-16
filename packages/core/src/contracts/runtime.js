@@ -1,19 +1,19 @@
 export const RUNTIME_CONTRACT_VERSION = '1.1.0';
 
 /**
- * @typedef {object} MarkdocxDomAdapter
+ * @typedef {object} MarktodocxDomAdapter
  * @property {(html: string) => Document} parseHtml Parse an HTML string into a DOM document.
  * @property {typeof Node} [Node] DOM Node constructor for non-browser runtimes.
  * @property {typeof NodeFilter} [NodeFilter] DOM NodeFilter constructor for non-browser runtimes.
  */
 
 /**
- * @typedef {object} MarkdocxRuntimeContracts
+ * @typedef {object} MarktodocxRuntimeContracts
  * Current shared-core runtime contracts are intentionally narrow.
  * The extracted core consumes a DOM adapter directly for HTML normalization.
  * Image inlining and Mermaid rendering are currently host-orchestration inputs,
  * not runtime hooks consumed through this contract surface yet.
- * @property {MarkdocxDomAdapter} [dom]
+ * @property {MarktodocxDomAdapter} [dom]
  */
 
 export function assertRuntimeContracts(runtime = {}) {

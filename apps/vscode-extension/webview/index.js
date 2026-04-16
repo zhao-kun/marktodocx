@@ -1,4 +1,4 @@
-import { convertMarkdownInBrowser } from '@markdocx/runtime-browser';
+import { convertMarkdownInBrowser } from '@marktodocx/runtime-browser';
 
 const vscode = acquireVsCodeApi();
 

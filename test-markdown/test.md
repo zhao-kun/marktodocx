@@ -1,6 +1,6 @@
-# markdocx Integration Test
+# marktodocx Integration Test
 
-This document exercises all features supported by the markdocx converter.
+This document exercises all features supported by the marktodocx converter.
 
 ## Text Formatting
 
@@ -52,7 +52,7 @@ function greet(name) {
   return message;
 }
 
-greet('markdocx');
+greet('marktodocx');
 ```
 
 ### Python

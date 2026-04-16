@@ -1,10 +1,10 @@
-# Design Document: markdocx Chrome Extension
+# Design Document: marktodocx Chrome Extension
 
 ## 1. Background
 
 ### 1.1 Current State
 
-markdocx is a Node.js CLI tool (`md-to-docx.mjs`) that converts Markdown files to Word (.docx) documents. It supports headings, lists, tables, code blocks, local images, and Mermaid diagrams.
+marktodocx is a Node.js CLI tool (`md-to-docx.mjs`) that converts Markdown files to Word (.docx) documents. It supports headings, lists, tables, code blocks, local images, and Mermaid diagrams.
 
 The current conversion pipeline:
 
@@ -29,7 +29,7 @@ The CLI tool requires Node.js 22+, npm, and a local Chrome binary installed via 
 
 ### 1.3 Scope
 
-This document covers the feasibility analysis, dependency audit, architecture design, and implementation plan for porting markdocx from a Node.js CLI tool to a Chrome extension.
+This document covers the feasibility analysis, dependency audit, architecture design, and implementation plan for porting marktodocx from a Node.js CLI tool to a Chrome extension.
 
 ---
 
@@ -229,7 +229,7 @@ This is fundamentally simpler. No subprocess, no temp files, no native addon.
 ```json
 {
   "manifest_version": 3,
-  "name": "markdocx",
+  "name": "marktodocx",
   "version": "1.0.0",
   "description": "Convert Markdown to Word (.docx) with Mermaid diagram support",
   "permissions": [

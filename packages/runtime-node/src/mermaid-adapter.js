@@ -1,4 +1,4 @@
-import { extractMermaidBlocks } from '@markdocx/core';
+import { extractMermaidBlocks } from '@marktodocx/core';
 
 function reportProgress(onProgress, message) {
   if (typeof onProgress === 'function') {
@@ -13,7 +13,7 @@ export async function renderMermaidFragmentsForNode(markdown, md, layoutMetrics,
   }
 
   if (typeof renderMermaid !== 'function') {
-    throw new Error('Mermaid rendering requires an explicit renderMermaid adapter. Provide one from @markdocx/runtime-node-mermaid.');
+    throw new Error('Mermaid rendering requires an explicit renderMermaid adapter. Provide one from @marktodocx/runtime-node-mermaid.');
   }
 
   const renderedMermaid = [];

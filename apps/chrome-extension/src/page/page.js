@@ -12,8 +12,8 @@ import {
   normalizeStyleOptions,
   resolveDocumentLayout,
   resolveDocumentStyle,
-} from '@markdocx/core';
-import { renderMermaidArtifactsForMarkdown } from '@markdocx/runtime-browser';
+} from '@marktodocx/core';
+import { renderMermaidArtifactsForMarkdown } from '@marktodocx/runtime-browser';
 
 const pickerArea = document.getElementById('picker-area');
 const pickerIcon = document.getElementById('picker-icon');
@@ -80,7 +80,7 @@ function getCanonicalStyleOptions(value) {
 }
 
 function isParityMode() {
-  return new URLSearchParams(window.location.search).get('markdocx-parity') === '1';
+  return new URLSearchParams(window.location.search).get('marktodocx-parity') === '1';
 }
 
 function getNestedValue(object, path) {
@@ -503,7 +503,7 @@ async function renderMermaidArtifactsForParity(markdown, runtimeStyleOptions) {
 }
 
 if (isParityMode()) {
-  window.__MARKDOCX_PARITY__ = {
+  window.__MARKTODOCX_PARITY__ = {
     renderMermaidArtifactsForParity,
   };
 }

@@ -6,9 +6,9 @@ import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 
 import puppeteer from 'puppeteer';
-import { DEFAULT_STYLE_OPTIONS, normalizeStyleOptions } from '@markdocx/core';
+import { DEFAULT_STYLE_OPTIONS, normalizeStyleOptions } from '@marktodocx/core';
 
-export { normalizeStyleOptions } from '@markdocx/core';
+export { normalizeStyleOptions } from '@marktodocx/core';
 
 const execFileAsync = promisify(execFile);
 const defaultStyleOptions = DEFAULT_STYLE_OPTIONS;
@@ -132,7 +132,7 @@ export async function verifyPinnedMermaidVersion() {
   }
 
   if (extensionVersion) {
-    throw new Error('The extension package should not declare Mermaid directly. Depend on @markdocx/runtime-browser instead.');
+    throw new Error('The extension package should not declare Mermaid directly. Depend on @marktodocx/runtime-browser instead.');
   }
 
   return { repoVersion, browserRuntimeVersion };
@@ -212,7 +212,7 @@ export async function createExtensionSession({ allowNoSandbox = false } = {}) {
     onProgress: (message) => console.warn(message),
   });
   const page = await browser.newPage();
-  await page.goto(`chrome-extension://${extensionId}/${extensionPagePath}?markdocx-parity=1`, {
+  await page.goto(`chrome-extension://${extensionId}/${extensionPagePath}?marktodocx-parity=1`, {
     waitUntil: 'networkidle0',
   });
   await assertParityHooks(page);
@@ -230,8 +230,8 @@ export async function createExtensionSession({ allowNoSandbox = false } = {}) {
 async function assertParityHooks(page) {
   const hasHooks = await page.evaluate(() => {
     return Boolean(
-      window.__MARKDOCX_PARITY__
-        && typeof window.__MARKDOCX_PARITY__.renderMermaidArtifactsForParity === 'function'
+      window.__MARKTODOCX_PARITY__
+        && typeof window.__MARKTODOCX_PARITY__.renderMermaidArtifactsForParity === 'function'
     );
   });
 
@@ -350,7 +350,7 @@ function normalizeSvg(svg) {
 
 async function renderMermaidArtifactsWithExtension(session, markdown, styleOptions = defaultStyleOptions) {
   return session.page.evaluate(async ({ markdownSource, runtimeStyleOptions }) => {
-    return window.__MARKDOCX_PARITY__.renderMermaidArtifactsForParity(markdownSource, runtimeStyleOptions);
+    return window.__MARKTODOCX_PARITY__.renderMermaidArtifactsForParity(markdownSource, runtimeStyleOptions);
   }, {
     markdownSource: markdown,
     runtimeStyleOptions: normalizeStyleOptions(styleOptions),

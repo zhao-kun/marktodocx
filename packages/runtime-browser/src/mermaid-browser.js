@@ -5,7 +5,7 @@ import {
   FLOWCHART_WRAPPING_WIDTH,
   MERMAID_RENDER_SCALE,
   resolveDocumentLayout,
-} from '@markdocx/core';
+} from '@marktodocx/core';
 
 let initialized = false;
 

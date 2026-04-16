@@ -33,7 +33,7 @@ async function main() {
     throw new Error('Parity manifest has no verified fixtures.');
   }
 
-  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'markdocx-agent-skill-parity-'));
+  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'marktodocx-agent-skill-parity-'));
   const failures = [];
   const passes = [];
 

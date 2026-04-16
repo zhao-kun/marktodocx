@@ -71,7 +71,7 @@ async function main() {
   }
 
   const session = await createExtensionSession({
-    allowNoSandbox: process.env.MARKDOCX_PUPPETEER_NO_SANDBOX === '1' || process.env.CI === 'true',
+    allowNoSandbox: process.env.MARKTODOCX_PUPPETEER_NO_SANDBOX === '1' || process.env.CI === 'true',
   });
 
   try {
