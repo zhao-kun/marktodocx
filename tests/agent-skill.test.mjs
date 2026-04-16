@@ -216,3 +216,57 @@ test('resolveBundledMermaidLaunchOptions defaults missing launchArgs to an empty
   }
 });
 
+if (process.platform !== 'win32') {
+  test('resolveBundledMermaidLaunchOptions restores execute bits for bundled Chromium helpers', async () => {
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'marktodocx-agent-skill-manifest-'));
+    const browserDir = path.join(tempDir, 'browser');
+    const executablePath = path.join(browserDir, 'chrome');
+    const crashpadHandlerPath = path.join(browserDir, 'chrome_crashpad_handler');
+    const xdgSettingsPath = path.join(browserDir, 'xdg-settings');
+
+    try {
+      await fs.mkdir(browserDir, { recursive: true });
+      await Promise.all([
+        fs.writeFile(executablePath, '', 'utf8'),
+        fs.writeFile(crashpadHandlerPath, '', 'utf8'),
+        fs.writeFile(xdgSettingsPath, '', 'utf8'),
+      ]);
+      await Promise.all([
+        fs.chmod(executablePath, 0o644),
+        fs.chmod(crashpadHandlerPath, 0o644),
+        fs.chmod(xdgSettingsPath, 0o644),
+      ]);
+
+      const launchOptions = await resolveBundledMermaidLaunchOptions({
+        manifest: {
+          profile: 'with-mermaid',
+          platform: process.platform,
+          arch: process.arch,
+          mermaid: {
+            bundledBrowser: {
+              executablePath: 'browser/chrome',
+            },
+          },
+        },
+        skillRootDir: tempDir,
+      });
+
+      const [chromeStat, crashpadStat, xdgSettingsStat] = await Promise.all([
+        fs.stat(executablePath),
+        fs.stat(crashpadHandlerPath),
+        fs.stat(xdgSettingsPath),
+      ]);
+
+      assert.deepEqual(launchOptions, {
+        executablePath,
+        args: [],
+      });
+      assert.notEqual(chromeStat.mode & 0o111, 0, 'Bundled Chromium executable should be executable.');
+      assert.notEqual(crashpadStat.mode & 0o111, 0, 'Crashpad helper should be executable.');
+      assert.notEqual(xdgSettingsStat.mode & 0o111, 0, 'Bundled browser helper scripts should be executable.');
+    } finally {
+      await fs.rm(tempDir, { recursive: true, force: true });
+    }
+  });
+}
+

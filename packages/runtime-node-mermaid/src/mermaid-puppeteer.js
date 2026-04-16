@@ -1,3 +1,4 @@
+import fs from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 
 import puppeteer from 'puppeteer';
@@ -9,14 +10,29 @@ import {
   resolveDocumentLayout,
 } from '@marktodocx/core';
 
+const BUNDLED_MERMAID_CJK_FONT_FAMILY = 'Marktodocx Mermaid CJK';
+const BUNDLED_MERMAID_LATIN_FONT_FAMILY = 'Marktodocx Mermaid Latin';
+const MERMAID_FONT_STACK = [
+  `"${BUNDLED_MERMAID_LATIN_FONT_FAMILY}"`,
+  `"${BUNDLED_MERMAID_CJK_FONT_FAMILY}"`,
+  '"Noto Sans SC"',
+  '"Noto Sans CJK SC"',
+  '"Microsoft YaHei"',
+  '"PingFang SC"',
+  'Helvetica',
+  'Arial',
+  'sans-serif',
+].join(', ');
+
+let bundledMermaidFontFaceCssPromise;
+
 function getMermaidConfig() {
   return {
     startOnLoad: false,
     theme: 'default',
     securityLevel: 'loose',
     markdownAutoWrap: true,
-    fontFamily:
-      'Noto Sans CJK SC, Microsoft YaHei, PingFang SC, Helvetica, Arial, sans-serif',
+    fontFamily: MERMAID_FONT_STACK,
     flowchart: {
       htmlLabels: true,
       curve: 'linear',
@@ -26,6 +42,10 @@ function getMermaidConfig() {
       padding: 10,
     },
   };
+}
+
+function diagramNeedsBundledCjkFont(code) {
+  return /[\u3000-\u303F\u3400-\u9FFF\uF900-\uFAFF\uFF00-\uFFEF]/.test(code);
 }
 
 function getDefaultLaunchOptions({
@@ -50,6 +70,53 @@ function getMermaidBundlePath() {
   }
 
   return fileURLToPath(new URL('../../../node_modules/mermaid/dist/mermaid.min.js', import.meta.url));
+}
+
+function getBundledNotoSansScFontPath(fileName) {
+  if (typeof import.meta.resolve === 'function') {
+    return fileURLToPath(import.meta.resolve(`@fontsource/noto-sans-sc/files/${fileName}`));
+  }
+
+  return fileURLToPath(new URL(`../../../node_modules/@fontsource/noto-sans-sc/files/${fileName}`, import.meta.url));
+}
+
+async function getBundledMermaidFontFaceCss() {
+  if (!bundledMermaidFontFaceCssPromise) {
+    bundledMermaidFontFaceCssPromise = (async () => {
+      const [latinFontBytes, cjkFontBytes] = await Promise.all([
+        fs.readFile(getBundledNotoSansScFontPath('noto-sans-sc-latin-400-normal.woff2')),
+        fs.readFile(getBundledNotoSansScFontPath('noto-sans-sc-chinese-simplified-400-normal.woff2')),
+      ]);
+
+      const latinFontDataUri = `data:font/woff2;base64,${latinFontBytes.toString('base64')}`;
+      const cjkFontDataUri = `data:font/woff2;base64,${cjkFontBytes.toString('base64')}`;
+
+      return [
+        '@font-face {',
+        `  font-family: '${BUNDLED_MERMAID_LATIN_FONT_FAMILY}';`,
+        '  font-style: normal;',
+        '  font-display: block;',
+        '  font-weight: 400;',
+        `  src: url(${JSON.stringify(latinFontDataUri)}) format('woff2');`,
+        '}',
+        '@font-face {',
+        `  font-family: '${BUNDLED_MERMAID_CJK_FONT_FAMILY}';`,
+        '  font-style: normal;',
+        '  font-display: block;',
+        '  font-weight: 400;',
+        `  src: url(${JSON.stringify(cjkFontDataUri)}) format('woff2');`,
+        '}',
+        ':root {',
+        `  --marktodocx-mermaid-font-family: ${MERMAID_FONT_STACK};`,
+        '}',
+        'svg, svg *, text, tspan, foreignObject, foreignObject *, body, div, span, p {',
+        '  font-family: var(--marktodocx-mermaid-font-family) !important;',
+        '}',
+      ].join('\n');
+    })();
+  }
+
+  return bundledMermaidFontFaceCssPromise;
 }
 
 function renderImageTag(artifact, index) {
@@ -78,8 +145,12 @@ export async function createPuppeteerMermaidRenderer({
   await page.addScriptTag({ path: getMermaidBundlePath() });
 
   async function renderArtifacts(code, index, layoutMetrics = resolveDocumentLayout()) {
+    const bundledMermaidFontFaceCss = diagramNeedsBundledCjkFont(code)
+      ? await getBundledMermaidFontFaceCss()
+      : '';
+
     return page.evaluate(
-      async ({ code, index, layoutMetrics, mermaidConfig, scale }) => {
+      async ({ code, index, layoutMetrics, mermaidConfig, scale, bundledMermaidFontFaceCss }) => {
         function findTrimBounds(imageData) {
           const { width, height, data } = imageData;
           let top = height;
@@ -149,13 +220,38 @@ export async function createPuppeteerMermaidRenderer({
           };
         }
 
+        function injectSvgFontFaceStyles(svg, fontFaceCss) {
+          if (typeof fontFaceCss !== 'string' || fontFaceCss.trim() === '') {
+            return svg;
+          }
+
+          const parser = new DOMParser();
+          const svgDoc = parser.parseFromString(svg, 'image/svg+xml');
+          const svgEl = svgDoc.documentElement;
+          const namespaceUri = 'http://www.w3.org/2000/svg';
+          let defs = svgEl.querySelector('defs');
+
+          if (!defs) {
+            defs = svgDoc.createElementNS(namespaceUri, 'defs');
+            svgEl.insertBefore(defs, svgEl.firstChild);
+          }
+
+          const styleEl = svgDoc.createElementNS(namespaceUri, 'style');
+          styleEl.setAttribute('type', 'text/css');
+          styleEl.textContent = fontFaceCss;
+          defs.prepend(styleEl);
+
+          return new XMLSerializer().serializeToString(svgEl);
+        }
+
         const mermaidApi = window.mermaid;
         mermaidApi.initialize(mermaidConfig);
         const { svg } = await mermaidApi.render(`marktodocx-node-mermaid-${index}`, code);
-        const { svgWidth, svgHeight } = extractSvgDimensions(svg);
+        const resolvedSvg = injectSvgFontFaceStyles(svg, bundledMermaidFontFaceCss);
+        const { svgWidth, svgHeight } = extractSvgDimensions(resolvedSvg);
         const canvasWidth = Math.ceil(svgWidth * scale);
         const canvasHeight = Math.ceil(svgHeight * scale);
-        const image = await loadSvgAsImage(svg);
+        const image = await loadSvgAsImage(resolvedSvg);
 
         const canvas = document.createElement('canvas');
         canvas.width = canvasWidth;
@@ -186,7 +282,7 @@ export async function createPuppeteerMermaidRenderer({
         }
 
         return {
-          svg,
+          svg: resolvedSvg,
           pngDataUri: trimmedCanvas.toDataURL('image/png'),
           naturalWidth,
           naturalHeight,
@@ -200,6 +296,7 @@ export async function createPuppeteerMermaidRenderer({
         layoutMetrics,
         mermaidConfig: getMermaidConfig(),
         scale: MERMAID_RENDER_SCALE,
+        bundledMermaidFontFaceCss,
       }
     );
   }

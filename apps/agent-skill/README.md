@@ -280,7 +280,7 @@ Mermaid conversion stays optional on the Node host path.
 
 - Source-tree usage: install `@marktodocx/runtime-node-mermaid` if the Markdown contains Mermaid blocks.
 - Standard export: Mermaid stays disabled by default. If the deployed skill sees Mermaid, it fails clearly and tells the operator to re-export with `--with-mermaid` or provision Mermaid support separately.
-- Mermaid-enabled export: use `npm run export:agent-skill:mermaid`. That profile installs `@marktodocx/runtime-node-mermaid`, vendors a Chromium browser into the export, probes the working launch args, writes both into `marktodocx-export-manifest.json`, and verifies a real Mermaid render during export.
+- Mermaid-enabled export: use `npm run export:agent-skill:mermaid`. That profile installs `@marktodocx/runtime-node-mermaid`, vendors a Chromium browser into the export, probes the working launch args, writes both into `marktodocx-export-manifest.json`, and verifies a real Mermaid render during export. On deployed Linux hosts, the skill also repairs stripped execute bits on the bundled Chromium launcher and helper binaries before Puppeteer starts them. When Mermaid labels contain Simplified Chinese text, the Node renderer injects a bundled Noto Sans SC webfont into the SVG before Chromium rasterizes it, so CJK labels do not depend on host system fonts.
 
 If you want to override the bundled browser on the target host, set `PUPPETEER_EXECUTABLE_PATH` to a compatible Chromium or Chrome binary.
 

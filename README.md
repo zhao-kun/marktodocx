@@ -434,7 +434,7 @@ To produce a Mermaid-enabled export with a vendored Chromium browser, run:
 npm run export:agent-skill:mermaid
 ```
 
-That profile is platform-specific and intended for deployment on the same OS and CPU family that built the export. It also persists the working Chromium launch args in the export manifest, so sandbox-restricted hosts that built the export usually do not need manual environment flags at runtime.
+That profile is platform-specific and intended for deployment on the same OS and CPU family that built the export. It also persists the working Chromium launch args in the export manifest, so sandbox-restricted hosts that built the export usually do not need manual environment flags at runtime. For Mermaid diagrams with Simplified Chinese labels, the Node renderer also injects a bundled Noto Sans SC webfont into the SVG before Chromium rasterizes it, so the export does not rely on host CJK fonts.
 
 For a CI-safe export gate, run:
 

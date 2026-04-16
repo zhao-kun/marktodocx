@@ -24,3 +24,15 @@ test('runtime-node-mermaid exposes a reusable renderer with close semantics', as
     await renderer.close();
   }
 });
+
+test('runtime-node-mermaid injects bundled CJK Mermaid fonts into SVG output when needed', async () => {
+  const renderer = await createPuppeteerMermaidRenderer();
+
+  try {
+    const artifact = await renderer.renderMermaidArtifacts('graph TD\n  A[事故分析] --> B[恢复服务]\n', 0);
+    assert.match(artifact.svg, /Marktodocx Mermaid CJK/);
+    assert.match(artifact.pngDataUri, /^data:image\/png;base64,/);
+  } finally {
+    await renderer.close();
+  }
+});

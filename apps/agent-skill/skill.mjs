@@ -10,6 +10,18 @@ import {
 
 const skillDir = path.dirname(fileURLToPath(import.meta.url));
 const exportManifestPath = path.join(skillDir, 'marktodocx-export-manifest.json');
+const bundledBrowserExecutableNamesByPlatform = {
+  linux: [
+    'chrome',
+    'chrome-wrapper',
+    'chrome_crashpad_handler',
+    'chrome_sandbox',
+    'xdg-mime',
+    'xdg-settings',
+  ],
+  darwin: [],
+  win32: [],
+};
 
 function isPlainObject(value) {
   return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
@@ -95,6 +107,39 @@ function assertBundledBrowserTargetMatchesCurrentHost(manifest) {
   );
 }
 
+async function ensureExecutableBit(filePath) {
+  try {
+    const stat = await fs.stat(filePath);
+    if (!stat.isFile()) {
+      return;
+    }
+
+    const permissionBits = stat.mode & 0o777;
+    if ((permissionBits & 0o111) === 0o111) {
+      return;
+    }
+
+    await fs.chmod(filePath, permissionBits | 0o111);
+  } catch (error) {
+    if (error?.code === 'ENOENT') {
+      return;
+    }
+    throw error;
+  }
+}
+
+async function ensureBundledBrowserExecutablePermissions(executablePath) {
+  const executableNames = bundledBrowserExecutableNamesByPlatform[process.platform] || [];
+  if (executableNames.length === 0) {
+    return;
+  }
+
+  const browserRootDir = path.dirname(executablePath);
+  await Promise.all(
+    executableNames.map((name) => ensureExecutableBit(path.join(browserRootDir, name)))
+  );
+}
+
 export async function resolveBundledMermaidLaunchOptions({
   env = process.env,
   manifest,
@@ -124,6 +169,8 @@ export async function resolveBundledMermaidLaunchOptions({
       `The bundled Mermaid browser is missing at ${resolvedExecutablePath}. Re-extract the exported skill archive, re-run the export with --with-mermaid, or set PUPPETEER_EXECUTABLE_PATH to a compatible browser.`
     );
   }
+
+  await ensureBundledBrowserExecutablePermissions(resolvedExecutablePath);
 
   const launchArgs = Array.isArray(bundledBrowser.launchArgs)
     ? bundledBrowser.launchArgs.filter((value) => typeof value === 'string' && value.trim() !== '')
