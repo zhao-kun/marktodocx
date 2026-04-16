@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="marktodocx retro terminal icon">
+	<defs>
+		<linearGradient id="bg" x1="18" y1="10" x2="110" y2="118" gradientUnits="userSpaceOnUse">
+			<stop offset="0" stop-color="#7caeff"/>
+			<stop offset="0.55" stop-color="#4272ee"/>
+			<stop offset="1" stop-color="#2445b8"/>
+		</linearGradient>
+		<linearGradient id="shell" x1="20" y1="22" x2="96" y2="88" gradientUnits="userSpaceOnUse">
+			<stop offset="0" stop-color="#2f55bf"/>
+			<stop offset="1" stop-color="#1a2f7d"/>
+		</linearGradient>
+		<linearGradient id="screen" x1="24" y1="28" x2="92" y2="74" gradientUnits="userSpaceOnUse">
+			<stop offset="0" stop-color="#15221f"/>
+			<stop offset="1" stop-color="#08100e"/>
+		</linearGradient>
+		<linearGradient id="paper" x1="76" y1="64" x2="104" y2="98" gradientUnits="userSpaceOnUse">
+			<stop offset="0" stop-color="#ffffff"/>
+			<stop offset="1" stop-color="#dfe8ff"/>
+		</linearGradient>
+	</defs>
+
+	<rect x="4" y="4" width="120" height="120" rx="26" fill="url(#bg)"/>
+	<rect x="4" y="4" width="120" height="120" rx="26" fill="none" stroke="#17369a" stroke-width="4"/>
+
+
+	<g transform="translate(6 0)">
+		<rect x="16" y="20" width="84" height="68" rx="16" fill="url(#shell)"/>
+		<rect x="16" y="20" width="84" height="68" rx="16" fill="none" stroke="#d8e4ff" stroke-width="3" opacity="0.72"/>
+		<rect x="24" y="28" width="68" height="46" rx="10" fill="url(#screen)"/>
+		<rect x="24" y="28" width="68" height="46" rx="10" fill="none" stroke="#66f0a1" stroke-width="2" opacity="0.28"/>
+
+		<g opacity="0.12" stroke="#86ffb3" stroke-width="2">
+			<path d="M28 36h60"/>
+			<path d="M28 44h60"/>
+			<path d="M28 52h60"/>
+			<path d="M28 60h60"/>
+			<path d="M28 68h60"/>
+		</g>
+
+		<path d="M39 41 50 49 39 57 39 52 45 49 39 46Z" fill="#7bffad"/>
+		<rect x="54" y="55" width="17" height="4" rx="2" fill="#7bffad"/>
+		<rect x="54" y="41" width="18" height="4" rx="2" fill="#30d976" opacity="0.95"/>
+		<rect x="54" y="47" width="12" height="4" rx="2" fill="#30d976" opacity="0.72"/>
+		<rect x="73" y="55" width="4" height="4" rx="1.5" fill="#d7ffe4"/>
+
+		<rect x="42" y="90" width="24" height="8" rx="3.5" fill="#1d2f72"/>
+		<rect x="30" y="98" width="46" height="10" rx="5" fill="#112158"/>
+		<rect x="30" y="98" width="46" height="10" rx="5" fill="none" stroke="#789cff" stroke-width="2" opacity="0.38"/>
+	</g>
+
+	<g transform="translate(3 0)">
+		<path d="M75 66h25a6 6 0 0 1 6 6v32a6 6 0 0 1-6 6H75a6 6 0 0 1-6-6V72a6 6 0 0 1 6-6Z" fill="#102162" opacity="0.18"/>
+		<path d="M76 64h24a6 6 0 0 1 6 6v30a6 6 0 0 1-6 6H76a6 6 0 0 1-6-6V70a6 6 0 0 1 6-6Z" fill="url(#paper)"/>
+		<path d="M76 64h24a6 6 0 0 1 6 6v30a6 6 0 0 1-6 6H76a6 6 0 0 1-6-6V70a6 6 0 0 1 6-6Z" fill="none" stroke="#adc1ff" stroke-width="2"/>
+		<path d="M93 64h7a6 6 0 0 1 6 6v7L93 64Z" fill="#d2deff"/>
+		<path d="M93 64v8a5 5 0 0 0 5 5h8" fill="none" stroke="#adc1ff" stroke-width="2"/>
+		<rect x="79" y="77" width="18" height="4" rx="2" fill="#466fe8"/>
+		<rect x="79" y="85" width="17" height="3.5" rx="1.75" fill="#6b8cf3"/>
+		<rect x="79" y="92" width="13" height="3.5" rx="1.75" fill="#6b8cf3"/>
+		<path d="M79 99h12" stroke="#2ecb71" stroke-width="3" stroke-linecap="round"/>
+	</g>
+
+</svg>

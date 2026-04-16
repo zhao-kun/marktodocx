@@ -1,5 +1,19 @@
 # marktodocx
 
+<!-- markdownlint-disable-next-line MD033 -->
+<div align="center">
+<img src="assets/icon.svg" alt="marktodocx 图标" width="220" />
+</div>
+
+<!-- markdownlint-disable MD033 -->
+<div align="center">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-0f172a" alt="MIT License" /></a>
+  <img src="https://img.shields.io/badge/node-%3E%3D22-339933?logo=node.js&logoColor=white" alt="Node.js 22+" />
+  <img src="https://img.shields.io/badge/parity-fixture--gated-2563eb" alt="Fixture-gated parity" />
+  <img src="https://img.shields.io/badge/hosts-CLI%20%7C%20Chrome%20%7C%20VS%20Code%20%7C%20Skill-111827" alt="Supported hosts" />
+</div>
+<!-- markdownlint-enable MD033 -->
+
 [English](README.md) | 简体中文
 
 marktodocx 可以将 Markdown 转换为 Word（`.docx`）文档，同时尽可能保留标题、段落、列表、表格、代码块、引用块、本地图片和 Mermaid 图表。所有支持的宿主都共享同一套转换规则，因此修复一次即可在所有入口生效，而不需要在不同工具之间重复实现。
