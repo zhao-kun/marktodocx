@@ -11,6 +11,8 @@
   <img src="https://img.shields.io/badge/node-%3E%3D22-339933?logo=node.js&logoColor=white" alt="Node.js 22+" />
   <img src="https://img.shields.io/badge/parity-fixture--gated-2563eb" alt="Fixture-gated parity" />
   <img src="https://img.shields.io/badge/hosts-CLI%20%7C%20Chrome%20%7C%20VS%20Code%20%7C%20Skill-111827" alt="Supported hosts" />
+  <a href="https://marketplace.visualstudio.com/items?itemName=zhao-kun.marktodocx-vscode-extension"><img src="https://img.shields.io/visual-studio-marketplace/v/zhao-kun.marktodocx-vscode-extension?label=VS%20Code%20Marketplace&logo=visualstudiocode&logoColor=white&color=0078d4" alt="VS Code Marketplace" /></a>
+  <a href="https://clawhub.ai/zhao-kun/marktodocx-skill"><img src="https://img.shields.io/badge/ClawHub-live-14b8a6" alt="ClawHub skill" /></a>
 </div>
 <!-- markdownlint-enable MD033 -->
 
@@ -18,7 +20,7 @@ English | [简体中文](README.zh-CN.md)
 
 marktodocx converts Markdown to Word (`.docx`) while preserving headings, paragraphs, lists, tables, code blocks, blockquotes, local images, and Mermaid diagrams. The same conversion rules are shared across every supported host so that one fix lands everywhere instead of being copied between tools.
 
-marktodocx **targets** three public registries — the VS Code Marketplace, the Chrome Web Store, and ClawHub (the OpenClaw skill registry) — plus GitHub Releases for skill zip mirrors. The full publish path is wired up in [`docs/publishing.md`](docs/publishing.md), but no host has shipped to its registry yet, so every host is currently built from this repository. The CLI is intentionally source-only and stays that way.
+marktodocx **targets** three public registries — the VS Code Marketplace, the Chrome Web Store, and ClawHub (the OpenClaw skill registry) — plus GitHub Releases for skill zip mirrors. The VS Code extension and agent skill are already live on their public registries, while the Chrome extension is still pending Chrome Web Store publication. The full publish path is wired up in [`docs/publishing.md`](docs/publishing.md). The CLI is intentionally source-only and stays that way.
 
 Mermaid support differs by host:
 
@@ -143,7 +145,7 @@ marktodocx/
 
 ## Installation
 
-End users can install most hosts from their public registry once it is published — VS Code Marketplace for the VSCode extension, Chrome Web Store for the Chrome extension, ClawHub (`clawhub install marktodocx-skill`) for the agent skill. The CLI is intentionally source-only.
+End users can already install the published hosts from their public registries — VS Code Marketplace for the VSCode extension and ClawHub (`clawhub install marktodocx-skill`) for the agent skill. The Chrome extension is still waiting on Chrome Web Store publication, and the CLI is intentionally source-only.
 
 The instructions below cover the source build, which works for every host and is required for the CLI:
 

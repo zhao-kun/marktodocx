@@ -11,6 +11,8 @@
   <img src="https://img.shields.io/badge/node-%3E%3D22-339933?logo=node.js&logoColor=white" alt="Node.js 22+" />
   <img src="https://img.shields.io/badge/parity-fixture--gated-2563eb" alt="Fixture-gated parity" />
   <img src="https://img.shields.io/badge/hosts-CLI%20%7C%20Chrome%20%7C%20VS%20Code%20%7C%20Skill-111827" alt="Supported hosts" />
+  <a href="https://marketplace.visualstudio.com/items?itemName=zhao-kun.marktodocx-vscode-extension"><img src="https://img.shields.io/visual-studio-marketplace/v/zhao-kun.marktodocx-vscode-extension?label=VS%20Code%20Marketplace&logo=visualstudiocode&logoColor=white&color=0078d4" alt="VS Code Marketplace" /></a>
+  <a href="https://clawhub.ai/zhao-kun/marktodocx-skill"><img src="https://img.shields.io/badge/ClawHub-live-14b8a6" alt="ClawHub skill" /></a>
 </div>
 <!-- markdownlint-enable MD033 -->
 
@@ -18,7 +20,7 @@
 
 marktodocx 可以将 Markdown 转换为 Word（`.docx`）文档，同时尽可能保留标题、段落、列表、表格、代码块、引用块、本地图片和 Mermaid 图表。所有支持的宿主都共享同一套转换规则，因此修复一次即可在所有入口生效，而不需要在不同工具之间重复实现。
 
-marktodocx **的发布目标**是三个公开仓库：VS Code Marketplace、Chrome Web Store 以及 ClawHub（OpenClaw 的 skill registry），并把 skill 的 zip 制品同步到 GitHub Releases。完整发布流程已经在 [`docs/publishing.md`](docs/publishing.md) 中描述，但目前还没有任何宿主真正发布到对应的 registry，因此现在所有宿主都需要从本仓库本地构建。CLI 故意保持源码安装，不发布到任何 registry。
+marktodocx **的发布目标**是三个公开仓库：VS Code Marketplace、Chrome Web Store 以及 ClawHub（OpenClaw 的 skill registry），并把 skill 的 zip 制品同步到 GitHub Releases。VS Code 扩展和 Agent Skill 已经发布到对应的公开 registry，Chrome 扩展仍在等待 Chrome Web Store 发布。完整发布流程见 [`docs/publishing.md`](docs/publishing.md)。CLI 故意保持源码安装，不发布到任何 registry。
 
 不同宿主的 Mermaid 支持方式不同：
 
@@ -143,7 +145,7 @@ marktodocx/
 
 ## 安装
 
-最终用户可以在对应宿主发布到 registry 之后，直接从公开仓库安装：VS Code 扩展走 VS Code Marketplace，Chrome 扩展走 Chrome Web Store，Agent Skill 通过 `clawhub install marktodocx-skill` 走 ClawHub。CLI 故意保持源码安装。
+最终用户现在已经可以直接从公开仓库安装已发布的宿主：VS Code 扩展走 VS Code Marketplace，Agent Skill 通过 `clawhub install marktodocx-skill` 走 ClawHub。Chrome 扩展仍在等待 Chrome Web Store 发布，CLI 故意保持源码安装。
 
 下面的步骤介绍源码构建流程，对所有宿主都有效，并且是 CLI 唯一的安装方式。在仓库根目录执行：
 
