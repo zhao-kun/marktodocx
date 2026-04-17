@@ -745,6 +745,8 @@ The golden manifest should summarize both donor SHA and donor tree state at the 
 
 Contributor implication: changing `test-markdown/` content is not uniformly safe or uniformly parity-critical. The parity contract is defined by `test-markdown/__golden__/manifest.json`, so contributors must check whether the edited file is referenced by a verified fixture before assuming that `npm run generate:goldens -- --refresh all-features` is sufficient.
 
+Because Mermaid SVG and PNG bytes depend on the exact Chrome build and font stack that rendered them, goldens generated on a contributor's local machine routinely drift from the CI renderer even when the Markdown input is unchanged. The canonical regeneration surface is therefore the `Regenerate Goldens` workflow (`.github/workflows/regenerate-goldens.yml`): it is triggered manually via `workflow_dispatch`, runs `npm run generate:goldens -- --refresh <scope>` against the Puppeteer-managed Chrome pinned by the repo, re-runs `npm run test:parity:all` against the regenerated corpus, and opens a pull request with the updated files under `test-markdown/__golden__/`. Local regeneration remains supported for iteration, but the PR merged into `main` must come from this workflow so donor SHA, donor tree state, and renderer identity are all CI-reproducible.
+
 ---
 
 ## 7. Configuration Model

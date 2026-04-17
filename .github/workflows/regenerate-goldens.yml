@@ -1,0 +1,68 @@
+name: Regenerate Goldens
+
+on:
+  workflow_dispatch:
+    inputs:
+      refresh:
+        description: 'Fixtures to regenerate (`all` or comma-separated fixture ids from manifest.json).'
+        required: false
+        default: 'all'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: regenerate-goldens
+  cancel-in-progress: false
+
+jobs:
+  regenerate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install workspace dependencies
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: '1'
+        run: npm ci
+
+      - name: Install Puppeteer-managed Chrome
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: '0'
+        run: npx puppeteer browsers install chrome
+
+      - name: Regenerate goldens
+        env:
+          MARKTODOCX_PUPPETEER_NO_SANDBOX: '1'
+        run: npm run generate:goldens -- --refresh "${{ inputs.refresh }}"
+
+      - name: Run full parity gate against regenerated corpus
+        env:
+          MARKTODOCX_PUPPETEER_NO_SANDBOX: '1'
+        run: npm run test:parity:all
+
+      - name: Create pull request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          commit-message: "chore: regenerate parity goldens on CI"
+          title: "chore: regenerate parity goldens on CI"
+          body: |
+            Regenerated the golden corpus on CI to eliminate local-vs-CI Mermaid/Chrome rendering drift.
+
+            - Triggered by: @${{ github.actor }}
+            - Refresh scope: `${{ inputs.refresh }}`
+            - Source SHA: `${{ github.sha }}`
+
+            The full parity gate (`npm run test:parity:all`) ran successfully against the regenerated corpus in this workflow before opening the PR.
+          branch: chore/regenerate-goldens
+          delete-branch: true
+          add-paths: |
+            test-markdown/__golden__/**
