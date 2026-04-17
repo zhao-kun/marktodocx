@@ -108,6 +108,51 @@ def recover_registry_session(client, registry_root, watcher_factory):
     for child_path in client.list_children(presence_root):
         client.watch_children(child_path, watcher_factory("presence-branch"))
 
+
+    service_root = f"{registry_root}/services"
+    presence_root = f"{registry_root}/presence"
+    health_root = f"{registry_root}/health"
+
+    client.watch_children(service_root, watcher_factory("service-root"))
+    client.watch_children(presence_root, watcher_factory("presence-root"))
+    client.watch_children(health_root, watcher_factory("health-root"))
+
+    for child_path in client.list_children(service_root):
+        client.watch_data(child_path, watcher_factory("service-data"))
+
+    for child_path in client.list_children(presence_root):
+        client.watch_children(child_path, watcher_factory("presence-branch"))
+
+
+    service_root = f"{registry_root}/services"
+    presence_root = f"{registry_root}/presence"
+    health_root = f"{registry_root}/health"
+
+    client.watch_children(service_root, watcher_factory("service-root"))
+    client.watch_children(presence_root, watcher_factory("presence-root"))
+    client.watch_children(health_root, watcher_factory("health-root"))
+
+    for child_path in client.list_children(service_root):
+        client.watch_data(child_path, watcher_factory("service-data"))
+
+    for child_path in client.list_children(presence_root):
+        client.watch_children(child_path, watcher_factory("presence-branch"))
+
+
+    service_root = f"{registry_root}/services"
+    presence_root = f"{registry_root}/presence"
+    health_root = f"{registry_root}/health"
+
+    client.watch_children(service_root, watcher_factory("service-root"))
+    client.watch_children(presence_root, watcher_factory("presence-root"))
+    client.watch_children(health_root, watcher_factory("health-root"))
+
+    for child_path in client.list_children(service_root):
+        client.watch_data(child_path, watcher_factory("service-data"))
+
+    for child_path in client.list_children(presence_root):
+        client.watch_children(child_path, watcher_factory("presence-branch"))
+
     return "session-restored"
 ```
 
