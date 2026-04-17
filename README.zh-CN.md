@@ -27,8 +27,19 @@ marktodocx **的发布目标**是三个公开仓库：VS Code Marketplace、Chro
 - Chrome 扩展和 VS Code 扩展在构建完成后，都会通过浏览器运行时内置 Mermaid 支持。
 - CLI 和 agent skill 默认运行在 Node 运行时上，因此当文档包含 Mermaid fence 时，需要 `@marktodocx/runtime-node-mermaid` 或使用 Mermaid 增强导出包。
 
+## 预览
+
+Markdown 源文预览：
+
+![Markdown 源文预览](assets/images/markdown_preview.png)
+
+生成的 DOCX 预览：
+
+![生成的 DOCX 预览](assets/images/word_preview.png)
+
 ## 目录
 
+- [预览](#预览)
 - [快速开始](#快速开始)
 - [宿主状态](#宿主状态)
 - [架构](#架构)
@@ -96,6 +107,10 @@ marktodocx **的发布目标**是三个公开仓库：VS Code Marketplace、Chro
 - 一个共享转换核心负责规范的 Markdown → HTML → DOCX 规则、样式与布局 schema、DOCX 归一化逻辑以及 parity 测试夹具。
 - 一个 **浏览器运行时家族**（`@marktodocx/runtime-browser`）承载 Chrome 扩展与 VS Code 扩展，基于原生 `DOMParser` 和页面内 Mermaid 渲染。
 - 一个 **Node 运行时家族**（`@marktodocx/runtime-node`，以及可选的 `@marktodocx/runtime-node-mermaid`）承载 CLI 和 agent skill，基于 jsdom DOM 适配器与可选的 Puppeteer Mermaid 渲染器。
+
+架构图：
+
+![Marktodocx 架构图](assets/Marktodocx%20Architecture%20Diagram.png)
 
 跨宿主输出一致性通过以下基于夹具的 parity 检查强制保证：`scripts/run-fixture-parity.mjs`、`scripts/run-cli-parity.mjs`、`scripts/run-vscode-parity.mjs` 和 `scripts/run-agent-skill-parity.mjs`。完整设计、契约与背景说明见 `docs/design-core-refactor.md`。
 

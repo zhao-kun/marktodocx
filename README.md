@@ -108,6 +108,10 @@ The repository follows a **Shared Core + Two Runtime Families** layout:
 - A **browser runtime family** (`@marktodocx/runtime-browser`) hosts the Chrome extension and VSCode extension on top of native `DOMParser` and in-page Mermaid rendering.
 - A **Node runtime family** (`@marktodocx/runtime-node`, plus the optional `@marktodocx/runtime-node-mermaid`) hosts the CLI and agent skill on top of a jsdom DOM adapter and an optional Puppeteer-based Mermaid renderer.
 
+Architecture diagram:
+
+![Marktodocx architecture diagram](assets/Marktodocx%20Architecture%20Diagram.png)
+
 Output parity across hosts is enforced by fixture-driven gates in `scripts/run-fixture-parity.mjs`, `scripts/run-cli-parity.mjs`, `scripts/run-vscode-parity.mjs`, and `scripts/run-agent-skill-parity.mjs`. See `docs/design-core-refactor.md` for the full design, contracts, and rationale.
 
 Repository cleanup is still intentionally incremental in one place only: `md-to-docx.mjs` remains the public CLI entry point until the final dead-code removal step is backed by stable parity history.
