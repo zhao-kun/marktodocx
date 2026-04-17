@@ -8,11 +8,11 @@ marktodocx uses the same shared conversion core as the marktodocx Chrome extensi
 
 Markdown source preview:
 
-![Markdown source preview](media/markdown_preview.png)
+![Markdown source preview](https://raw.githubusercontent.com/zhao-kun/markdocx/main/apps/vscode-extension/media/markdown_preview.png)
 
 Generated DOCX preview:
 
-![Generated DOCX preview](media/word_preview.png)
+![Generated DOCX preview](https://raw.githubusercontent.com/zhao-kun/markdocx/main/apps/vscode-extension/media/word_preview.png)
 
 ## Features
 
@@ -27,7 +27,7 @@ Generated DOCX preview:
 
 Command placement in VS Code:
 
-![How to use marktodocx in VS Code](media/how_to_use_in_vscode.png)
+![How to use marktodocx in VS Code](https://raw.githubusercontent.com/zhao-kun/markdocx/main/apps/vscode-extension/media/how_to_use_in_vscode.png)
 
 1. Open a workspace that contains your Markdown file and any local images it references
 2. Run the command in one of these ways:

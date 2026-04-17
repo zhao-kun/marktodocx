@@ -117,7 +117,7 @@ If any of these fail, do not publish.
 - Icon: `apps/vscode-extension/media/icon.png` (128×128, referenced by `package.json` `icon` field).
 - Description: `package.json` `displayName` and `description`.
 - Long description: `apps/vscode-extension/README.md`.
-- README screenshots for the Marketplace should live under `apps/vscode-extension/` and preferably under `apps/vscode-extension/media/`, so `vsce` can package them with the VSIX. Do not reference `../../assets/...` from the listing README.
+- README screenshots for the Marketplace should use absolute public image URLs, typically GitHub raw URLs that point at versioned files in this repository. Do not rely on relative paths such as `media/...` or `../../assets/...` in the listing README, because the Marketplace README renderer can show those images as broken even when the VSIX contains the files.
 - Categories: `Formatters`, `Other`.
 - Keywords: see `package.json` `keywords` — these drive Marketplace search.
 

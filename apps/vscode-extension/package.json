@@ -2,7 +2,7 @@
   "name": "marktodocx-vscode-extension",
   "displayName": "marktodocx",
   "description": "Convert Markdown to DOCX in VS Code using the shared browser runtime family.",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "publisher": "zhao-kun",
   "license": "MIT",
   "author": {
