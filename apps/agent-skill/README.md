@@ -2,6 +2,16 @@
 
 This app is the thin agent-skill host for marktodocx. It reuses the shared Node runtime family in `@marktodocx/runtime-node` and only owns skill-facing parameter parsing, input resolution, and optional output writing.
 
+## Preview
+
+Markdown source preview:
+
+![Markdown source preview](../../assets/images/markdown_preview.png)
+
+Generated DOCX preview:
+
+![Generated DOCX preview](../../assets/images/word_preview.png)
+
 ## Naming
 
 - Source app directory: `apps/agent-skill/`

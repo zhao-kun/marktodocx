@@ -4,6 +4,16 @@ Convert any Markdown file on your computer into a Word (`.docx`) document — ri
 
 marktodocx runs the entire conversion inside the extension. Your Markdown and images never leave your machine.
 
+## Preview
+
+Markdown source preview:
+
+![Markdown source preview](../../assets/images/markdown_preview.png)
+
+Generated DOCX preview:
+
+![Generated DOCX preview](../../assets/images/word_preview.png)
+
 ## Features
 
 - One-click Markdown → DOCX conversion in the browser
@@ -71,7 +81,7 @@ To run an unpacked development build from source, follow the [Chrome Extension Q
 
 ## Feedback
 
-Bug reports, feature requests, and style-configuration ideas are welcome at https://github.com/zhao-kun/markdocx/issues.
+Bug reports, feature requests, and style-configuration ideas are welcome at [the issue tracker](https://github.com/zhao-kun/markdocx/issues).
 
 ## License
 

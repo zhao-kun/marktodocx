@@ -111,6 +111,7 @@ If any of these fail, do not publish.
 - Icon: `apps/vscode-extension/media/icon.png` (128×128, referenced by `package.json` `icon` field).
 - Description: `package.json` `displayName` and `description`.
 - Long description: `apps/vscode-extension/README.md`.
+- README screenshots for the Marketplace should live under `apps/vscode-extension/` and preferably under `apps/vscode-extension/media/`, so `vsce` can package them with the VSIX. Do not reference `../../assets/...` from the listing README.
 - Categories: `Formatters`, `Other`.
 - Keywords: see `package.json` `keywords` — these drive Marketplace search.
 
@@ -244,6 +245,8 @@ The agent skill is published to ClawHub, the OpenClaw skill registry, and mirror
    git push origin agent-skill-v<version>
    ```
 7. Cut a GitHub Release for the tag and attach `apps/agent-skill/dist/marktodocx-skill.zip`. Use the body of `apps/agent-skill/INTRO.md` as the release description.
+
+ClawHub listing note: `apps/agent-skill/INTRO.md` is registry-facing copy. If you add screenshots there, use absolute public image URLs rather than repo-relative paths so the listing still renders correctly outside the repository checkout.
 
 ### Mermaid-enabled releases
 

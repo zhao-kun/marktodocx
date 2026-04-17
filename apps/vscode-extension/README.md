@@ -4,6 +4,16 @@ Convert Markdown files to Word (`.docx`) directly from VS Code — headings, lis
 
 marktodocx uses the same shared conversion core as the marktodocx Chrome extension, CLI, and agent skill, so one Markdown file renders to the same DOCX output everywhere.
 
+## Preview
+
+Markdown source preview:
+
+![Markdown source preview](media/markdown_preview.png)
+
+Generated DOCX preview:
+
+![Generated DOCX preview](media/word_preview.png)
+
 ## Features
 
 - Convert any `.md` or `.markdown` file with a single command
@@ -14,6 +24,10 @@ marktodocx uses the same shared conversion core as the marktodocx Chrome extensi
 - Output location chosen through a standard save dialog
 
 ## Usage
+
+Command placement in VS Code:
+
+![How to use marktodocx in VS Code](media/how_to_use_in_vscode.png)
 
 1. Open a workspace that contains your Markdown file and any local images it references
 2. Run the command in one of these ways:
@@ -58,7 +72,7 @@ To build a `.vsix` from source instead, see the project repository's [`docs/publ
 
 ## Feedback
 
-Issues and suggestions are welcome at https://github.com/zhao-kun/markdocx/issues.
+Issues and suggestions are welcome at [the issue tracker](https://github.com/zhao-kun/markdocx/issues).
 
 ## License
 

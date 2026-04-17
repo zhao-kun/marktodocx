@@ -2,6 +2,16 @@
 
 A Claude Agent Skill that converts Markdown into Word (`.docx`) files using the shared marktodocx Node runtime. Same conversion rules as the marktodocx CLI, Chrome extension, and VS Code extension, so one Markdown file produces the same DOCX everywhere.
 
+## Preview
+
+Markdown source preview:
+
+![Markdown source preview](https://raw.githubusercontent.com/zhao-kun/markdocx/main/assets/images/markdown_preview.png)
+
+Generated DOCX preview:
+
+![Generated DOCX preview](https://raw.githubusercontent.com/zhao-kun/markdocx/main/assets/images/word_preview.png)
+
 ## What It Does
 
 Give the agent a Markdown file path or inline Markdown content and it writes a `.docx` file that preserves headings, lists, tables, code blocks with syntax highlighting, blockquotes, local images, and (optionally) Mermaid diagrams rendered as static images.
@@ -55,7 +65,7 @@ Either command installs the skill into the workspace's `skills/` directory. Star
 
 ### From a GitHub Release
 
-Each ClawHub publish is also attached to a GitHub Release. Grab the latest `marktodocx-skill.zip` from https://github.com/zhao-kun/marktodocx/releases and extract it into your skill host:
+Each ClawHub publish is also attached to a GitHub Release. Grab the latest `marktodocx-skill.zip` from [GitHub Releases](https://github.com/zhao-kun/markdocx/releases) and extract it into your skill host:
 
 ```bash
 # Claude Code
@@ -108,7 +118,7 @@ Mermaid is optional on the Node host path:
 
 ## Feedback
 
-Issues and feature requests: https://github.com/zhao-kun/marktodocx/issues
+Issues and feature requests: [the issue tracker](https://github.com/zhao-kun/markdocx/issues)
 
 ## Maintainers
 

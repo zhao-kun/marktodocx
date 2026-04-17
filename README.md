@@ -27,8 +27,19 @@ Mermaid support differs by host:
 - Chrome extension and VSCode extension include Mermaid through the browser runtime after you build the host.
 - CLI and agent skill run on the Node runtime by default, so Mermaid requires Node-side Chromium support through `@marktodocx/runtime-node-mermaid` or a Mermaid-enabled agent-skill export.
 
+## Preview
+
+Markdown source preview:
+
+![Markdown source preview](assets/images/markdown_preview.png)
+
+Generated DOCX preview:
+
+![Generated DOCX preview](assets/images/word_preview.png)
+
 ## Contents
 
+- [Preview](#preview)
 - [Quickstart](#quickstart)
 - [Host Status](#host-status)
 - [Architecture](#architecture)
