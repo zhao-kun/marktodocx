@@ -494,6 +494,17 @@ GitHub Actions 与本地流程保持一致：第一个 job 安装依赖并执行
 npm run generate:goldens
 ```
 
+Parity 维护规则：`npm run test:parity` 校验的是 `test-markdown/__golden__/manifest.json` 中所有 `status: "verified"` 的夹具，而不是 `test-markdown/` 下的所有 Markdown 文件。
+
+如果你修改了 manifest 中登记的夹具输入，请在重新运行 parity 之前刷新对应的 fixture id：
+
+```bash
+npm run generate:goldens -- --refresh <fixture-id>
+npm run generate:goldens -- --refresh all
+```
+
+这里的“夹具输入”既包括 `markdownPath` 指向的 Markdown 文件，也包括该夹具引用的本地资源。未列入 manifest 的临时 Markdown 示例文件不会影响 `npm run test:parity`。
+
 ## 限制
 
 - Mermaid 图表会以 PNG 图片形式嵌入 Word，而不是保留为可编辑 Mermaid 源。

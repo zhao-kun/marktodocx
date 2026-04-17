@@ -191,6 +191,8 @@ The core package now owns validation and normalization for style options, plus r
 
 The project now has an explicit golden manifest and verified fixture categories. This matters because the design previously described parity at a strategy level, but the implementation now has a concrete source of truth for which fixtures are canonical and which regressions they protect.
 
+That also creates a contributor workflow rule: if a verified fixture's `markdownPath` input or referenced local assets change, the matching fixture id must be regenerated before `npm run test:parity` can pass again. Files under `test-markdown/` that are not selected by the manifest are not part of the parity gate.
+
 #### Regression fixtures are more targeted
 
 Parity coverage is no longer only a broad all-features sample. It now includes narrow regression fixtures for page overflow, style propagation, and blockquote behavior. That is a better match for the design goal of catching drift early and locally.
@@ -740,6 +742,8 @@ Parity script requirements:
 The parity entry points must build the Chrome extension before generating goldens or running parity so `apps/chrome-extension/dist/` reflects the current workspace sources rather than stale artifacts.
 
 The golden manifest should summarize both donor SHA and donor tree state at the top level. A dirty donor tree is an allowed transitional state during development, but it must be visible in the manifest and treated as a reproducibility debt to burn down.
+
+Contributor implication: changing `test-markdown/` content is not uniformly safe or uniformly parity-critical. The parity contract is defined by `test-markdown/__golden__/manifest.json`, so contributors must check whether the edited file is referenced by a verified fixture before assuming that `npm run generate:goldens -- --refresh all-features` is sufficient.
 
 ---
 

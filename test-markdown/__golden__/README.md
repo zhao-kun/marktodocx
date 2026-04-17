@@ -6,8 +6,10 @@ Rules:
 
 - Golden DOCX files must be generated from the Chrome extension donor build selected for Phase A.
 - `manifest.json` is the authoritative fixture list for `npm run test:parity`.
+- Only manifest-listed fixtures with `status: "verified"` participate in `npm run test:parity`. Not every file under `test-markdown/` is parity-gated.
 - `npm run generate:goldens` generates or refreshes pending goldens from the current Chrome extension donor build and records the donor git SHA.
 - To refresh existing goldens, use `npm run generate:goldens -- --refresh all` or `npm run generate:goldens -- --refresh <fixture-id>[,<fixture-id>...]`.
+- If you edit a verified fixture's `markdownPath` file or any local asset referenced by that fixture, you must refresh that fixture id before rerunning parity.
 - Golden generation refuses to run on a dirty working tree unless `--allow-dirty` is passed. Dirty-tree generations are recorded per fixture as non-clean provenance.
 - Chromium sandbox-disabling flags are off by default. Use `MARKTODOCX_PUPPETEER_NO_SANDBOX=1` or `--no-sandbox` only in CI/container environments that require it.
 - `status: "pending"` means the fixture is selected for the parity corpus but does not yet have a verified Chrome-extension-generated golden.
@@ -18,9 +20,10 @@ Rules:
 Manual review workflow for Mermaid visual baselines:
 
 1. Regenerate the target fixture with `npm run generate:goldens -- --refresh <fixture-id>`.
-2. Inspect `test-markdown/__golden__/visual-baselines/<fixture-id>/` against the previous baseline set in Git diff or an image diff tool.
-3. If the visual drift is expected and the SVG parity hashes remain stable, accept the updated baseline images with the regenerated golden.
-4. If the SVG parity hashes changed unexpectedly, treat that as a real parity regression and investigate before updating the golden.
+2. If you changed more than one verified fixture input, regenerate all affected fixture ids or use `npm run generate:goldens -- --refresh all`.
+3. Inspect `test-markdown/__golden__/visual-baselines/<fixture-id>/` against the previous baseline set in Git diff or an image diff tool.
+4. If the visual drift is expected and the SVG parity hashes remain stable, accept the updated baseline images with the regenerated golden.
+5. If the SVG parity hashes changed unexpectedly, treat that as a real parity regression and investigate before updating the golden.
 
 Expected next step:
 

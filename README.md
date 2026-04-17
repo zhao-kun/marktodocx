@@ -494,6 +494,17 @@ To refresh fixtures when canonical output intentionally changes:
 npm run generate:goldens
 ```
 
+Parity maintenance rule: `npm run test:parity` validates every `status: "verified"` fixture listed in `test-markdown/__golden__/manifest.json`, not every Markdown file under `test-markdown/`.
+
+If you edit a manifest-listed fixture input, refresh the matching fixture id before rerunning parity:
+
+```bash
+npm run generate:goldens -- --refresh <fixture-id>
+npm run generate:goldens -- --refresh all
+```
+
+This applies to both the fixture Markdown file recorded in `markdownPath` and any local assets referenced by that fixture. Editing ad hoc Markdown files that are not listed in the manifest does not affect `npm run test:parity`.
+
 ## Limitations
 
 - Mermaid diagrams are embedded as PNG images, not as editable Mermaid sources inside Word.
