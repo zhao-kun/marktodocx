@@ -10,3 +10,4 @@ vite.extension.config.mjs
 **/*.map
 **/.DS_Store
 dist/marktodocx-vscode-extension.vsix
+pack_output.json

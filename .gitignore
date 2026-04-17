@@ -17,3 +17,5 @@ temp_*.mjs
 /*_output.txt
 
 publish.md
+apps/vscode-extension/pack_output.json
+*.vsix

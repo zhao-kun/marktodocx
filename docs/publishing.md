@@ -87,9 +87,15 @@ If any of these fail, do not publish.
 4. Publish to the Marketplace:
    ```bash
    cd apps/vscode-extension
-   npx @vscode/vsce publish
+   npx @vscode/vsce publish --no-dependencies
    ```
-   `vsce publish` reads the version from `package.json`. To bump and publish in one step you can also use `vsce publish patch` / `minor` / `major`.
+   Or use the workspace script:
+
+   ```bash
+   npm run publish:marketplace --workspace apps/vscode-extension
+   ```
+
+   `vsce publish` reads the version from `package.json`. In this monorepo, the `--no-dependencies` flag is required because the extension is already bundled into `dist/`. Without that flag, `vsce` can traverse workspace-linked dependencies and repo-root files during packaging, which leads to errors such as `invalid relative path: extension/../../publish.md`.
 5. Confirm the listing went live at:
    ```
    https://marketplace.visualstudio.com/items?itemName=zhao-kun.marktodocx-vscode-extension

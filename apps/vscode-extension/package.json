@@ -110,6 +110,7 @@
     "build": "vite build --config ./vite.config.mjs && vite build --config ./vite.extension.config.mjs && node ./scripts/build-check.js",
     "watch": "vite build --watch --config ./vite.config.mjs",
     "package": "npm run build && vsce package --no-dependencies --out ./dist/marktodocx-vscode-extension.vsix",
+    "publish:marketplace": "npm run build && vsce publish --no-dependencies",
     "install:vsix": "code --install-extension ./dist/marktodocx-vscode-extension.vsix --force"
   },
   "devDependencies": {
