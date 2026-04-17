@@ -1,5 +1,4 @@
 name: Regenerate Goldens
-
 on:
   workflow_dispatch:
     inputs:
