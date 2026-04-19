@@ -43,7 +43,7 @@ This file owns the release **process**, not the listing copy.
 - The Chrome extension's `manifest.json` `version` field is **always** synced from `apps/chrome-extension/package.json` at build time by the `marktodocx-sync-manifest-version` Vite plugin. Do not edit `public/manifest.json` `version` by hand — it is treated as a placeholder (`0.0.0`) and overwritten in `dist/manifest.json` during `npm run build:chrome-extension`.
 - Tag releases on `main` as `<host>-v<version>` (for example `vscode-extension-v0.1.0`, `chrome-extension-v0.1.0`, `agent-skill-v0.1.0`). Tags drive GitHub Release artifact names.
 - Pushing one of those host tags triggers `.github/workflows/release-assets.yml`, which creates or updates the matching GitHub Release and uploads the host artifact set for that tag.
-- `.github/workflows/release-assets.yml` also supports `workflow_dispatch` with a `release_tag` input, so you can rebuild and re-upload assets for an existing host tag without pushing a new tag.
+- `.github/workflows/release-assets.yml` also supports `workflow_dispatch` with `release_tag` and `source_ref` inputs, so you can rebuild and re-upload assets for an existing host tag from a newer branch or commit without pushing a new tag.
 
 ## Pre-Release Checklist (All Hosts)
 
