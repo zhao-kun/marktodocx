@@ -1120,13 +1120,15 @@ Work:
 
 1. Add smoke tests for all hosts.
 2. Add parity checks to CI.
-3. Remove obsolete monolith code.
-4. Update repository docs.
+3. Add tag-driven GitHub Release asset automation for host packages.
+4. Remove obsolete monolith code.
+5. Update repository docs.
 
 Concrete package and file work:
 
 - Add `scripts/smoke-all-hosts.mjs`.
 - Add CI workflow entries for core, runtimes, and apps.
+- Add host-tag-driven GitHub Actions release packaging that uploads the VSCode `.vsix`, the Chrome extension zip, the standard agent-skill zip, and Debian amd64/arm64 Mermaid-enabled skill zips to GitHub Releases.
 - The Chrome extension host has now been moved to `apps/chrome-extension/`, and the local shim-only files that duplicated shared-package exports have been removed.
 - Update parity tooling paths and build entry points in the same phase so golden generation and parity checks continue to target the built Chrome extension rather than hard-coded pre-move source paths.
 - Remove obsolete renderer duplicates and old monolith paths after parity is stable.

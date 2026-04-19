@@ -1,0 +1,272 @@
+name: Release Assets
+
+on:
+  push:
+    tags:
+      - 'vscode-extension-v*'
+      - 'chrome-extension-v*'
+      - 'agent-skill-v*'
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Existing host release tag to rebuild, for example vscode-extension-v0.1.2 or agent-skill-v0.1.3.'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-assets-${{ github.event_name == 'workflow_dispatch' && inputs.release_tag || github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  resolve-release:
+    runs-on: ubuntu-latest
+    outputs:
+      release_tag: ${{ steps.resolve.outputs.release_tag }}
+      release_kind: ${{ steps.resolve.outputs.release_kind }}
+      release_version: ${{ steps.resolve.outputs.release_version }}
+    steps:
+      - name: Resolve release target
+        id: resolve
+        shell: bash
+        run: |
+          release_tag="${{ github.event_name == 'workflow_dispatch' && inputs.release_tag || github.ref_name }}"
+          case "$release_tag" in
+            vscode-extension-v*)
+              release_kind="vscode-extension"
+              release_version="${release_tag#vscode-extension-v}"
+              ;;
+            chrome-extension-v*)
+              release_kind="chrome-extension"
+              release_version="${release_tag#chrome-extension-v}"
+              ;;
+            agent-skill-v*)
+              release_kind="agent-skill"
+              release_version="${release_tag#agent-skill-v}"
+              ;;
+            *)
+              echo "Unsupported release tag: $release_tag" >&2
+              exit 1
+              ;;
+          esac
+
+          echo "release_tag=$release_tag" >> "$GITHUB_OUTPUT"
+          echo "release_kind=$release_kind" >> "$GITHUB_OUTPUT"
+          echo "release_version=$release_version" >> "$GITHUB_OUTPUT"
+
+  vscode-extension:
+    needs: resolve-release
+    if: needs.resolve-release.outputs.release_kind == 'vscode-extension'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.resolve-release.outputs.release_tag }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install workspace dependencies
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: '1'
+        run: npm ci
+
+      - name: Verify tag version matches VS Code extension package
+        run: |
+          expected_version="${{ needs.resolve-release.outputs.release_version }}"
+          package_version="$(node -p "require('./apps/vscode-extension/package.json').version")"
+          if [ "$expected_version" != "$package_version" ]; then
+            echo "Tag version $expected_version does not match apps/vscode-extension/package.json version $package_version" >&2
+            exit 1
+          fi
+
+      - name: Package VS Code extension
+        run: npm run package:vscode-extension
+
+      - name: Publish VS Code extension asset to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.resolve-release.outputs.release_tag }}
+          generate_release_notes: true
+          overwrite_files: true
+          files: |
+            apps/vscode-extension/dist/marktodocx-vscode-extension.vsix
+
+  chrome-extension:
+    needs: resolve-release
+    if: needs.resolve-release.outputs.release_kind == 'chrome-extension'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.resolve-release.outputs.release_tag }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install workspace dependencies
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: '1'
+        run: npm ci
+
+      - name: Verify tag version matches Chrome extension package
+        run: |
+          expected_version="${{ needs.resolve-release.outputs.release_version }}"
+          package_version="$(node -p "require('./apps/chrome-extension/package.json').version")"
+          if [ "$expected_version" != "$package_version" ]; then
+            echo "Tag version $expected_version does not match apps/chrome-extension/package.json version $package_version" >&2
+            exit 1
+          fi
+
+      - name: Build Chrome extension
+        run: npm run build:chrome-extension
+
+      - name: Create Chrome extension archive
+        run: |
+          rm -f apps/chrome-extension/marktodocx-chrome-extension.zip
+          cd apps/chrome-extension/dist
+          zip -qr ../marktodocx-chrome-extension.zip .
+
+      - name: Publish Chrome extension asset to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.resolve-release.outputs.release_tag }}
+          generate_release_notes: true
+          overwrite_files: true
+          files: |
+            apps/chrome-extension/marktodocx-chrome-extension.zip
+
+  agent-skill-standard-build:
+    needs: resolve-release
+    if: needs.resolve-release.outputs.release_kind == 'agent-skill'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.resolve-release.outputs.release_tag }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install workspace dependencies
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: '1'
+        run: npm ci
+
+      - name: Verify tag version matches agent skill package
+        run: |
+          expected_version="${{ needs.resolve-release.outputs.release_version }}"
+          package_version="$(node -p "require('./apps/agent-skill/package.json').version")"
+          if [ "$expected_version" != "$package_version" ]; then
+            echo "Tag version $expected_version does not match apps/agent-skill/package.json version $package_version" >&2
+            exit 1
+          fi
+
+      - name: Export standard agent skill
+        run: npm run export:agent-skill
+
+      - name: Upload standard agent skill archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-skill-release-standard
+          path: apps/agent-skill/dist/marktodocx-skill.zip
+          if-no-files-found: error
+
+  agent-skill-mermaid-build:
+    needs: resolve-release
+    if: needs.resolve-release.outputs.release_kind == 'agent-skill'
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-latest
+            asset_name: marktodocx-skill-with-mermaid-debian-amd64.zip
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+            asset_name: marktodocx-skill-with-mermaid-debian-arm64.zip
+    runs-on: ${{ matrix.runner }}
+    container:
+      image: node:22-bookworm
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.resolve-release.outputs.release_tag }}
+
+      - name: Install workspace dependencies
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: '1'
+        run: npm ci
+
+      - name: Verify tag version matches agent skill package
+        run: |
+          expected_version="${{ needs.resolve-release.outputs.release_version }}"
+          package_version="$(node -p "require('./apps/agent-skill/package.json').version")"
+          if [ "$expected_version" != "$package_version" ]; then
+            echo "Tag version $expected_version does not match apps/agent-skill/package.json version $package_version" >&2
+            exit 1
+          fi
+
+      - name: Export Mermaid-enabled agent skill on Debian ${{ matrix.arch }}
+        env:
+          MARKTODOCX_PUPPETEER_INSTALL_DEPS: '1'
+          MARKTODOCX_PUPPETEER_NO_SANDBOX: '1'
+        run: npm run export:agent-skill:mermaid
+
+      - name: Rename Mermaid skill archive for release
+        run: |
+          cp apps/agent-skill/dist/marktodocx-skill.zip \
+            apps/agent-skill/dist/${{ matrix.asset_name }}
+
+      - name: Upload Mermaid-enabled agent skill archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-skill-release-mermaid-${{ matrix.arch }}
+          path: apps/agent-skill/dist/${{ matrix.asset_name }}
+          if-no-files-found: error
+
+  agent-skill-publish:
+    needs:
+      - resolve-release
+      - agent-skill-standard-build
+      - agent-skill-mermaid-build
+    if: needs.resolve-release.outputs.release_kind == 'agent-skill'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.resolve-release.outputs.release_tag }}
+
+      - name: Download built agent skill release assets
+        uses: actions/download-artifact@v4
+        with:
+          pattern: agent-skill-release-*
+          path: release-assets
+          merge-multiple: true
+
+      - name: Publish agent skill assets to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.resolve-release.outputs.release_tag }}
+          body_path: apps/agent-skill/INTRO.md
+          overwrite_files: true
+          files: |
+            release-assets/marktodocx-skill.zip
+            release-assets/marktodocx-skill-with-mermaid-debian-amd64.zip
+            release-assets/marktodocx-skill-with-mermaid-debian-arm64.zip

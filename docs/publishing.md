@@ -42,6 +42,8 @@ This file owns the release **process**, not the listing copy.
 - Each host owns its own version in its own `package.json`. Versions are independent — bumping the VS Code extension does not require bumping the Chrome extension.
 - The Chrome extension's `manifest.json` `version` field is **always** synced from `apps/chrome-extension/package.json` at build time by the `marktodocx-sync-manifest-version` Vite plugin. Do not edit `public/manifest.json` `version` by hand — it is treated as a placeholder (`0.0.0`) and overwritten in `dist/manifest.json` during `npm run build:chrome-extension`.
 - Tag releases on `main` as `<host>-v<version>` (for example `vscode-extension-v0.1.0`, `chrome-extension-v0.1.0`, `agent-skill-v0.1.0`). Tags drive GitHub Release artifact names.
+- Pushing one of those host tags triggers `.github/workflows/release-assets.yml`, which creates or updates the matching GitHub Release and uploads the host artifact set for that tag.
+- `.github/workflows/release-assets.yml` also supports `workflow_dispatch` with a `release_tag` input, so you can rebuild and re-upload assets for an existing host tag without pushing a new tag.
 
 ## Pre-Release Checklist (All Hosts)
 
@@ -107,7 +109,7 @@ If any of these fail, do not publish.
    git tag vscode-extension-v<version>
    git push origin vscode-extension-v<version>
    ```
-7. Attach the same `.vsix` to a GitHub Release for the tag, in case users want a manual install.
+7. GitHub Actions automatically creates or updates the GitHub Release for that tag and uploads `apps/vscode-extension/dist/marktodocx-vscode-extension.vsix`.
 
 ### What the package contains
 
@@ -173,7 +175,7 @@ If you change any of these, run `npm run package:vscode-extension` again so the 
    git tag chrome-extension-v<version>
    git push origin chrome-extension-v<version>
    ```
-9. Attach the same `marktodocx-chrome-extension.zip` to a GitHub Release for the tag, in case users want a manual unpacked install.
+9. GitHub Actions automatically creates or updates the GitHub Release for that tag and uploads `apps/chrome-extension/marktodocx-chrome-extension.zip`.
 
 ### Common rejection causes to avoid
 
@@ -251,7 +253,10 @@ The agent skill is published to ClawHub, the OpenClaw skill registry, and mirror
    git tag agent-skill-v<version>
    git push origin agent-skill-v<version>
    ```
-7. Cut a GitHub Release for the tag and attach `apps/agent-skill/dist/marktodocx-skill.zip`. Use the body of `apps/agent-skill/INTRO.md` as the release description.
+7. GitHub Actions automatically creates or updates the GitHub Release for that tag, uses `apps/agent-skill/INTRO.md` as the release description, and uploads these assets:
+   - `apps/agent-skill/dist/marktodocx-skill.zip`
+   - `apps/agent-skill/dist/marktodocx-skill-with-mermaid-debian-amd64.zip`
+   - `apps/agent-skill/dist/marktodocx-skill-with-mermaid-debian-arm64.zip`
 
 ClawHub listing note: `apps/agent-skill/SKILL.md` is the registry-facing copy that ClawHub renders from the exported skill. If you add screenshots there, use absolute public image URLs rather than repo-relative paths so the listing still renders correctly outside the repository checkout.
 
@@ -269,7 +274,7 @@ Mermaid-enabled exports are platform-specific because they vendor a Chromium bin
    ```
    The export pipeline prunes Chromium's Google Docs reading-mode accessibility helper files before packaging. They are not used by headless Mermaid rendering, and removing them avoids ClawHub or VirusTotal heuristics that can flag the vendored browser bundle for dynamic-code execution. The deployed skill also repairs stripped execute bits on bundled Chromium launcher/helper files before Puppeteer launches, which avoids `EACCES` failures on registries or unzip flows that do not preserve Unix file modes.
 3. Publish to ClawHub as a separate slug or version tag (e.g. add a `with-mermaid-linux-x64` tag), so users on other platforms do not accidentally install a binary that does not run.
-4. Attach the Mermaid-enabled zip to a separate GitHub Release asset clearly labelled with the host OS and architecture.
+4. The GitHub Release automation for `agent-skill-v<version>` tags already uploads Mermaid-enabled assets clearly labelled with the host OS and architecture: `marktodocx-skill-with-mermaid-debian-amd64.zip` and `marktodocx-skill-with-mermaid-debian-arm64.zip`.
 
 The standard export keeps Mermaid disabled and fails clearly if the deployed skill encounters a Mermaid block. That behavior is intentional — see `apps/agent-skill/README.md` for the full Mermaid story.
 

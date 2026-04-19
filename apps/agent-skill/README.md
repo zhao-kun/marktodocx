@@ -6,6 +6,7 @@ This app is the thin agent-skill host for marktodocx. It reuses the shared Node 
 
 - GitHub repository: [zhao-kun/markdocx](https://github.com/zhao-kun/markdocx)
 - ClawHub skill page: [marktodocx-skill](https://clawhub.ai/zhao-kun/marktodocx-skill)
+- GitHub Releases: [marktodocx release assets](https://github.com/zhao-kun/markdocx/releases)
 
 ## Preview
 
@@ -132,12 +133,14 @@ What this does:
 - writes a distributable zip archive at `apps/agent-skill/dist/marktodocx-skill.zip`
 - smoke-tests that exported folder from an isolated temporary directory
 - verifies the exported layout in a CI-safe follow-up check when using `npm run test:export:agent-skill`
+- GitHub Release automation later republishes the standard zip as `marktodocx-skill.zip` and the CI-built Mermaid variants as `marktodocx-skill-with-mermaid-debian-amd64.zip` and `marktodocx-skill-with-mermaid-debian-arm64.zip`
 
 Profile behavior:
 
 - `npm run export:agent-skill` keeps Mermaid optional. The export includes the optional Mermaid tarball in `vendor/`, but does not install `@marktodocx/runtime-node-mermaid` into `node_modules/` and does not bundle Chromium.
 - `npm run export:agent-skill:mermaid` installs `@marktodocx/runtime-node-mermaid`, vendors a pinned Chromium browser into the export, probes the working Chromium launch args on the export host, writes them into the runtime manifest, and runs a real Mermaid render smoke test before the export succeeds.
 - Mermaid-enabled exports are platform-specific because the vendored browser is built for the host platform that ran the export.
+- The GitHub Actions release workflow builds Mermaid-enabled archives on Debian Bookworm for both amd64 and arm64, and publishes them as separate release assets.
 - Mermaid-enabled exports still require the host OS to provide Chromium's Linux shared libraries. Minimal VPS images often miss packages such as `libatk1.0-0`.
 - A malformed `marktodocx-export-manifest.json` is treated as a hard deployment error. The skill fails loudly instead of guessing around a corrupt Mermaid export.
 

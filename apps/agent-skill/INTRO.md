@@ -70,16 +70,24 @@ Either command installs the skill into the workspace's `skills/` directory. Star
 
 ### From a GitHub Release
 
-Each ClawHub publish is also attached to a GitHub Release. Grab the latest `marktodocx-skill.zip` from [GitHub Releases](https://github.com/zhao-kun/markdocx/releases) and extract it into your skill host:
+GitHub Releases publish three skill archives:
+
+- `marktodocx-skill.zip` — standard export without Mermaid support
+- `marktodocx-skill-with-mermaid-debian-amd64.zip` — Mermaid-enabled export for Debian-compatible Linux on amd64
+- `marktodocx-skill-with-mermaid-debian-arm64.zip` — Mermaid-enabled export for Debian-compatible Linux on arm64
+
+Choose the Mermaid-enabled archive only when your deployment target matches both the operating system family and CPU architecture. Otherwise, use the standard `marktodocx-skill.zip` asset and keep Mermaid disabled.
+
+Examples:
 
 ```bash
-# Claude Code
+# Claude Code standard export
 mkdir -p ~/.claude/skills
 unzip -oq marktodocx-skill.zip -d ~/.claude/skills
 
-# OpenClaw
+# OpenClaw Mermaid export on Debian amd64
 mkdir -p ~/.openclaw/workspace/skills
-unzip -oq marktodocx-skill.zip -d ~/.openclaw/workspace/skills
+unzip -oq marktodocx-skill-with-mermaid-debian-amd64.zip -d ~/.openclaw/workspace/skills
 ```
 
 Start a new agent session after deploying.
