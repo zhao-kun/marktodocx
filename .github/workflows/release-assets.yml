@@ -208,6 +208,39 @@ jobs:
         with:
           ref: ${{ needs.resolve-release.outputs.release_tag }}
 
+      - name: Install Chromium and runtime libraries
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          apt-get update
+          apt-get install -y \
+            ca-certificates \
+            chromium \
+            fonts-liberation
+          apt-get install -y libasound2t64 || apt-get install -y libasound2
+          apt-get install -y \
+            libatk1.0-0 \
+            libatk-bridge2.0-0 \
+            libcups2 \
+            libdbus-1-3 \
+            libdrm2 \
+            libgbm1 \
+            libglib2.0-0 \
+            libgtk-3-0 \
+            libnspr4 \
+            libnss3 \
+            libpango-1.0-0 \
+            libx11-6 \
+            libx11-xcb1 \
+            libxcb1 \
+            libxcomposite1 \
+            libxdamage1 \
+            libxext6 \
+            libxfixes3 \
+            libxkbcommon0 \
+            libxrandr2 \
+            xdg-utils
+
       - name: Install workspace dependencies
         env:
           PUPPETEER_SKIP_DOWNLOAD: '1'
@@ -224,8 +257,8 @@ jobs:
 
       - name: Export Mermaid-enabled agent skill on Debian ${{ matrix.arch }}
         env:
-          MARKTODOCX_PUPPETEER_INSTALL_DEPS: '1'
           MARKTODOCX_PUPPETEER_NO_SANDBOX: '1'
+          MARKTODOCX_PUPPETEER_SYSTEM_EXECUTABLE_PATH: /usr/bin/chromium
         run: npm run export:agent-skill:mermaid
 
       - name: Rename Mermaid skill archive for release

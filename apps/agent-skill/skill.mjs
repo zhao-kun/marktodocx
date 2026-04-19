@@ -15,6 +15,8 @@ const bundledBrowserExecutableNamesByPlatform = {
     'chrome',
     'chrome-wrapper',
     'chrome_crashpad_handler',
+    'chromium',
+    'chrome-sandbox',
     'chrome_sandbox',
     'xdg-mime',
     'xdg-settings',

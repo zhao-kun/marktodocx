@@ -135,6 +135,14 @@ function isMissingSharedLibrariesError(text) {
   return /error while loading shared libraries:/i.test(text);
 }
 
+function getConfiguredSystemBrowserExecutable(env = process.env) {
+  const executablePath = env.MARKTODOCX_PUPPETEER_SYSTEM_EXECUTABLE_PATH;
+  if (typeof executablePath !== 'string') {
+    return '';
+  }
+  return executablePath.trim();
+}
+
 async function pruneChromiumResources(browserRootDir) {
   await Promise.all(
     prunedChromiumRelativePaths.map((relativePath) =>
@@ -143,7 +151,33 @@ async function pruneChromiumResources(browserRootDir) {
   );
 }
 
+async function installVendoredSystemBrowser(executablePath) {
+  const resolvedExecutablePath = await fs.realpath(executablePath);
+  const sourceBrowserDir = path.dirname(resolvedExecutablePath);
+  const targetBrowserDir = path.join(exportBrowserDir, 'chromium');
+
+  await fs.mkdir(exportBrowserDir, { recursive: true });
+  await fs.rm(targetBrowserDir, { recursive: true, force: true });
+  await fs.cp(sourceBrowserDir, targetBrowserDir, { recursive: true });
+  await pruneChromiumResources(targetBrowserDir);
+
+  const vendoredExecutablePath = path.join(targetBrowserDir, path.basename(resolvedExecutablePath));
+  await fs.access(vendoredExecutablePath);
+
+  return {
+    browser: 'chromium',
+    buildId: 'system',
+    executablePath: vendoredExecutablePath,
+    relativeExecutablePath: path.relative(exportDir, vendoredExecutablePath),
+  };
+}
+
 async function installVendoredChromeBrowser() {
+  const systemExecutablePath = getConfiguredSystemBrowserExecutable(process.env);
+  if (systemExecutablePath) {
+    return installVendoredSystemBrowser(systemExecutablePath);
+  }
+
   const installArgs = ['exec', 'puppeteer', 'browsers', 'install', 'chrome'];
   if (shouldInstallPuppeteerSystemDeps(process.env)) {
     installArgs.push('--install-deps');
