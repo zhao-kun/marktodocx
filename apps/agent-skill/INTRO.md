@@ -2,6 +2,11 @@
 
 A Claude Agent Skill that converts Markdown into Word (`.docx`) files using the shared marktodocx Node runtime. Same conversion rules as the marktodocx CLI, Chrome extension, and VS Code extension, so one Markdown file produces the same DOCX everywhere.
 
+## Project Links
+
+- GitHub repository: [zhao-kun/markdocx](https://github.com/zhao-kun/markdocx)
+- ClawHub skill page: [marktodocx-skill](https://clawhub.ai/zhao-kun/marktodocx-skill)
+
 ## Preview
 
 Markdown source preview:
@@ -114,7 +119,7 @@ Mermaid is optional on the Node host path:
 
 ## License
 
-[MIT](https://github.com/zhao-kun/marktodocx/blob/main/LICENSE) © Kun Zhao
+[MIT](https://github.com/zhao-kun/markdocx/blob/main/LICENSE) © Kun Zhao
 
 ## Feedback
 
@@ -122,4 +127,4 @@ Issues and feature requests: [the issue tracker](https://github.com/zhao-kun/mar
 
 ## Maintainers
 
-The ClawHub publish process and GitHub Release process for this skill are documented in [`docs/publishing.md`](https://github.com/zhao-kun/marktodocx/blob/main/docs/publishing.md#agent-skill-clawhub) at the project root.
+The ClawHub publish process and GitHub Release process for this skill are documented in [`docs/publishing.md`](https://github.com/zhao-kun/markdocx/blob/main/docs/publishing.md#agent-skill-clawhub) at the project root.

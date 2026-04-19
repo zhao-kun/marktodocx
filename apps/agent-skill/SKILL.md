@@ -50,3 +50,25 @@ Convert Markdown into DOCX using the shared Node runtime family in this reposito
 - Do not invent style fields outside the shared `styleOptions` schema.
 - Do not silently ignore missing Mermaid support.
 - Do not claim conversion succeeded until the DOCX file has been written or bytes have been returned.
+
+## Mermaid Support
+
+- The skill published on ClawHub does not support Mermaid diagram conversion.
+- If the Markdown contains Mermaid code blocks, the published ClawHub skill should fail clearly instead of silently producing different output.
+- If you need Mermaid conversion, build and package the skill from the source repository with Mermaid support enabled, then deploy that exported artifact yourself.
+
+
+## Project Links
+
+- GitHub repository: [zhao-kun/markdocx](https://github.com/zhao-kun/markdocx)
+- GitHub Releases: [marktodocx skill artifacts](https://github.com/zhao-kun/markdocx/releases)
+
+## Preview
+
+Markdown source preview:
+
+![Markdown source preview](https://raw.githubusercontent.com/zhao-kun/markdocx/main/assets/images/markdown_preview.png)
+
+Generated DOCX preview:
+
+![Generated DOCX preview](https://raw.githubusercontent.com/zhao-kun/markdocx/main/assets/images/word_preview.png)

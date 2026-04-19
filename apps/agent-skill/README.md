@@ -2,6 +2,11 @@
 
 This app is the thin agent-skill host for marktodocx. It reuses the shared Node runtime family in `@marktodocx/runtime-node` and only owns skill-facing parameter parsing, input resolution, and optional output writing.
 
+## Project Links
+
+- GitHub repository: [zhao-kun/markdocx](https://github.com/zhao-kun/markdocx)
+- ClawHub skill page: [marktodocx-skill](https://clawhub.ai/zhao-kun/marktodocx-skill)
+
 ## Preview
 
 Markdown source preview:
@@ -194,7 +199,7 @@ The most reliable manual deployment path today is:
 Example:
 
 ```bash
-git clone <this-repo-url> ~/src/marktodocx
+git clone https://github.com/zhao-kun/markdocx.git ~/src/marktodocx
 cd ~/src/marktodocx
 npm install
 npm run export:agent-skill

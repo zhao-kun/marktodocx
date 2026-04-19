@@ -6,7 +6,8 @@ User-facing listing copy lives next to each host:
 
 - `apps/vscode-extension/README.md` — VS Code Marketplace listing
 - `apps/chrome-extension/README.md` — Chrome Web Store listing
-- `apps/agent-skill/INTRO.md` — ClawHub listing
+- `apps/agent-skill/SKILL.md` — ClawHub listing
+- `apps/agent-skill/INTRO.md` — GitHub Release description for the agent skill
 - `apps/agent-skill/README.md` — manual / developer deployment recipes
 
 This file owns the release **process**, not the listing copy.
@@ -252,7 +253,7 @@ The agent skill is published to ClawHub, the OpenClaw skill registry, and mirror
    ```
 7. Cut a GitHub Release for the tag and attach `apps/agent-skill/dist/marktodocx-skill.zip`. Use the body of `apps/agent-skill/INTRO.md` as the release description.
 
-ClawHub listing note: `apps/agent-skill/INTRO.md` is registry-facing copy. If you add screenshots there, use absolute public image URLs rather than repo-relative paths so the listing still renders correctly outside the repository checkout.
+ClawHub listing note: `apps/agent-skill/SKILL.md` is the registry-facing copy that ClawHub renders from the exported skill. If you add screenshots there, use absolute public image URLs rather than repo-relative paths so the listing still renders correctly outside the repository checkout.
 
 ### Mermaid-enabled releases
 
