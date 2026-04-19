@@ -206,6 +206,8 @@ export async function createExtensionSession({ allowNoSandbox = false } = {}) {
   const browser = await puppeteer.launch({
     headless: 'new',
     args: launchArgs,
+    // Puppeteer disables extensions by default; parity needs the built MV3 extension to load.
+    ignoreDefaultArgs: ['--disable-extensions'],
   });
 
   const extensionId = await getExtensionId(browser, {
