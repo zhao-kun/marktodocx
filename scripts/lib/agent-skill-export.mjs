@@ -127,8 +127,17 @@ function shouldInstallPuppeteerSystemDeps(env = process.env) {
   return env.MARKTODOCX_PUPPETEER_INSTALL_DEPS === '1';
 }
 
+function shouldDisableSandbox(env = process.env) {
+  return env.MARKTODOCX_PUPPETEER_NO_SANDBOX === '1';
+}
+
+function getNoSandboxLaunchArgs() {
+  return ['--no-sandbox', '--disable-setuid-sandbox'];
+}
+
 function isSandboxRestrictionError(text) {
-  return /No usable sandbox!/i.test(text);
+  return /No usable sandbox!/i.test(text)
+    || /Running as root without --no-sandbox is not supported/i.test(text);
 }
 
 function isMissingSharedLibrariesError(text) {
@@ -220,7 +229,7 @@ async function installVendoredChromeBrowser() {
   };
 }
 
-async function probeBundledBrowserLaunchArgs(executablePath) {
+async function probeBundledBrowserLaunchArgs(executablePath, env = process.env) {
   async function tryLaunch(args) {
     const code = [
       "import puppeteer from 'puppeteer';",
@@ -231,10 +240,16 @@ async function probeBundledBrowserLaunchArgs(executablePath) {
 
     const result = await execFile(process.execPath, ['--input-type=module', '--eval', code], {
       cwd: exportDir,
-      env: process.env,
+      env,
     });
 
     assert.equal(result.stdout, 'ok');
+  }
+
+  if (shouldDisableSandbox(env)) {
+    const noSandboxArgs = getNoSandboxLaunchArgs();
+    await tryLaunch(noSandboxArgs);
+    return noSandboxArgs;
   }
 
   try {
@@ -250,8 +265,9 @@ async function probeBundledBrowserLaunchArgs(executablePath) {
       throw error;
     }
 
-    await tryLaunch(['--no-sandbox', '--disable-setuid-sandbox']);
-    return ['--no-sandbox', '--disable-setuid-sandbox'];
+    const noSandboxArgs = getNoSandboxLaunchArgs();
+    await tryLaunch(noSandboxArgs);
+    return noSandboxArgs;
   }
 }
 
@@ -327,7 +343,7 @@ export async function provisionMermaidSupport({ withMermaid = false } = {}) {
 
   const bundledBrowser = await installVendoredChromeBrowser();
   try {
-    bundledBrowser.launchArgs = await probeBundledBrowserLaunchArgs(bundledBrowser.executablePath);
+    bundledBrowser.launchArgs = await probeBundledBrowserLaunchArgs(bundledBrowser.executablePath, process.env);
   } catch (error) {
     throw new Error(buildMermaidSmokeFailureMessage(error));
   }
