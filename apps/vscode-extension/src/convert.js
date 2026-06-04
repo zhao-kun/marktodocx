@@ -1,4 +1,5 @@
 const fs = require('node:fs/promises');
+const https = require('node:https');
 const path = require('node:path');
 
 const IMAGE_EXTENSIONS = new Map([
@@ -50,6 +51,58 @@ async function listFilesRecursively(rootDir) {
 
 function hasPotentialLocalImages(markdown) {
   return /!\[[^\]]*\]\((?!https?:|data:|#)|<img\b[^>]*\bsrc=["'](?!https?:|data:|#)/i.test(markdown);
+}
+
+function findExternalImageUrls(markdown) {
+  const urls = new Set();
+  const mdRegex = /!\[[^\]]*\]\((https?:\/\/[^\s)]+)\)/g;
+  let match;
+  while ((match = mdRegex.exec(markdown)) !== null) {
+    urls.add(match[1]);
+  }
+  const htmlRegex = /<img\b[^>]*\bsrc=["'](https?:\/\/[^\s"')>]+)["']/gi;
+  while ((match = htmlRegex.exec(markdown)) !== null) {
+    urls.add(match[1]);
+  }
+  return [...urls];
+}
+
+function downloadImage(url) {
+  return new Promise((resolve, reject) => {
+    https.get(url, { timeout: 15000 }, (response) => {
+      if (response.statusCode >= 200 && response.statusCode < 400) {
+        const chunks = [];
+        response.on('data', (chunk) => chunks.push(chunk));
+        response.on('end', () => {
+          resolve({
+            buffer: Buffer.concat(chunks),
+            mimeType: (response.headers['content-type'] || 'application/octet-stream').split(';')[0].trim(),
+          });
+        });
+      } else if (response.statusCode >= 300 && response.statusCode < 400 && response.headers.location) {
+        downloadImage(response.headers.location).then(resolve).catch(reject);
+      } else {
+        reject(new Error(`HTTP ${response.statusCode} for ${url}`));
+      }
+    }).on('timeout', () => {
+      reject(new Error(`Timeout downloading ${url}`));
+    }).on('error', reject);
+  });
+}
+
+async function collectExternalImageMap(markdown) {
+  const urls = findExternalImageUrls(markdown);
+  if (urls.length === 0) return {};
+  const imageMap = {};
+  await Promise.all(urls.map(async (url) => {
+    try {
+      const { buffer, mimeType } = await downloadImage(url);
+      imageMap[url] = bytesToDataUri(buffer, mimeType);
+    } catch (err) {
+      console.warn(`marktodocx: failed to download external image ${url}: ${err.message}`);
+    }
+  }));
+  return imageMap;
 }
 
 async function collectWorkspaceImageMap(rootDir) {
@@ -153,9 +206,13 @@ async function convertMarkdownToDocx({ resourceUri, vscodeApi, webviewHost }) {
   }
 
   const styleOptions = await resolveVsCodeStyleOptions(vscodeApi, markdownUri, workspaceRoot);
-  const imageMap = hasPotentialLocalImages(markdown)
+  let imageMap = hasPotentialLocalImages(markdown)
     ? await collectWorkspaceImageMap(workspaceRoot)
     : {};
+  const externalImageMap = await collectExternalImageMap(markdown);
+  if (Object.keys(externalImageMap).length > 0) {
+    imageMap = { ...imageMap, ...externalImageMap };
+  }
   const mdRelativeDir = getMarkdownRelativeDir(workspaceRoot, markdownPath);
 
   const bytes = await vscodeApi.window.withProgress(
@@ -189,6 +246,7 @@ async function convertMarkdownToDocx({ resourceUri, vscodeApi, webviewHost }) {
 }
 
 module.exports = {
+  collectExternalImageMap,
   collectWorkspaceImageMap,
   convertMarkdownToDocx,
   getMarkdownRelativeDir,
