@@ -1,6 +1,5 @@
 import MarkdownIt from 'markdown-it';
 
-import { HIDDEN_CODE_BLOCK_LANGUAGES } from '../constants.js';
 import { resolveDocumentStyle } from '../style/document-style.js';
 import { highlightCode } from './syntax-highlighter.js';
 
@@ -32,10 +31,6 @@ function renderInlineCodeHtml(content, resolvedStyle) {
 
 function renderCodeBlockHtml(content, resolvedStyle, language = '') {
   const normalized = content.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
-  const showLanguageBadge = language && !HIDDEN_CODE_BLOCK_LANGUAGES.has(language.toLowerCase());
-  const languageBadge = showLanguageBadge
-    ? `<div class="code-block-language" style="color: ${resolvedStyle.code.languageBadgeColor};">${escapeHtml(language)}</div>`
-    : '';
 
   const highlightedLines = highlightCode(normalized, language, resolvedStyle.code.syntaxTheme);
 
@@ -57,7 +52,6 @@ function renderCodeBlockHtml(content, resolvedStyle, language = '') {
     '<table class="code-block-table" role="presentation" width="100%" style="width: 100%; border-collapse: collapse; table-layout: fixed;">',
     '  <tr>',
     `    <td class="code-block-cell" style="border: 1px solid ${resolvedStyle.code.blockBorderColor}; background-color: ${resolvedStyle.code.blockBackgroundColor}; color: ${resolvedStyle.code.textColor}; padding: 8pt 10pt;">`,
-    languageBadge,
     renderedLines,
     '    </td>',
     '  </tr>',

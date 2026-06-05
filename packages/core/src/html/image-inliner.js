@@ -24,7 +24,19 @@ export function inlineLocalImages(html, imageMap, mdRelativeDir, runtime = {}) {
 
   for (const image of images) {
     const src = image.getAttribute('src');
-    if (!src || src.startsWith('data:') || /^[a-z]+:/i.test(src)) {
+    if (!src || src.startsWith('data:')) {
+      continue;
+    }
+
+    // Check imageMap by raw URL first (supports external images pre-downloaded by the host)
+    const directUri = imageMap[src];
+    if (directUri) {
+      image.setAttribute('src', directUri);
+      continue;
+    }
+
+    // Only resolve relative paths (skip other absolute URLs)
+    if (/^[a-z]+:/i.test(src)) {
       continue;
     }
 

@@ -1,22 +1,4 @@
-import hljs from 'highlight.js/lib/core';
-import python from 'highlight.js/lib/languages/python';
-import go from 'highlight.js/lib/languages/go';
-import java from 'highlight.js/lib/languages/java';
-import bash from 'highlight.js/lib/languages/bash';
-import javascript from 'highlight.js/lib/languages/javascript';
-import typescript from 'highlight.js/lib/languages/typescript';
-
-hljs.registerLanguage('python', python);
-hljs.registerLanguage('go', go);
-hljs.registerLanguage('java', java);
-hljs.registerLanguage('bash', bash);
-hljs.registerLanguage('javascript', javascript);
-hljs.registerLanguage('typescript', typescript);
-hljs.registerLanguage('js', javascript);
-hljs.registerLanguage('ts', typescript);
-hljs.registerLanguage('py', python);
-hljs.registerLanguage('sh', bash);
-hljs.registerLanguage('shell', bash);
+import hljs from 'highlight.js/lib/common';
 
 const COLOR_PALETTES = {
   light: {
@@ -43,6 +25,29 @@ const COLOR_PALETTES = {
     'hljs-regexp': '#0a3069',
     'hljs-symbol': '#0550ae',
     'hljs-doctag': '#cf222e',
+    'hljs-name': '#0550ae',
+    'hljs-selector-tag': '#cf222e',
+    'hljs-selector-id': '#8250df',
+    'hljs-selector-class': '#8250df',
+    'hljs-selector-attr': '#0550ae',
+    'hljs-selector-pseudo': '#cf222e',
+    'hljs-params': '#953800',
+    'hljs-subst': '#0550ae',
+    'hljs-addition': '#1a7f37',
+    'hljs-deletion': '#cf222e',
+    'hljs-tag': '#0550ae',
+    'hljs-emphasis': '#8250df',
+    'hljs-strong': '#8250df',
+    'hljs-formula': '#0550ae',
+    'hljs-link': '#0550ae',
+    'hljs-quote': '#0a3069',
+    'hljs-template-tag': '#cf222e',
+    'hljs-template-variable': '#953800',
+    'hljs-punctuation': '#6e7781',
+    'hljs-code': '#0a3069',
+    'hljs-function': '#8250df',
+    'hljs-bullet': '#0550ae',
+    'hljs-attribute': '#0550ae',
   },
   dark: {
     'hljs-title function_': '#d2a8ff',
@@ -68,6 +73,29 @@ const COLOR_PALETTES = {
     'hljs-regexp': '#a5d6ff',
     'hljs-symbol': '#79c0ff',
     'hljs-doctag': '#ff7b72',
+    'hljs-name': '#79c0ff',
+    'hljs-selector-tag': '#ff7b72',
+    'hljs-selector-id': '#d2a8ff',
+    'hljs-selector-class': '#d2a8ff',
+    'hljs-selector-attr': '#79c0ff',
+    'hljs-selector-pseudo': '#ff7b72',
+    'hljs-params': '#ffa657',
+    'hljs-subst': '#79c0ff',
+    'hljs-addition': '#3fb950',
+    'hljs-deletion': '#ff7b72',
+    'hljs-tag': '#79c0ff',
+    'hljs-emphasis': '#d2a8ff',
+    'hljs-strong': '#d2a8ff',
+    'hljs-formula': '#79c0ff',
+    'hljs-link': '#79c0ff',
+    'hljs-quote': '#a5d6ff',
+    'hljs-template-tag': '#ff7b72',
+    'hljs-template-variable': '#ffa657',
+    'hljs-punctuation': '#8b949e',
+    'hljs-code': '#a5d6ff',
+    'hljs-function': '#d2a8ff',
+    'hljs-bullet': '#79c0ff',
+    'hljs-attribute': '#79c0ff',
   },
 };
 
