@@ -3,9 +3,11 @@ import { convertMarkdownInBrowser } from '@marktodocx/runtime-browser';
 const vscode = acquireVsCodeApi();
 
 function bytesToBase64(bytes) {
+  const uint8 = new Uint8Array(bytes);
   let binary = '';
-  for (let index = 0; index < bytes.length; index += 1) {
-    binary += String.fromCharCode(bytes[index]);
+  const chunkSize = 0x8000;
+  for (let i = 0; i < uint8.length; i += chunkSize) {
+    binary += String.fromCharCode.apply(null, uint8.subarray(i, i + chunkSize));
   }
   return btoa(binary);
 }
